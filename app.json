@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "simwt-mobile",
+    "name": "SIMWT Mobile",
     "slug": "simwt-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,11 +8,13 @@
     "scheme": "simwtmobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "co.id.mwtpart.simwt"
     },
     "android": {
+      "package": "co.id.mwtpart.simwt",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#00880F",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -26,17 +28,30 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#00880F"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "12219d51-f42c-48d1-b4c8-9f482d512144"
+      },
+      "router": {}
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/12219d51-f42c-48d1-b4c8-9f482d512144"
     }
   }
 }
