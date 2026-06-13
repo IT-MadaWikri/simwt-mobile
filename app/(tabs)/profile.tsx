@@ -4,9 +4,11 @@
  */
 // File profile.tsx code block starts here:
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Switch, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as LocalAuthentication from 'expo-local-authentication';
 import Colors from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -19,6 +21,9 @@ interface MenuItem {
   color?: string;
   onPress?: () => void;
   danger?: boolean;
+  isToggle?: boolean;
+  toggleValue?: boolean;
+  onToggle?: (val: boolean) => void;
 }
 
 /**
@@ -29,6 +34,60 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [loadingLogout, setLoadingLogout] = useState(false);
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+
+  useEffect(() => {
+    loadBiometricSetting();
+  }, []);
+
+  const loadBiometricSetting = async () => {
+    try {
+      const value = await AsyncStorage.getItem('use_biometric');
+      setIsBiometricEnabled(value === 'true');
+    } catch (e) {
+      console.error('Failed to load biometric setting', e);
+    }
+  };
+
+  const toggleBiometric = async (value: boolean) => {
+    if (value) {
+      // User is trying to enable biometric
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+        if (!hasHardware || !isEnrolled) {
+          Alert.alert('Perhatian', 'Perangkat Anda tidak mendukung biometrik atau belum dikonfigurasi.');
+          return;
+        }
+
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Verifikasi identitas Anda untuk mengaktifkan biometrik',
+          cancelLabel: 'Batal',
+          disableDeviceFallback: false,
+        });
+
+        if (result.success) {
+          setIsBiometricEnabled(true);
+          await AsyncStorage.setItem('use_biometric', 'true');
+        } else {
+          setIsBiometricEnabled(false);
+        }
+      } catch (e) {
+        console.error('Failed biometric validation', e);
+        Alert.alert('Error', 'Terjadi kesalahan pada sistem biometrik.');
+        setIsBiometricEnabled(false);
+      }
+    } else {
+      // User is disabling biometric
+      setIsBiometricEnabled(false);
+      try {
+        await AsyncStorage.setItem('use_biometric', 'false');
+      } catch (e) {
+        console.error('Failed to save biometric setting', e);
+      }
+    }
+  };
 
   /**
    * Menangani proses keluar (Logout)
@@ -60,6 +119,14 @@ export default function ProfileScreen() {
 
   const menuItems: MenuItem[][] = [
     [
+      { 
+        icon: 'fingerprint', 
+        label: 'Login dengan Fingerprint', 
+        subtitle: 'Gunakan biometrik untuk masuk',
+        isToggle: true,
+        toggleValue: isBiometricEnabled,
+        onToggle: toggleBiometric
+      },
       { 
         icon: 'shield-lock-outline', 
         label: 'Keamanan Akun', 
@@ -163,7 +230,16 @@ export default function ProfileScreen() {
                     <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                   ) : null}
                 </View>
-                <MaterialCommunityIcons name="chevron-right" size={22} color={Colors.textTertiary} />
+                {item.isToggle ? (
+                  <Switch
+                    value={item.toggleValue}
+                    onValueChange={item.onToggle}
+                    trackColor={{ false: '#E0E0E0', true: '#00AA13' }}
+                    thumbColor={Platform.OS === 'android' ? (item.toggleValue ? '#FFFFFF' : '#F5F5F5') : ''}
+                  />
+                ) : (
+                  <MaterialCommunityIcons name="chevron-right" size={22} color={Colors.textTertiary} />
+                )}
               </TouchableOpacity>
             ))}
           </View>

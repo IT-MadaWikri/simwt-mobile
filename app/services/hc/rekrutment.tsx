@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import RenderHtml from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -83,7 +82,8 @@ export default function RekrutmentAdminScreen() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: 'Dashboard Rekrutment',
+          headerShown: true,
+          headerTitle: 'Rekrutment',
           headerStyle: { backgroundColor: '#1565C0' },
           headerTintColor: Colors.white,
           headerShadowVisible: false,
@@ -94,94 +94,91 @@ export default function RekrutmentAdminScreen() {
           ),
         }}
       />
+
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1565C0']} />}
       >
-        {/* Main Metrics */}
-        <View style={styles.metricsGrid}>
-          <View style={[styles.metricCard, { backgroundColor: '#E3F2FD' }]}>
-            <MaterialCommunityIcons name="briefcase-outline" size={32} color="#1565C0" />
-            <Text style={styles.metricNumber}>{totalLowongan}</Text>
-            <Text style={styles.metricLabel}>Lowongan Aktif</Text>
-          </View>
-          <View style={[styles.metricCard, { backgroundColor: '#E8F5E9' }]}>
-            <MaterialCommunityIcons name="account-group-outline" size={32} color="#2E7D32" />
-            <Text style={styles.metricNumber}>{totalPelamar}</Text>
-            <Text style={styles.metricLabel}>Total Pelamar</Text>
-          </View>
+        {/* Quick Actions Scroll */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsRow}>
+          <TouchableOpacity style={styles.actionBtnSolid}>
+            <MaterialCommunityIcons name="plus" size={18} color={Colors.white} />
+            <Text style={styles.actionBtnSolidText}>Posting Loker</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtnOutline}>
+            <MaterialCommunityIcons name="format-list-bulleted" size={18} color={Colors.textPrimary} />
+            <Text style={styles.actionBtnOutlineText}>Posisi & Pendidikan</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtnOutline}>
+            <MaterialCommunityIcons name="cog-outline" size={18} color={Colors.textPrimary} />
+            <Text style={styles.actionBtnOutlineText}>Pengaturan</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        <Text style={styles.sectionTitle}>Menu Utama</Text>
+        <View style={styles.menuGrid}>
+          {/* Loker */}
+          <TouchableOpacity style={styles.menuCard}>
+            <View style={[styles.menuIconBg, { backgroundColor: '#E3F2FD' }]}>
+              <MaterialCommunityIcons name="briefcase-outline" size={28} color="#1565C0" />
+            </View>
+            <Text style={styles.menuCardText}>Lihat Semua Loker</Text>
+          </TouchableOpacity>
+
+          {/* Pelamar */}
+          <TouchableOpacity style={styles.menuCard}>
+            <View style={[styles.menuIconBg, { backgroundColor: '#F3E5F5' }]}>
+              <MaterialCommunityIcons name="account-group-outline" size={28} color="#7B1FA2" />
+            </View>
+            <Text style={styles.menuCardText}>Lihat Semua Pelamar</Text>
+          </TouchableOpacity>
+
+          {/* Jadwal */}
+          <TouchableOpacity style={styles.menuCard}>
+            <View style={[styles.menuIconBg, { backgroundColor: '#FFF3E0' }]}>
+              <MaterialCommunityIcons name="calendar-clock-outline" size={28} color="#E65100" />
+            </View>
+            <Text style={styles.menuCardText}>Lihat Semua Jadwal</Text>
+          </TouchableOpacity>
+
+          {/* Kalender */}
+          <TouchableOpacity style={styles.menuCard}>
+            <View style={[styles.menuIconBg, { backgroundColor: '#E8F5E9' }]}>
+              <MaterialCommunityIcons name="calendar-month-outline" size={28} color="#2E7D32" />
+            </View>
+            <Text style={styles.menuCardText}>Lihat Kalender</Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.metricsGrid}>
-          <View style={[styles.metricCard, { backgroundColor: '#FFF3E0' }]}>
-            <MaterialCommunityIcons name="calendar-clock-outline" size={32} color="#E65100" />
-            <Text style={styles.metricNumber}>{jadwalHariIni}</Text>
-            <Text style={styles.metricLabel}>Jadwal Hari Ini</Text>
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Informasi Approval</Text>
+          <View style={styles.metricsGrid}>
+            <View style={[styles.metricCard, { backgroundColor: '#E3F2FD' }]}>
+              <MaterialCommunityIcons name="briefcase-outline" size={32} color="#1565C0" />
+              <Text style={styles.metricNumber}>{totalLowongan}</Text>
+              <Text style={styles.metricLabel}>Lowongan Aktif</Text>
+            </View>
+            <View style={[styles.metricCard, { backgroundColor: '#E8F5E9' }]}>
+              <MaterialCommunityIcons name="account-group-outline" size={32} color="#2E7D32" />
+              <Text style={styles.metricNumber}>{totalPelamar}</Text>
+              <Text style={styles.metricLabel}>Total Pelamar</Text>
+            </View>
           </View>
-          <View style={[styles.metricCard, { backgroundColor: totalPending > 0 ? '#FFEBEE' : '#F5F5F5' }]}>
-            <MaterialCommunityIcons name="file-document-edit-outline" size={32} color={totalPending > 0 ? "#C62828" : "#757575"} />
-            <Text style={[styles.metricNumber, { color: totalPending > 0 ? '#C62828' : '#757575' }]}>{totalPending}</Text>
-            <Text style={styles.metricLabel}>Menunggu Approval</Text>
+
+          <View style={styles.metricsGrid}>
+            <View style={[styles.metricCard, { backgroundColor: '#FFF3E0' }]}>
+              <MaterialCommunityIcons name="calendar-clock-outline" size={32} color="#E65100" />
+              <Text style={styles.metricNumber}>{jadwalHariIni}</Text>
+              <Text style={styles.metricLabel}>Jadwal Hari Ini</Text>
+            </View>
+            <View style={[styles.metricCard, { backgroundColor: totalPending > 0 ? '#FFEBEE' : '#F5F5F5' }]}>
+              <MaterialCommunityIcons name="file-document-edit-outline" size={32} color={totalPending > 0 ? "#C62828" : "#757575"} />
+              <Text style={[styles.metricNumber, { color: totalPending > 0 ? '#C62828' : '#757575' }]}>{totalPending}</Text>
+              <Text style={styles.metricLabel}>Menunggu Approval</Text>
+            </View>
           </View>
         </View>
-
-        {/* MITA Analysis Section */}
-        {analisisMITA && analisisMITA.analisis_mendalam && (
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="robot-outline" size={24} color="#1565C0" />
-              <Text style={styles.sectionTitle}>Analisis MITA Insight</Text>
-            </View>
-
-            <View style={styles.insightCard}>
-              <Text style={styles.insightTitle}>Kondisi Saat Ini</Text>
-              <RenderHtml
-                contentWidth={width - Spacing.screenPadding * 4}
-                source={{ html: analisisMITA.analisis_mendalam.kondisi }}
-                tagsStyles={{
-                  strong: { color: '#1565C0', fontWeight: 'bold' },
-                  p: { fontSize: 14, color: Colors.textSecondary, lineHeight: 22, margin: 0 },
-                }}
-              />
-            </View>
-
-            {analisisMITA.analisis_mendalam.risiko && analisisMITA.analisis_mendalam.risiko.length > 0 && (
-              <View style={[styles.insightCard, styles.riskCard]}>
-                <View style={styles.riskHeader}>
-                  <MaterialCommunityIcons name="alert-circle-outline" size={20} color="#D32F2F" />
-                  <Text style={styles.riskTitleText}>Risiko Teridentifikasi</Text>
-                </View>
-                {analisisMITA.analisis_mendalam.risiko.map((risk: any, index: number) => (
-                  <View key={index} style={styles.riskItem}>
-                    <Text style={styles.riskItemTitle}>• {risk.judul}</Text>
-                    <Text style={styles.riskItemDesc}>{risk.deskripsi}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {analisisMITA.analisis_mendalam.rekomendasi && analisisMITA.analisis_mendalam.rekomendasi.length > 0 && (
-              <View style={[styles.insightCard, styles.recommendationCard]}>
-                <View style={styles.riskHeader}>
-                  <MaterialCommunityIcons name="lightbulb-on-outline" size={20} color="#F57F17" />
-                  <Text style={[styles.riskTitleText, { color: '#F57F17' }]}>Rekomendasi Aksi</Text>
-                </View>
-                {analisisMITA.analisis_mendalam.rekomendasi.map((rec: any, index: number) => (
-                  <View key={index} style={styles.riskItem}>
-                    <View style={styles.recHeader}>
-                      <Text style={styles.riskItemTitle}>• {rec.aksi}</Text>
-                      <View style={[styles.priorityBadge, rec.prioritas === 'High' ? styles.highPriority : styles.medPriority]}>
-                        <Text style={[styles.priorityText, rec.prioritas === 'High' ? styles.highPriorityText : styles.medPriorityText]}>{rec.prioritas}</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.riskItemDesc}>{rec.detail}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
       </ScrollView>
     </>
   );
@@ -244,93 +241,84 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontWeight: '600',
   },
-  sectionContainer: {
-    marginTop: Spacing.lg,
+  quickActionsRow: {
+    gap: 12,
+    marginBottom: Spacing.xl,
+    paddingRight: Spacing.screenPadding,
   },
-  sectionHeader: {
+  actionBtnSolid: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#1565C0',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    gap: 6,
+    shadowColor: '#1565C0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  actionBtnSolidText: {
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  actionBtnOutline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: 6,
+  },
+  actionBtnOutlineText: {
+    color: Colors.textPrimary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  menuCard: {
+    width: '47%',
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    borderRadius: Spacing.radius.lg,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  menuIconBg: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: Spacing.md,
+  },
+  menuCardText: {
+    color: Colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1565C0',
-    marginLeft: 8,
-  },
-  insightCard: {
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  insightTitle: {
-    fontSize: 16,
-    fontWeight: '700',
     color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
-  },
-  riskCard: {
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFEBEE',
-  },
-  riskHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: Spacing.md,
-  },
-  riskTitleText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#D32F2F',
-    marginLeft: 8,
-  },
-  riskItem: {
-    marginBottom: Spacing.md,
-  },
-  riskItemTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 4,
-  },
-  riskItemDesc: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    marginLeft: 12,
-  },
-  recommendationCard: {
-    borderColor: '#FFF9C4',
-    backgroundColor: '#FFFDE7',
-  },
-  recHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  highPriority: {
-    backgroundColor: '#FFEBEE',
-  },
-  medPriority: {
-    backgroundColor: '#E3F2FD',
-  },
-  highPriorityText: {
-    color: '#C62828',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  medPriorityText: {
-    color: '#1565C0',
-    fontSize: 10,
-    fontWeight: '700',
   },
 });

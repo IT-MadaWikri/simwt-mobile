@@ -55,7 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = useCallback(async (username: string, password: string) => {
-    setIsLoading(true);
     setError(null);
     try {
       const result = await authService.login({ username, password });
@@ -75,8 +74,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const message = err.message || 'Login gagal';
       setError(message);
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

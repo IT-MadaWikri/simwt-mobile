@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Switch } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +21,7 @@ export default function EditProfileScreen() {
   const [whatsapp, setWhatsapp] = useState('081223155139');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [useFingerprint, setUseFingerprint] = useState(false);
 
   const renderInput = (label: string, value: string, onChange: (t: string) => void, required = false, isSecure = false) => (
     <View style={styles.inputWrapper}>
@@ -99,6 +100,20 @@ export default function EditProfileScreen() {
           <View style={styles.sectionBody}>
             {renderInput('PASSWORD (OPSIONAL)', password, setPassword, false, true)}
             {renderInput('ULANGI PASSWORD (OPSIONAL)', passwordConfirm, setPasswordConfirm, false, true)}
+            
+            {/* Fingerprint Toggle */}
+            <View style={styles.switchContainer}>
+              <View style={styles.switchLabelContainer}>
+                <MaterialCommunityIcons name="fingerprint" size={20} color={Colors.textPrimary} style={{ marginRight: 8 }} />
+                <Text style={styles.switchLabel}>Gunakan Fingerprint untuk Login</Text>
+              </View>
+              <Switch
+                value={useFingerprint}
+                onValueChange={setUseFingerprint}
+                trackColor={{ false: '#E0E0E0', true: '#00AA13' }}
+                thumbColor={Platform.OS === 'android' ? (useFingerprint ? '#FFFFFF' : '#F5F5F5') : ''}
+              />
+            </View>
           </View>
         </View>
 
@@ -183,6 +198,25 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
     marginBottom: Spacing.md,
     fontStyle: 'italic',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F5F6F8',
+    paddingTop: 16,
+  },
+  switchLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  switchLabel: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    fontWeight: '600',
   },
   infoCard: {
     backgroundColor: '#E8F5E9',

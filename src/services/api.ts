@@ -13,7 +13,7 @@ const api: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
-    'API_SIMWT_TOKEN': API_CONFIG.API_TOKEN,
+    'X-SIMMWT-KEY': API_CONFIG.API_TOKEN,
   },
 });
 

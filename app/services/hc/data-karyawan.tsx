@@ -56,7 +56,11 @@ export default function HumanCapitalScreen() {
   };
 
   const renderEmployee = ({ item }: { item: Employee }) => (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card} 
+      onPress={() => router.push(`/services/hc/karyawan/${item.id}`)}
+      activeOpacity={0.7}
+    >
       {item.foto_profil ? (
         <Image
           source={{ uri: item.foto_profil.startsWith('http') ? item.foto_profil : `https://mwtpart.co.id/storage/${item.foto_profil}` }}
@@ -98,13 +102,14 @@ export default function HumanCapitalScreen() {
       {(item.status_karyawan === 'Aktif' || !item.status_karyawan) && (
          <View style={styles.activeDot} />
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <>
       <Stack.Screen
         options={{
+          headerShown: true,
           headerTitle: 'Data Karyawan',
           headerStyle: { backgroundColor: Colors.white },
           headerTintColor: Colors.textPrimary,
