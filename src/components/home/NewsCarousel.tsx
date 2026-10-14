@@ -1,10 +1,16 @@
 /**
- * NewsCarousel — Horizontal scrolling news/promo banners
+ * NewsCarousel — banner berita/promo yang digeser mendatar.
+ *
+ * Kartunya memakai gradien brand (bukan warna rata seperti sebelumnya) agar
+ * senada dengan tombol utama dan layar muat di karir-mwt.
  */
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import Colors from '../../../constants/Colors';
-import Spacing from '../../../constants/Spacing';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { brand } from '../../../constants/Colors';
+import Spacing, { Shadows } from '../../../constants/Spacing';
+import { fonts } from '../../../constants/Typography';
+import { gs } from '../../../constants/GlobalStyles';
 import SectionHeader from '../common/SectionHeader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -14,38 +20,39 @@ interface NewsItem {
   id: number;
   title: string;
   excerpt: string;
-  color: string;
+  colors: readonly [string, string];
   icon: string;
 }
 
 const MOCK_NEWS: NewsItem[] = [
   {
     id: 1,
-    title: '🎉 Selamat Datang di SIMWT',
+    title: 'Selamat Datang di SIMWT',
     excerpt: 'Akses semua layanan MWT Part dalam satu aplikasi',
-    color: '#00880F',
+    colors: [brand[700], brand[500]],
     icon: '🚀',
   },
   {
     id: 2,
-    title: '📋 Update Sistem Audit',
+    title: 'Update Sistem Audit',
     excerpt: 'Fitur audit baru telah tersedia untuk semua departemen',
-    color: '#1565C0',
+    colors: [brand[800], brand[600]],
     icon: '📋',
   },
   {
     id: 3,
-    title: '💡 Program Kaizen',
+    title: 'Program Kaizen',
     excerpt: 'Kirimkan ide improvement Anda melalui menu Kaizen',
-    color: '#E65100',
+    colors: [brand[600], brand[400]],
     icon: '💡',
   },
 ];
 
 export default function NewsCarousel() {
   return (
-    <View style={styles.container}>
+    <View style={gs.section}>
       <SectionHeader title="Berita Terbaru" onAction={() => {}} />
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -54,14 +61,17 @@ export default function NewsCarousel() {
         snapToInterval={CARD_WIDTH + Spacing.md}
       >
         {MOCK_NEWS.map((news) => (
-          <View
+          <LinearGradient
             key={news.id}
-            style={[styles.card, { backgroundColor: news.color }]}
+            colors={news.colors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.card}
           >
             <Text style={styles.cardIcon}>{news.icon}</Text>
             <Text style={styles.cardTitle}>{news.title}</Text>
             <Text style={styles.cardExcerpt}>{news.excerpt}</Text>
-          </View>
+          </LinearGradient>
         ))}
       </ScrollView>
     </View>
@@ -69,38 +79,32 @@ export default function NewsCarousel() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: Spacing.sectionGap,
-  },
   scrollContent: {
     paddingHorizontal: Spacing.screenPadding,
     gap: Spacing.md,
   },
   card: {
     width: CARD_WIDTH,
-    borderRadius: Spacing.radius.lg,
+    borderRadius: Spacing.radius.xl,
     padding: Spacing.xl,
     minHeight: 130,
     justifyContent: 'flex-end',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    ...Shadows.raised,
   },
   cardIcon: {
     fontSize: 28,
     marginBottom: Spacing.sm,
   },
   cardTitle: {
+    fontFamily: fonts.bold,
     fontSize: 16,
-    fontWeight: '700',
     color: Colors.white,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   cardExcerpt: {
+    fontFamily: fonts.regular,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
     lineHeight: 18,
+    color: 'rgba(255,255,255,0.85)',
   },
 });

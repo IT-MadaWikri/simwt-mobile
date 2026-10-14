@@ -1,21 +1,35 @@
 /**
- * Service Detail Screen — Dynamic route for all 10 services
- * Uses [id] dynamic segment to match service definitions
+ * Halaman layanan generik — dipakai semua entri grid beranda yang belum punya
+ * layar khususnya sendiri.
+ *
+ * Sebelumnya halaman ini menawarkan tiga aksi seragam ("Tambah Baru", "Lihat
+ * Semua", "Laporan") untuk SEMUA layanan, padahal hampir semuanya tidak
+ * menuju ke mana pun: ditekan, tidak terjadi apa-apa, tanpa penjelasan. Yang
+ * seperti itu lebih buruk daripada tidak ada tombol sama sekali, karena
+ * pengguna mengira aplikasinya rusak.
+ *
+ * Sekarang tiap aksi wajib menyatakan `route`-nya. Yang belum punya layar
+ * ditandai jelas sebagai belum tersedia, ditampilkan redup, dan tidak bisa
+ * ditekan.
  */
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
+import { fonts } from '../../constants/Typography';
+import { gs } from '../../constants/GlobalStyles';
 import { SERVICES, ServiceItem } from '../../constants/Services';
+
+interface AksiLayanan {
+  icon: string;
+  label: string;
+  subtitle: string;
+  /** Ada isinya = layarnya sudah jadi dan bisa dibuka. */
+  route?: string;
+}
 
 export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,264 +40,202 @@ export default function ServiceDetailScreen() {
 
   if (!service) {
     return (
-      <View style={styles.notFound}>
+      <View style={[gs.screen, gs.centerFill]}>
         <MaterialCommunityIcons
           name="alert-circle-outline"
-          size={64}
+          size={56}
           color={Colors.textTertiary}
         />
-        <Text style={styles.notFoundText}>Layanan tidak ditemukan</Text>
+        <Text style={gs.emptyTitle}>Layanan tidak ditemukan</Text>
+        <Text style={gs.emptyText}>Menu yang Anda tuju tidak terdaftar.</Text>
       </View>
     );
   }
+
+  const judul = service.name.replace('\n', ' ');
+  const aksi = aksiUntuk(service);
+  const adaYangAktif = aksi.some((item) => !!item.route);
 
   return (
     <>
       <Stack.Screen
         options={{
-          headerTitle: service.name.replace('\n', ' '),
-          headerStyle: { backgroundColor: Colors.white },
-          headerTintColor: Colors.textPrimary,
+          headerTitle: judul,
+          headerStyle: { backgroundColor: Colors.primary },
+          headerTintColor: Colors.white,
+          headerTitleStyle: { fontFamily: fonts.semibold },
+          headerShadowVisible: false,
         }}
       />
-      <ScrollView 
-        style={styles.container} 
+
+      <ScrollView
+        style={gs.screen}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
+        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
       >
-        {/* Hero Section */}
-        <View style={[styles.hero, { backgroundColor: service.backgroundColor }]}>
+        {/* Kepala layanan */}
+        <View style={[gs.card, gs.center, { paddingVertical: Spacing.xxl }]}>
           <View
             style={[
-              styles.heroIcon,
-              { backgroundColor: service.iconColor + '20' },
+              gs.iconTileLg,
+              { backgroundColor: service.backgroundColor, width: 80, height: 80 },
             ]}
           >
             <MaterialCommunityIcons
               name={service.icon as any}
-              size={48}
+              size={40}
               color={service.iconColor}
             />
           </View>
-          <Text style={[styles.heroTitle, { color: service.iconColor }]}>
-            {service.name.replace('\n', ' ')}
+          <Text style={[gs.h3, gs.textCenter, { marginTop: Spacing.lg }]}>{judul}</Text>
+          <Text style={[gs.body, gs.textCenter, { marginTop: Spacing.xs }]}>
+            {service.description}
           </Text>
-          <Text style={styles.heroDescription}>{service.description}</Text>
         </View>
 
-        {/* Content Area */}
-        <View style={styles.content}>
-          {/* Coming Soon Card */}
-          <View style={styles.comingSoonCard}>
+        {!adaYangAktif && (
+          <View style={[gs.cardBrand, gs.center, { marginTop: Spacing.lg }]}>
             <MaterialCommunityIcons
               name="rocket-launch-outline"
-              size={56}
+              size={40}
               color={Colors.primary}
             />
-            <Text style={styles.comingSoonTitle}>Segera Hadir</Text>
-            <Text style={styles.comingSoonText}>
-              Fitur {service.name.replace('\n', ' ')} sedang dalam pengembangan.{'\n'}
-              Nantikan update selanjutnya!
+            <Text style={[gs.emptyTitle, { marginTop: Spacing.sm }]}>Segera Hadir</Text>
+            <Text style={gs.emptyText}>
+              Modul {judul} belum tersedia di aplikasi. Untuk sementara masih
+              dikerjakan lewat SIMWT versi web.
             </Text>
           </View>
+        )}
 
-          {/* Quick Actions */}
-          <View style={styles.actionsSection}>
-            <Text style={styles.sectionTitle}>Aksi Cepat</Text>
-            {getQuickActions(service).map((action, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.actionItem}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (action.route) {
-                    router.push(action.route as any);
-                  }
-                }}
-              >
-                <View
-                  style={[
-                    styles.actionIcon,
-                    { backgroundColor: service.backgroundColor },
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    name={action.icon as any}
-                    size={22}
-                    color={service.iconColor}
-                  />
-                </View>
-                <View style={styles.actionContent}>
-                  <Text style={styles.actionLabel}>{action.label}</Text>
-                  <Text style={styles.actionSubtitle}>{action.subtitle}</Text>
-                </View>
+        <Text style={[gs.sectionTitle, { marginTop: Spacing.xl }]}>Aksi Cepat</Text>
+
+        {aksi.map((item) => {
+          const aktif = !!item.route;
+
+          return (
+            <TouchableOpacity
+              key={item.label}
+              style={[gs.card, gs.row, gs.gapMd, { marginBottom: Spacing.sm }, !aktif && { opacity: 0.55 }]}
+              activeOpacity={aktif ? 0.7 : 1}
+              // Tanpa `route`, tombol benar-benar mati — jangan biarkan
+              // pengguna menekan sesuatu yang diam saja.
+              disabled={!aktif}
+              onPress={() => item.route && router.push(item.route as any)}
+            >
+              <View style={[gs.iconTile, { backgroundColor: service.backgroundColor }]}>
+                <MaterialCommunityIcons
+                  name={item.icon as any}
+                  size={20}
+                  color={service.iconColor}
+                />
+              </View>
+
+              <View style={gs.flex1}>
+                <Text style={gs.title}>{item.label}</Text>
+                <Text style={gs.caption}>{item.subtitle}</Text>
+              </View>
+
+              {aktif ? (
                 <MaterialCommunityIcons
                   name="chevron-right"
                   size={22}
                   color={Colors.textTertiary}
                 />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+              ) : (
+                <View style={[gs.badge, gs.badgeMuted]}>
+                  <Text style={[gs.badgeText, gs.badgeTextMuted]}>Belum ada</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </>
   );
 }
 
-function getQuickActions(service: ServiceItem) {
-  const defaultActions = [
-    {
-      icon: 'plus-circle-outline',
-      label: 'Tambah Baru',
-      subtitle: `Buat ${service.name.replace('\n', ' ')} baru`,
-    },
-    {
-      icon: 'format-list-bulleted',
-      label: 'Lihat Semua',
-      subtitle: `Daftar ${service.name.replace('\n', ' ')}`,
-    },
-    {
-      icon: 'chart-bar',
-      label: 'Laporan',
-      subtitle: 'Lihat statistik dan laporan',
-    },
-  ];
-
-  // Custom actions per service
-  const customActions: Record<string, any[]> = {
-    'tiket-masalah': [
-      { icon: 'plus-circle-outline', label: 'Buat Tiket Baru', subtitle: 'Laporkan masalah baru' },
-      { icon: 'format-list-bulleted', label: 'Tiket Saya', subtitle: 'Lihat semua tiket Anda' },
-      { icon: 'chart-bar', label: 'Statistik Tiket', subtitle: 'Overview status tiket' },
+/**
+ * Daftar aksi per layanan.
+ *
+ * Isi `route` HANYA kalau layarnya benar-benar ada — begitu layar baru dibuat,
+ * cukup tambahkan rutenya di sini dan tombolnya otomatis hidup.
+ */
+function aksiUntuk(service: ServiceItem): AksiLayanan[] {
+  const perLayanan: Record<string, AksiLayanan[]> = {
+    'human-capital': [
+      {
+        icon: 'account-group',
+        label: 'Data Karyawan',
+        subtitle: 'Direktori seluruh karyawan',
+        route: '/services/hc/data-karyawan',
+      },
+      {
+        icon: 'briefcase-account-outline',
+        label: 'Rekrutment',
+        subtitle: 'Ringkasan lowongan & pelamar',
+        route: '/services/hc/rekrutment',
+      },
     ],
     'database-aset': [
+      {
+        icon: 'qrcode-scan',
+        label: 'Scan QR Aset',
+        subtitle: 'Pindai label untuk melihat detail aset',
+        route: '/(tabs)/scan',
+      },
       { icon: 'plus-circle-outline', label: 'Tambah Aset', subtitle: 'Registrasi aset baru' },
-      { icon: 'magnify', label: 'Cari Aset', subtitle: 'Cari berdasarkan kode/nama' },
-      { icon: 'qrcode-scan', label: 'Scan QR', subtitle: 'Scan QR code aset' },
+      { icon: 'magnify', label: 'Cari Aset', subtitle: 'Cari berdasarkan kode atau nama' },
+    ],
+    'stok-opname': [
+      {
+        icon: 'clipboard-list-outline',
+        label: 'Periode & Lembar',
+        subtitle: 'Lihat dokumen dan progres perhitungan',
+        route: '/services/sto',
+      },
+      {
+        icon: 'barcode-scan',
+        label: 'Hitung dengan Scan',
+        subtitle: 'Menunggu alur scan disiapkan di server',
+      },
+    ],
+    'tiket-masalah': [
+      {
+        icon: 'format-list-bulleted',
+        label: 'Tiket Saya',
+        subtitle: 'Riwayat & progres tiket yang Anda ajukan',
+        route: '/services/tiket',
+      },
+      {
+        icon: 'plus-circle-outline',
+        label: 'Buat Tiket Baru',
+        subtitle: 'Laporkan masalah baru',
+        route: '/services/tiket/buat',
+      },
     ],
     audit: [
       { icon: 'plus-circle-outline', label: 'Mulai Audit', subtitle: 'Buat checklist audit baru' },
-      { icon: 'format-list-bulleted', label: 'Riwayat Audit', subtitle: 'Lihat audit sebelumnya' },
-      { icon: 'file-document-outline', label: 'Template', subtitle: 'Kelola template audit' },
+      { icon: 'history', label: 'Riwayat Audit', subtitle: 'Lihat audit sebelumnya' },
     ],
-    'human-capital': [
-      { icon: 'account-group', label: 'Data Karyawan', subtitle: 'Direktori dan daftar semua karyawan', route: '/services/hc/data-karyawan' },
-      { icon: 'briefcase-account-outline', label: 'Rekrutment', subtitle: 'Manajemen lowongan dan pelamar', route: '/services/hc/rekrutment' },
+    berita: [
+      {
+        icon: 'bell-outline',
+        label: 'Notifikasi',
+        subtitle: 'Pemberitahuan terbaru untuk Anda',
+        route: '/(tabs)/notification',
+      },
+      { icon: 'newspaper-variant-outline', label: 'Berita', subtitle: 'Pengumuman perusahaan' },
     ],
   };
 
-  return customActions[service.id] || defaultActions;
+  return (
+    perLayanan[service.id] ?? [
+      {
+        icon: 'format-list-bulleted',
+        label: `Daftar ${service.name.replace('\n', ' ')}`,
+        subtitle: 'Belum tersedia di aplikasi',
+      },
+    ]
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  hero: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: Spacing.screenPadding,
-  },
-  heroIcon: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  heroDescription: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-  content: {
-    padding: Spacing.screenPadding,
-  },
-  comingSoonCard: {
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.lg,
-    padding: Spacing.xxl,
-    alignItems: 'center',
-    marginBottom: Spacing.sectionGap,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  comingSoonTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.sm,
-  },
-  comingSoonText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  actionsSection: {
-    marginBottom: Spacing.sectionGap,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-  actionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.md,
-    padding: Spacing.lg,
-    marginBottom: Spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  actionIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  actionContent: {
-    flex: 1,
-  },
-  actionLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  actionSubtitle: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  notFound: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: Colors.background,
-  },
-  notFoundText: {
-    fontSize: 16,
-    color: Colors.textTertiary,
-    marginTop: 16,
-  },
-});

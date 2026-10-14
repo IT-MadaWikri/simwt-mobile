@@ -28,6 +28,17 @@ export interface Kaizen {
   foto_kondisi_sesudah?: string;
   kondisi_sebelum?: string;
   kondisi_sesudah?: string;
+
+  /**
+   * Nama field alternatif yang dikembalikan endpoint detail
+   * (`GET /kaizen/data/{idKaizen}`) — berdampingan dengan pasangan
+   * `*_kondisi_*` di atas, tidak selalu keduanya terisi. Layar detail
+   * membaca keempatnya, jadi keempatnya harus ada di tipe ini.
+   */
+  detail_sebelum?: string;
+  detail_sesudah?: string;
+  foto_sebelum?: string;
+  foto_sesudah?: string;
 }
 
 export interface KaizenDashboardData {

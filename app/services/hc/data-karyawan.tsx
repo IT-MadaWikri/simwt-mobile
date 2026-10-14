@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Image,
-  TextInput,
-  ActivityIndicator,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../../constants/Colors';
+import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { Employee, karyawanService } from '../../../src/services/karyawanService';
+import { fonts } from '../../../constants/Typography';
+import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
+import { inputReset } from '../../../constants/GlobalStyles';
 
 export default function HumanCapitalScreen() {
   const router = useRouter();
@@ -84,14 +78,14 @@ export default function HumanCapitalScreen() {
         
         <View style={styles.badgesContainer}>
           {item.nik && (
-            <View style={[styles.badge, { backgroundColor: '#E3F2FD' }]}>
-              <MaterialCommunityIcons name="badge-account-horizontal-outline" size={12} color="#1565C0" />
-              <Text style={[styles.badgeText, { color: '#1565C0' }]}>{item.nik}</Text>
+            <View style={[styles.badge, { backgroundColor: brand[50] }]}>
+              <MaterialCommunityIcons name="badge-account-horizontal-outline" size={12} color={brand[700]} />
+              <Text style={[styles.badgeText, { color: brand[700] }]}>{item.nik}</Text>
             </View>
           )}
-          <View style={[styles.badge, { backgroundColor: '#F3E5F5' }]}>
-            <MaterialCommunityIcons name="domain" size={12} color="#7B1FA2" />
-            <Text style={[styles.badgeText, { color: '#7B1FA2' }]} numberOfLines={1}>
+          <View style={[styles.badge, { backgroundColor: Colors.servicePurple }]}>
+            <MaterialCommunityIcons name="domain" size={12} color="#7e22ce" />
+            <Text style={[styles.badgeText, { color: '#7e22ce' }]} numberOfLines={1}>
               {getDepartment(item)}
             </Text>
           </View>
@@ -142,8 +136,7 @@ export default function HumanCapitalScreen() {
 
         {loading ? (
           <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#7B1FA2" />
-            <Text style={styles.loadingText}>Memuat Direktori Karyawan...</Text>
+            <LoadingSpinner message="Memuat Direktori Karyawan..." />
           </View>
         ) : (
           <FlatList
@@ -181,7 +174,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: slate[50],
     borderRadius: Spacing.radius.full,
     paddingHorizontal: Spacing.md,
     height: 44,
@@ -191,6 +184,7 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
     fontSize: 15,
     color: Colors.textPrimary,
+    ...inputReset,
   },
   listContainer: {
     padding: Spacing.screenPadding,
@@ -201,7 +195,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.md,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -217,14 +211,14 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#7B1FA2',
+    backgroundColor: '#7e22ce',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
     color: Colors.white,
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   cardContent: {
     flex: 1,
@@ -232,7 +226,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
@@ -256,14 +250,14 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     maxWidth: 120, // To prevent super long department names from overflowing
   },
   activeDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#00AA13', // Gojek Green
+    backgroundColor: brand[600], // Gojek Green
     borderWidth: 2,
     borderColor: Colors.white,
     position: 'absolute',
@@ -286,7 +280,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginTop: Spacing.md,
   },

@@ -1,50 +1,43 @@
 /**
- * SectionHeader — Section title with optional "Lihat Semua" action
+ * SectionHeader — judul blok konten dengan aksi "Lihat Semua" opsional.
  */
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Colors from '../../../constants/Colors';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Spacing from '../../../constants/Spacing';
+import { gs } from '../../../constants/GlobalStyles';
 
 interface SectionHeaderProps {
   title: string;
+  /** Label kecil huruf kapital di atas judul — padanan `.section-eyebrow`. */
+  eyebrow?: string;
   actionText?: string;
   onAction?: () => void;
 }
 
 export default function SectionHeader({
   title,
+  eyebrow,
   actionText = 'Lihat Semua',
   onAction,
 }: SectionHeaderProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {onAction && (
+    <View
+      style={[
+        gs.rowBetween,
+        gs.containerX,
+        { marginBottom: Spacing.md, alignItems: 'flex-end' },
+      ]}
+    >
+      <View style={gs.flex1}>
+        {eyebrow ? <Text style={gs.sectionEyebrow}>{eyebrow}</Text> : null}
+        <Text style={[gs.sectionTitle, { marginBottom: 0 }]}>{title}</Text>
+      </View>
+
+      {onAction ? (
         <TouchableOpacity onPress={onAction} activeOpacity={0.7}>
-          <Text style={styles.action}>{actionText}</Text>
+          <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>{actionText}</Text>
         </TouchableOpacity>
-      )}
+      ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-    paddingHorizontal: Spacing.screenPadding,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  action: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-});

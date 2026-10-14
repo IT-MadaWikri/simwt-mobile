@@ -4,15 +4,25 @@
  */
 // File profile.tsx code block starts here:
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Switch, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  Platform,
+} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as LocalAuthentication from 'expo-local-authentication';
-import Colors from '../../constants/Colors';
+import { biometric } from '../../src/utils/biometric';
+import Colors, { brand, slate } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/authService';
+import { fonts } from '../../constants/Typography';
+import { dialog } from '../../src/components/common/AppDialog';
+import BrandSpinner from '../../src/components/common/BrandSpinner';
 
 interface MenuItem {
   icon: string;
@@ -35,109 +45,99 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [loadingLogout, setLoadingLogout] = useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+  const [namaBiometrik, setNamaBiometrik] = useState('Sidik Jari');
 
   useEffect(() => {
     loadBiometricSetting();
   }, []);
 
   const loadBiometricSetting = async () => {
-    try {
-      const value = await AsyncStorage.getItem('use_biometric');
-      setIsBiometricEnabled(value === 'true');
-    } catch (e) {
-      console.error('Failed to load biometric setting', e);
-    }
+    setIsBiometricEnabled(await biometric.siapDipakai());
+    setNamaBiometrik(await biometric.namaJenis());
   };
 
+  /**
+   * Menyalakan/mematikan masuk cepat.
+   *
+   * Menyalakan dari sini TIDAK bisa langsung menyimpan kredensial: aplikasi
+   * sudah tidak memegang kata sandi setelah pengguna masuk. Karena itu jalur
+   * "nyalakan" hanya mengarahkan — penyimpanannya terjadi di layar login,
+   * tepat setelah masuk manual berhasil.
+   */
   const toggleBiometric = async (value: boolean) => {
-    if (value) {
-      // User is trying to enable biometric
-      try {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-        if (!hasHardware || !isEnrolled) {
-          Alert.alert('Perhatian', 'Perangkat Anda tidak mendukung biometrik atau belum dikonfigurasi.');
-          return;
-        }
-
-        const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Verifikasi identitas Anda untuk mengaktifkan biometrik',
-          cancelLabel: 'Batal',
-          disableDeviceFallback: false,
-        });
-
-        if (result.success) {
-          setIsBiometricEnabled(true);
-          await AsyncStorage.setItem('use_biometric', 'true');
-        } else {
-          setIsBiometricEnabled(false);
-        }
-      } catch (e) {
-        console.error('Failed biometric validation', e);
-        Alert.alert('Error', 'Terjadi kesalahan pada sistem biometrik.');
-        setIsBiometricEnabled(false);
-      }
-    } else {
-      // User is disabling biometric
+    if (!value) {
+      await biometric.matikan();
       setIsBiometricEnabled(false);
-      try {
-        await AsyncStorage.setItem('use_biometric', 'false');
-      } catch (e) {
-        console.error('Failed to save biometric setting', e);
-      }
+      dialog.alert(
+        'Masuk Cepat Dimatikan',
+        'Kredensial yang tersimpan di perangkat sudah dihapus.'
+      );
+      return;
     }
+
+    if (!(await biometric.didukung())) {
+      dialog.alert(
+        'Tidak Didukung',
+        'Perangkat ini tidak punya sensor biometrik, atau belum ada sidik jari/wajah yang didaftarkan di pengaturan perangkat.'
+      );
+      return;
+    }
+
+    // Toggle sengaja dibiarkan mati — jangan tampilkan "aktif" padahal
+    // kredensialnya belum ada; tombol di layar login akan gagal senyap.
+    setIsBiometricEnabled(false);
+    dialog.alert(
+      `Aktifkan Masuk dengan ${namaBiometrik}`,
+      `Keluar lalu masuk sekali lagi dengan kata sandi. Setelah berhasil, akan muncul tawaran untuk mengaktifkan ${namaBiometrik.toLowerCase()}.`
+    );
   };
 
   /**
    * Menangani proses keluar (Logout)
    * Akan menampilkan konfirmasi terlebih dahulu sebelum memanggil API logout.
    */
-  const handleLogout = () => {
-    Alert.alert(
-      'Keluar dari Aplikasi',
-      'Apakah Anda yakin ingin keluar?',
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Keluar',
-          style: 'destructive',
-          onPress: async () => {
-            setLoadingLogout(true);
-            try {
-              await logout(); // Memanggil endpoint POST /logout via authService
-              router.replace('/login');
-            } catch (error) {
-              Alert.alert('Error', 'Gagal keluar dari aplikasi.');
-              setLoadingLogout(false);
-            }
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    const setuju = await dialog.confirm({
+      title: 'Keluar dari Aplikasi',
+      message: 'Apakah Anda yakin ingin keluar?',
+      confirmText: 'Keluar',
+      destructive: true,
+    });
+    if (!setuju) return;
+
+    setLoadingLogout(true);
+    try {
+      await logout(); // Memanggil endpoint POST /logout via authService
+      router.replace('/login');
+    } catch (error) {
+      dialog.alert('Gagal Keluar', 'Terjadi kesalahan saat keluar dari aplikasi.', 'danger');
+      setLoadingLogout(false);
+    }
   };
 
   const menuItems: MenuItem[][] = [
     [
-      { 
-        icon: 'fingerprint', 
-        label: 'Login dengan Fingerprint', 
-        subtitle: 'Gunakan biometrik untuk masuk',
+      {
+        icon: 'fingerprint',
+        label: `Masuk dengan ${namaBiometrik}`,
+        subtitle: isBiometricEnabled
+          ? 'Aktif — kredensial tersimpan terenkripsi di perangkat'
+          : 'Masuk tanpa mengetik kata sandi',
         isToggle: true,
         toggleValue: isBiometricEnabled,
-        onToggle: toggleBiometric
+        onToggle: toggleBiometric,
       },
       { 
         icon: 'shield-lock-outline', 
         label: 'Keamanan Akun', 
         subtitle: 'Password & Autentikasi',
-        onPress: () => Alert.alert('Keamanan Akun', 'Fitur ganti password sedang dikembangkan.')
+        onPress: () => dialog.alert('Keamanan Akun', 'Fitur ganti password sedang dikembangkan.')
       },
       { 
         icon: 'bell-outline', 
         label: 'Pengaturan Notifikasi', 
         subtitle: 'Atur pemberitahuan',
-        onPress: () => Alert.alert('Segera Hadir', 'Fitur pengaturan notifikasi sedang dalam pengembangan.')
+        onPress: () => dialog.alert('Segera Hadir', 'Fitur pengaturan notifikasi sedang dalam pengembangan.')
       },
     ],
     [
@@ -145,13 +145,13 @@ export default function ProfileScreen() {
         icon: 'translate', 
         label: 'Bahasa', 
         subtitle: 'Indonesia',
-        onPress: () => Alert.alert('Bahasa', 'Pilihan bahasa saat ini hanya Bahasa Indonesia.')
+        onPress: () => dialog.alert('Bahasa', 'Pilihan bahasa saat ini hanya Bahasa Indonesia.')
       },
       { 
         icon: 'human-capacity-increase', 
         label: 'Aksesibilitas', 
         subtitle: 'Ukuran teks & tema',
-        onPress: () => Alert.alert('Aksesibilitas', 'Pengaturan aksesibilitas sedang dalam pengembangan.')
+        onPress: () => dialog.alert('Aksesibilitas', 'Pengaturan aksesibilitas sedang dalam pengembangan.')
       },
     ],
     [
@@ -159,13 +159,13 @@ export default function ProfileScreen() {
         icon: 'information-outline', 
         label: 'Tentang Aplikasi', 
         subtitle: 'Versi 1.0.0 (SIMWT)',
-        onPress: () => Alert.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.')
+        onPress: () => dialog.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.')
       },
       { 
         icon: 'help-circle-outline', 
         label: 'Pusat Bantuan', 
         subtitle: 'FAQ & Hubungi Kami',
-        onPress: () => Alert.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')
+        onPress: () => dialog.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')
       },
     ],
   ];
@@ -234,8 +234,8 @@ export default function ProfileScreen() {
                   <Switch
                     value={item.toggleValue}
                     onValueChange={item.onToggle}
-                    trackColor={{ false: '#E0E0E0', true: '#00AA13' }}
-                    thumbColor={Platform.OS === 'android' ? (item.toggleValue ? '#FFFFFF' : '#F5F5F5') : ''}
+                    trackColor={{ false: Colors.border, true: brand[600] }}
+                    thumbColor={Platform.OS === 'android' ? (item.toggleValue ? Colors.white : slate[50]) : ''}
                   />
                 ) : (
                   <MaterialCommunityIcons name="chevron-right" size={22} color={Colors.textTertiary} />
@@ -253,7 +253,7 @@ export default function ProfileScreen() {
           disabled={loadingLogout}
         >
           {loadingLogout ? (
-            <ActivityIndicator color={Colors.danger} />
+            <BrandSpinner size={22} color={Colors.danger} />
           ) : (
             <>
               <MaterialCommunityIcons name="logout" size={22} color={Colors.danger} />
@@ -276,7 +276,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F6F8', // Latar belakang abu muda khas Gojek
+    backgroundColor: Colors.background, // Latar belakang abu muda khas Gojek
   },
   greenBanner: {
     position: 'absolute',
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 180, // Tinggi banner hijau
-    backgroundColor: '#00AA13', // Hijau solid Gojek
+    backgroundColor: brand[600], // Hijau solid Gojek
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
   },
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 24,
     padding: Spacing.lg,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
@@ -315,12 +315,12 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: Colors.white,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 20,
     marginBottom: Spacing.lg,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: Colors.borderSubtle,
   },
   lastMenuItem: {
     borderBottomWidth: 0,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 16, // Squircle icon
-    backgroundColor: '#E8F5E9', // Hijau muda transparan
+    backgroundColor: brand[50], // Hijau muda transparan
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
@@ -384,14 +384,14 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   menuSubtitle: {
     fontSize: 13,
     color: Colors.textSecondary,
     marginTop: 2,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -402,8 +402,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: Spacing.md,
     borderWidth: 1,
-    borderColor: '#FFEBEE',
-    shadowColor: '#000',
+    borderColor: Colors.serviceRed,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.danger,
     marginLeft: 8,
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     color: Colors.textTertiary,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
     marginTop: 4,
   },
 });

@@ -8,6 +8,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, StyleSheet, Platform, Animated, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import Spacing, { Shadows } from '../../constants/Spacing';
+import Typography, { fonts } from '../../constants/Typography';
 
 // Lightweight Gojek-style Tab Icon Animation
 function AnimatedTabIcon({ name, focused, color }: { name: string, focused: boolean, color: any }) {
@@ -50,32 +52,10 @@ function AnimatedTabIcon({ name, focused, color }: { name: string, focused: bool
   );
 }
 
-// Custom Scan Button (Big center button)
-const CustomScanButton = ({ children, onPress }: any) => (
-  <TouchableOpacity
-    style={{
-      top: -20,
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-    onPress={onPress}
-    activeOpacity={0.8}
-  >
-    <View style={{
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      backgroundColor: '#00AA13', // Gojek Green
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: '#00AA13',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 5,
-      borderWidth: 4,
-      borderColor: Colors.white,
-    }}>
+// Tombol scan besar di tengah tab bar — pola khas Gojek yang dipertahankan.
+const CustomScanButton = ({ onPress }: any) => (
+  <TouchableOpacity style={styles.scanButton} onPress={onPress} activeOpacity={0.85}>
+    <View style={styles.scanButtonInner}>
       <MaterialCommunityIcons name="qrcode-scan" size={24} color={Colors.white} />
     </View>
   </TouchableOpacity>
@@ -101,16 +81,12 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: Colors.white,
           borderTopWidth: 1,
-          borderTopColor: Colors.border,
-          // Use SafeAreaInsets to dynamically pad the bottom for Android button navigation
+          borderTopColor: Colors.borderSubtle,
+          // Padding bawah mengikuti safe area agar tidak tertutup navigasi Android.
           height: Platform.OS === 'ios' ? 88 : 65 + insets.bottom,
           paddingBottom: Platform.OS === 'ios' ? 28 : insets.bottom + 8,
           paddingTop: 6,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-          elevation: 8,
+          ...Shadows.raised,
         },
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
@@ -127,11 +103,10 @@ export default function TabLayout() {
           title: 'Home',
           headerTitle: 'SIMWT Mobile',
           headerTitleStyle: {
-            ...styles.headerTitle,
-            color: Colors.primary,
-            fontWeight: '800',
+            fontFamily: fonts.extrabold,
             fontSize: 20,
-            letterSpacing: 1,
+            color: Colors.primary,
+            letterSpacing: 0.5,
           },
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon name={focused ? 'home' : 'home-outline'} focused={focused} color={color} />
@@ -142,10 +117,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="activity"
         options={{
-          title: 'Aktivitas',
-          headerTitle: 'Aktivitas',
+          // Tab ini sekarang Approval Center — semua yang menunggu keputusan
+          // pengguna (Kaizen, Tiket) dikumpulkan di satu layar.
+          title: 'Approval',
+          headerTitle: 'Approval Center',
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon name={focused ? 'clipboard-text' : 'clipboard-text-outline'} focused={focused} color={color} />
+            <AnimatedTabIcon
+              name={focused ? 'clipboard-check' : 'clipboard-check-outline'}
+              focused={focused}
+              color={color}
+            />
           ),
         }}
       />
@@ -155,6 +136,9 @@ export default function TabLayout() {
         name="scan"
         options={{
           title: '', // Tanpa teks di bawah tombol scan
+          // Kamera memenuhi layar dan punya bilah atas mengambang sendiri
+          // (tombol kembali + judul) — header bawaan akan menimpanya.
+          headerShown: false,
           tabBarIcon: () => null,
           tabBarButton: (props) => (
             <CustomScanButton {...props} onPress={() => {
@@ -180,14 +164,21 @@ export default function TabLayout() {
         }}
       />
 
+      {/* Chat menggantikan tab Mita — Mita sekarang kontak AI di dalamnya
+          (ala Meta AI di WhatsApp). Tab bar disembunyikan karena ruang chat
+          punya bilah tulis sendiri di dasar layar. */}
       <Tabs.Screen
-        name="mita-chat"
+        name="chat"
         options={{
-          title: 'Mita',
+          title: 'Chat',
           headerShown: false,
           tabBarStyle: { display: 'none' },
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon name={focused ? "robot" : "robot-outline"} focused={focused} color={color} />
+            <AnimatedTabIcon
+              name={focused ? 'chat' : 'chat-outline'}
+              focused={focused}
+              color={color}
+            />
           ),
         }}
       />
@@ -208,8 +199,8 @@ export default function TabLayout() {
           title: 'Edit Pengguna',
           headerShown: true, // Akan menampilkan header default dengan back button
           headerTitleStyle: {
+            fontFamily: fonts.semibold,
             fontSize: 16,
-            fontWeight: '700',
             color: Colors.textPrimary,
           },
           tabBarStyle: { display: 'none' },
@@ -228,8 +219,8 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.medium,
+    fontSize: Typography.sizes.xs,
   },
   tabItem: {
     paddingTop: 2,
@@ -240,16 +231,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
+    fontSize: Typography.sizes.xl,
     color: Colors.textPrimary,
   },
   badge: {
     backgroundColor: Colors.danger,
+    fontFamily: fonts.bold,
     fontSize: 10,
-    fontWeight: '700',
     minWidth: 18,
     height: 18,
-    borderRadius: 9,
+    borderRadius: Spacing.radius.full,
+  },
+  scanButton: {
+    top: -20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: Colors.white,
+    ...Shadows.brand,
   },
 });

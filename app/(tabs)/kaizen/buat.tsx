@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../../constants/Colors';
+import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import api from '../../../src/services/api';
+import { fonts } from '../../../constants/Typography';
+import { dialog } from '../../../src/components/common/AppDialog';
+import { inputReset } from '../../../constants/GlobalStyles';
+import BrandSpinner from '../../../src/components/common/BrandSpinner';
 
 export default function BuatKaizenScreen() {
   const router = useRouter();
@@ -40,7 +42,7 @@ export default function BuatKaizenScreen() {
 
   const handleSubmit = async () => {
     if (!formData.tema || !formData.nama_pelaksana) {
-      Alert.alert('Error', 'Tema dan Nama Pelaksana wajib diisi.');
+      dialog.alert('Error', 'Tema dan Nama Pelaksana wajib diisi.');
       return;
     }
 
@@ -61,16 +63,21 @@ export default function BuatKaizenScreen() {
       });
 
       if (response.data && response.data.success) {
-        Alert.alert('Sukses', 'Pengajuan Kaizen berhasil dibuat!', [
-          { text: 'OK', onPress: () => router.back() }
-        ]);
+        await dialog.alert('Sukses', 'Pengajuan Kaizen berhasil dibuat!', 'success');
+        router.back();
       } else {
         throw new Error(response.data?.message || 'Gagal mengirim data');
       }
 
     } catch (error: any) {
       console.error('Submit Kaizen Error:', error);
-      Alert.alert('Error', error.response?.data?.message || error.message || 'Terjadi kesalahan saat mengirim pengajuan Kaizen.');
+      dialog.alert(
+        'Gagal Mengirim',
+        error.response?.data?.message ||
+          error.message ||
+          'Terjadi kesalahan saat mengirim pengajuan Kaizen.',
+        'danger'
+      );
     } finally {
       setLoading(false);
     }
@@ -81,7 +88,7 @@ export default function BuatKaizenScreen() {
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]} showsVerticalScrollIndicator={false}>
         
         <View style={styles.alertBox}>
-          <MaterialCommunityIcons name="information" size={20} color="#1565C0" />
+          <MaterialCommunityIcons name="information" size={20} color={brand[700]} />
           <Text style={styles.alertText}>
             Isi detail inovasi / kaizen Anda di bawah ini. Pastikan informasi sudah benar sebelum mengirim.
           </Text>
@@ -188,7 +195,7 @@ export default function BuatKaizenScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.white} />
+            <BrandSpinner size={22} color={Colors.white} />
           ) : (
             <Text style={styles.submitButtonText}>Kirim Pengajuan Kaizen</Text>
           )}
@@ -212,14 +219,14 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: Colors.borderSubtle,
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   scrollContent: {
@@ -228,7 +235,7 @@ const styles = StyleSheet.create({
   },
   alertBox: {
     flexDirection: 'row',
-    backgroundColor: '#E3F2FD',
+    backgroundColor: brand[50],
     padding: Spacing.md,
     borderRadius: 8,
     marginBottom: Spacing.xl,
@@ -238,7 +245,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: 12,
-    color: '#1565C0',
+    color: brand[700],
     lineHeight: 18,
   },
   formGroup: {
@@ -250,7 +257,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 8,
   },
@@ -259,13 +266,14 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
     color: Colors.textPrimary,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: slate[50],
+    ...inputReset,
   },
   textArea: {
     minHeight: 100,
@@ -280,17 +288,17 @@ const styles = StyleSheet.create({
   uploadBtnText: {
     marginLeft: 8,
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     color: Colors.primary,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: Colors.borderSubtle,
     marginVertical: Spacing.lg,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginBottom: Spacing.lg,
   },
@@ -298,10 +306,10 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: Colors.borderSubtle,
   },
   submitButton: {
-    backgroundColor: '#00AA13',
+    backgroundColor: brand[600],
     paddingVertical: 14,
     borderRadius: 24,
     alignItems: 'center',
@@ -309,6 +317,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: Colors.white,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 });

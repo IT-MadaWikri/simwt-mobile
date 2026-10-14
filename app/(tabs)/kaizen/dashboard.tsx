@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  ActivityIndicator,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../../constants/Colors';
+import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenDashboardData } from '../../../src/types/kaizen';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { useRouter } from 'expo-router';
+import { fonts } from '../../../constants/Typography';
+import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 
 export default function KaizenDashboardScreen() {
   const router = useRouter();
@@ -54,8 +48,7 @@ export default function KaizenDashboardScreen() {
   if (loading && !refreshing) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Memuat Ringkasan Kaizen...</Text>
+        <LoadingSpinner message="Memuat Ringkasan Kaizen..." />
       </View>
     );
   }
@@ -65,7 +58,7 @@ export default function KaizenDashboardScreen() {
       <ScrollView 
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]} 
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#00AA13']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[brand[600]]} />}
       >
         
         {/* Quick Stats Carousel */}
@@ -74,28 +67,28 @@ export default function KaizenDashboardScreen() {
           showsHorizontalScrollIndicator={false} 
           contentContainerStyle={styles.statsCarousel}
         >
-          <View style={[styles.statCard, { backgroundColor: '#E8F5E9', borderColor: '#C8E6C9' }]}>
+          <View style={[styles.statCard, { backgroundColor: brand[50], borderColor: brand[100] }]}>
             <View style={styles.statIconBg}>
-              <MaterialCommunityIcons name="check-decagram" size={20} color="#2E7D32" />
+              <MaterialCommunityIcons name="check-decagram" size={20} color={brand[700]} />
             </View>
             <Text style={styles.statLabel}>Kaizen Disetujui</Text>
-            <Text style={[styles.statValue, { color: '#2E7D32' }]}>{dashboardData?.jumlahDisetujui || 0}</Text>
+            <Text style={[styles.statValue, { color: brand[700] }]}>{dashboardData?.jumlahDisetujui || 0}</Text>
           </View>
 
-          <View style={[styles.statCard, { backgroundColor: '#E3F2FD', borderColor: '#BBDEFB' }]}>
+          <View style={[styles.statCard, { backgroundColor: brand[50], borderColor: brand[100] }]}>
             <View style={styles.statIconBg}>
-              <MaterialCommunityIcons name="chart-line" size={20} color="#1565C0" />
+              <MaterialCommunityIcons name="chart-line" size={20} color={brand[700]} />
             </View>
             <Text style={styles.statLabel}>Rata-rata/Bulan</Text>
-            <Text style={[styles.statValue, { color: '#1565C0' }]}>{dashboardData?.rataRataPerBulan || 0}</Text>
+            <Text style={[styles.statValue, { color: brand[700] }]}>{dashboardData?.rataRataPerBulan || 0}</Text>
           </View>
 
-          <View style={[styles.statCard, { backgroundColor: '#FFF3E0', borderColor: '#FFE0B2' }]}>
+          <View style={[styles.statCard, { backgroundColor: Colors.serviceOrange, borderColor: Colors.serviceOrange }]}>
             <View style={styles.statIconBg}>
-              <MaterialCommunityIcons name="percent" size={20} color="#E65100" />
+              <MaterialCommunityIcons name="percent" size={20} color="#c2410c" />
             </View>
             <Text style={styles.statLabel}>Tingkat Persetujuan</Text>
-            <Text style={[styles.statValue, { color: '#E65100' }]}>{dashboardData?.tingkatPenerimaan || 0}%</Text>
+            <Text style={[styles.statValue, { color: '#c2410c' }]}>{dashboardData?.tingkatPenerimaan || 0}%</Text>
           </View>
         </ScrollView>
 
@@ -123,7 +116,7 @@ export default function KaizenDashboardScreen() {
         <View style={styles.section}>
           <View style={styles.mitaContainer}>
             <View style={styles.mitaHeader}>
-              <MaterialCommunityIcons name="robot-outline" size={24} color="#FFF" />
+              <MaterialCommunityIcons name="robot-outline" size={24} color={Colors.white} />
               <Text style={styles.mitaTitle}>Mita AI Insights</Text>
             </View>
             <View style={styles.mitaBody}>
@@ -143,21 +136,21 @@ export default function KaizenDashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
   },
   loadingText: {
     marginTop: 12,
     color: Colors.textSecondary,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   header: {
-    backgroundColor: '#00AA13',
+    backgroundColor: brand[600],
     paddingTop: Spacing.xl * 1.5,
     paddingBottom: Spacing.md,
     paddingHorizontal: Spacing.lg,
@@ -170,8 +163,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#FFF',
+    fontFamily: fonts.bold,
+    color: Colors.white,
   },
   scrollContent: {
     paddingBottom: Spacing.xxxl,
@@ -198,13 +191,13 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     color: Colors.textSecondary,
     marginBottom: 4,
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
   },
   section: {
     paddingHorizontal: Spacing.lg,
@@ -212,7 +205,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
@@ -229,23 +222,23 @@ const styles = StyleSheet.create({
   },
   progressDeptName: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   progressText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.primary,
   },
   progressBarBg: {
     height: 8,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: Colors.borderSubtle,
     borderRadius: 4,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#00AA13',
+    backgroundColor: brand[600],
     borderRadius: 4,
   },
   emptyText: {
@@ -258,7 +251,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
   },
   mitaHeader: {
     backgroundColor: '#4A148C', // Deep purple
@@ -269,8 +262,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mitaTitle: {
-    color: '#FFF',
-    fontWeight: '700',
+    color: Colors.white,
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   mitaBody: {

@@ -1,238 +1,167 @@
 /**
- * Notification Screen — List notifikasi user
+ * Notifikasi — data nyata dari GET /notifications/latest.
+ *
+ * Sebelumnya layar ini berisi daftar contoh yang di-hardcode. Sekarang membaca
+ * notifikasi Laravel yang sesungguhnya, diratakan oleh `notifikasiService`.
  */
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, Linking } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
+import { gs } from '../../constants/GlobalStyles';
+import LoadingSpinner from '../../src/components/common/LoadingSpinner';
+import { dialog } from '../../src/components/common/AppDialog';
+import {
+  notifikasiService,
+  rupaNotifikasi,
+  Notifikasi,
+} from '../../src/services/notifikasiService';
+import { jalankanSetelahTransisi } from '../../src/utils/useSetelahTransisi';
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'danger';
-  read: boolean;
-  time: string;
+/** "Baru saja" / "3 jam lalu" / tanggal. */
+function jarakWaktu(iso: string | null): string {
+  if (!iso) return '';
+  const selisih = Date.now() - new Date(iso).getTime();
+  const menit = Math.floor(selisih / 60000);
+  if (menit < 1) return 'Baru saja';
+  if (menit < 60) return `${menit} menit lalu`;
+  const jam = Math.floor(menit / 60);
+  if (jam < 24) return `${jam} jam lalu`;
+  const hari = Math.floor(jam / 24);
+  if (hari < 7) return `${hari} hari lalu`;
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    title: 'Tiket Direspon',
-    message: 'Tiket #1024 telah direspon oleh tim IT Support',
-    type: 'info',
-    read: false,
-    time: '30 menit lalu',
-  },
-  {
-    id: '2',
-    title: 'Audit Reminder',
-    message: 'Audit mingguan departemen QC dijadwalkan besok',
-    type: 'warning',
-    read: false,
-    time: '1 jam lalu',
-  },
-  {
-    id: '3',
-    title: 'Kaizen Approved',
-    message: 'Ide kaizen "Optimasi Layout Gudang" telah disetujui',
-    type: 'success',
-    read: true,
-    time: '3 jam lalu',
-  },
-  {
-    id: '4',
-    title: 'Kegiatan Mendatang',
-    message: 'Training K3 dijadwalkan 15 Juni 2026 di Aula Utama',
-    type: 'info',
-    read: true,
-    time: 'Kemarin',
-  },
-  {
-    id: '5',
-    title: 'System Maintenance',
-    message: 'Server maintenance dijadwalkan Sabtu, 14 Juni pukul 22:00',
-    type: 'danger',
-    read: true,
-    time: '2 hari lalu',
-  },
-];
-
-const typeConfig = {
-  info: { icon: 'information-outline', color: Colors.info, bg: '#E3F2FD' },
-  warning: { icon: 'alert-outline', color: Colors.warning, bg: '#FFF8E1' },
-  success: { icon: 'check-circle-outline', color: Colors.success, bg: '#E8F5E9' },
-  danger: { icon: 'alert-circle-outline', color: Colors.danger, bg: '#FFEBEE' },
+const WARNA = {
+  brand: { tile: brand[50], icon: brand[600] },
+  warning: { tile: Colors.serviceAmber, icon: '#b45309' },
+  danger: { tile: Colors.serviceRed, icon: Colors.dangerDark },
 };
 
-export default function NotificationScreen() {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+export default function NotifikasiScreen() {
+  const insets = useSafeAreaInsets();
+  const [daftar, setDaftar] = useState<Notifikasi[]>([]);
+  const [memuat, setMemuat] = useState(true);
+  const [menyegarkan, setMenyegarkan] = useState(false);
+  const [galat, setGalat] = useState<string | null>(null);
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const muat = useCallback(async () => {
+    try {
+      setGalat(null);
+      setDaftar(await notifikasiService.terbaru());
+    } catch (err: any) {
+      setGalat(err?.message ?? 'Gagal memuat notifikasi.');
+    } finally {
+      setMemuat(false);
+      setMenyegarkan(false);
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => jalankanSetelahTransisi(() => muat()), [muat]));
+
+  const buka = async (item: Notifikasi) => {
+    if (!item.tautan) return;
+    // Tautan menunjuk halaman SIMWT web — buka di peramban perangkat.
+    const bisa = await Linking.canOpenURL(item.tautan);
+    if (bisa) Linking.openURL(item.tautan);
+    else dialog.alert('Tautan Tidak Valid', item.tautan);
   };
 
-  const renderItem = ({ item }: { item: Notification }) => {
-    const config = typeConfig[item.type];
-
+  if (memuat) {
     return (
-      <TouchableOpacity
-        style={[styles.card, !item.read && styles.unreadCard]}
-        onPress={() => markAsRead(item.id)}
-        activeOpacity={0.7}
-      >
-        {!item.read && <View style={styles.unreadDot} />}
-        <View style={[styles.iconBg, { backgroundColor: config.bg }]}>
-          <MaterialCommunityIcons
-            name={config.icon as any}
-            size={22}
-            color={config.color}
-          />
-        </View>
-        <View style={styles.content}>
-          <Text style={[styles.title, !item.read && styles.unreadTitle]}>
-            {item.title}
-          </Text>
-          <Text style={styles.message} numberOfLines={2}>
-            {item.message}
-          </Text>
-          <Text style={styles.time}>{item.time}</Text>
-        </View>
-      </TouchableOpacity>
+      <View style={gs.screen}>
+        <LoadingSpinner message="Memuat notifikasi..." />
+      </View>
     );
-  };
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  }
 
   return (
-    <View style={styles.container}>
+    <View style={gs.screen}>
       <FlatList
-        data={notifications}
+        data={daftar}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.headerRow}>
-            <Text style={styles.header}>Notifikasi</Text>
-            {unreadCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{unreadCount}</Text>
-              </View>
-            )}
-          </View>
+        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+        refreshControl={
+          <RefreshControl
+            refreshing={menyegarkan}
+            onRefresh={() => {
+              setMenyegarkan(true);
+              muat();
+            }}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <View style={[gs.card, gs.center, { marginTop: Spacing.xl }]}>
             <MaterialCommunityIcons
-              name="bell-off-outline"
-              size={64}
+              name={galat ? 'alert-circle-outline' : 'bell-off-outline'}
+              size={44}
               color={Colors.textTertiary}
             />
-            <Text style={styles.emptyText}>Belum ada notifikasi</Text>
+            <Text style={gs.emptyTitle}>{galat ? 'Gagal memuat' : 'Belum ada notifikasi'}</Text>
+            <Text style={gs.emptyText}>
+              {galat ?? 'Pemberitahuan untuk Anda akan tampil di sini.'}
+            </Text>
           </View>
         }
+        renderItem={({ item }) => {
+          const rupa = rupaNotifikasi(item.tipe);
+          const warna = WARNA[rupa.warna];
+
+          return (
+            <TouchableOpacity
+              style={[gs.card, gs.row, gs.gapMd, { marginBottom: Spacing.sm }]}
+              activeOpacity={item.tautan ? 0.75 : 1}
+              disabled={!item.tautan}
+              onPress={() => buka(item)}
+            >
+              <View style={[gs.iconTile, { backgroundColor: warna.tile }]}>
+                <MaterialCommunityIcons name={rupa.icon as any} size={20} color={warna.icon} />
+              </View>
+
+              <View style={gs.flex1}>
+                <View style={gs.rowBetween}>
+                  <Text style={[gs.title, gs.flex1, { fontSize: 14 }]} numberOfLines={2}>
+                    {item.judul}
+                  </Text>
+                  {!item.dibaca && <View style={styles.titikBaru} />}
+                </View>
+
+                {item.pesan ? (
+                  <Text style={[gs.bodySm, { marginTop: 2 }]} numberOfLines={3}>
+                    {item.pesan}
+                  </Text>
+                ) : null}
+
+                <View style={[gs.rowBetween, { marginTop: Spacing.xs }]}>
+                  <Text style={gs.caption}>{jarakWaktu(item.waktu)}</Text>
+                  {item.tautan ? (
+                    <View style={[gs.row, gs.gapXs]}>
+                      <Text style={[gs.caption, gs.textBrand]}>Buka</Text>
+                      <MaterialCommunityIcons name="open-in-new" size={12} color={brand[600]} />
+                    </View>
+                  ) : null}
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  list: {
-    padding: Spacing.screenPadding,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  badge: {
-    backgroundColor: Colors.danger,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: Spacing.sm,
-  },
-  badgeText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.md,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  unreadCard: {
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-  },
-  unreadDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
+const styles = {
+  titikBaru: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
+    backgroundColor: brand[500],
+    marginLeft: Spacing.sm,
+    marginTop: 5,
   },
-  iconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: Colors.textPrimary,
-    marginBottom: 4,
-  },
-  unreadTitle: {
-    fontWeight: '700',
-  },
-  message: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  time: {
-    fontSize: 11,
-    color: Colors.textTertiary,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 80,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: Colors.textTertiary,
-    marginTop: 16,
-  },
-});
+};

@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  ActivityIndicator, 
-  TouchableOpacity, 
-  Alert 
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import api from '../src/services/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { fonts } from '../constants/Typography';
+import { dialog } from '../src/components/common/AppDialog';
+import LoadingSpinner from '../src/components/common/LoadingSpinner';
 
 // API base dari konfig yang diminta user
 const API_URL = 'https://api.mwtpart.co.id/api';
@@ -65,8 +60,7 @@ export default function ScanResultScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Mencari Data Aset...</Text>
+        <LoadingSpinner message="Mencari Data Aset..." />
       </View>
     );
   }
@@ -204,7 +198,7 @@ export default function ScanResultScreen() {
       <View style={[styles.bottomContainer, { paddingBottom: insets.bottom + Spacing.lg }]}>
         <TouchableOpacity 
           style={styles.primaryButton}
-          onPress={() => Alert.alert('Lapor Masalah', 'Fitur ini akan membuka form pelaporan tiket.')}
+          onPress={() => dialog.alert('Lapor Masalah', 'Fitur ini akan membuka form pelaporan tiket.')}
         >
           <Text style={styles.primaryButtonText}>Laporkan masalah aset</Text>
         </TouchableOpacity>
@@ -216,20 +210,20 @@ export default function ScanResultScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
     padding: Spacing.xl,
   },
   loadingText: {
     marginTop: Spacing.md,
     fontSize: 16,
     color: Colors.textSecondary,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   errorText: {
     marginTop: Spacing.md,
@@ -246,7 +240,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: Colors.white,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   scrollContent: {
     padding: Spacing.md,
@@ -258,16 +252,16 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#EAEAEA',
+    borderColor: Colors.borderSubtle,
   },
   mainTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   divider: {
     height: 1,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: Colors.borderSubtle,
     marginVertical: Spacing.md,
   },
   imagePlaceholder: {
@@ -275,7 +269,7 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 16,
-    color: '#9E9E9E',
+    color: Colors.textTertiary,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -289,38 +283,38 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#757575',
+    fontFamily: fonts.bold,
+    color: Colors.textSecondary,
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   itemValue: {
     fontSize: 15,
     color: Colors.textPrimary,
-    fontWeight: '400',
+    fontFamily: fonts.regular,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   tableHeader: {
     flexDirection: 'row',
     paddingBottom: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEA',
+    borderBottomColor: Colors.borderSubtle,
   },
   tableHeaderText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#757575',
+    fontFamily: fonts.bold,
+    color: Colors.textSecondary,
     textTransform: 'uppercase',
   },
   tableRow: {
     flexDirection: 'row',
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEA',
+    borderBottomColor: Colors.borderSubtle,
   },
   tableCell: {
     fontSize: 15,
@@ -334,7 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     padding: Spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#EAEAEA',
+    borderTopColor: Colors.borderSubtle,
   },
   primaryButton: {
     backgroundColor: '#0056B3', // Warna biru sesuai gambar user
@@ -344,7 +338,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: Colors.white,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     fontSize: 16,
   },
 });

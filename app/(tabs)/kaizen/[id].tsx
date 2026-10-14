@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  ActivityIndicator,
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   Image,
   TextInput,
   TouchableOpacity,
@@ -12,11 +11,14 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../../constants/Colors';
+import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenDetail } from '../../../src/types/kaizen';
 import { useAuth } from '../../../src/contexts/AuthContext';
+import { fonts } from '../../../constants/Typography';
+import { inputReset } from '../../../constants/GlobalStyles';
+import BrandSpinner from '../../../src/components/common/BrandSpinner';
 
 export default function KaizenDetailScreen() {
   const { user } = useAuth();
@@ -47,7 +49,7 @@ export default function KaizenDetailScreen() {
     switch(status?.toUpperCase()) {
       case 'DISETUJUI': return Colors.success;
       case 'DITOLAK': return Colors.danger;
-      case 'DITERIMA': return '#FF9800';
+      case 'DITERIMA': return Colors.warning;
       default: return Colors.textSecondary;
     }
   };
@@ -56,8 +58,8 @@ export default function KaizenDetailScreen() {
     return (
       <View style={styles.centerContainer}>
         {/* Gojek style simple loader instead of big indicator */}
-        <ActivityIndicator size="small" color={Colors.primary} />
-        <Text style={{marginTop: 12, color: Colors.textSecondary, fontWeight: '500'}}>Menarik data kaizen...</Text>
+        <BrandSpinner size={26} />
+        <Text style={{marginTop: 12, color: Colors.textSecondary, fontFamily: fonts.medium}}>Menarik data kaizen...</Text>
       </View>
     );
   }
@@ -167,7 +169,7 @@ export default function KaizenDetailScreen() {
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBg}>
-              <MaterialCommunityIcons name="lightbulb-on" size={18} color="#FF9800" />
+              <MaterialCommunityIcons name="lightbulb-on" size={18} color={Colors.warning} />
             </View>
             <Text style={styles.sectionTitle}>Daftar Manfaat ({manfaats?.length || 0})</Text>
           </View>
@@ -191,8 +193,8 @@ export default function KaizenDetailScreen() {
         {/* Nilai PQCDSM */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeaderRow}>
-            <View style={[styles.sectionIconBg, {backgroundColor: '#E8EAF6'}]}>
-              <MaterialCommunityIcons name="chart-bar" size={18} color="#3F51B5" />
+            <View style={[styles.sectionIconBg, {backgroundColor: Colors.serviceIndigo}]}>
+              <MaterialCommunityIcons name="chart-bar" size={18} color="#4338ca" />
             </View>
             <Text style={styles.sectionTitle}>Penilaian Kategori (PQCDSM)</Text>
           </View>
@@ -230,7 +232,7 @@ export default function KaizenDetailScreen() {
         {user?.role && ['super_admin', 'Superadmin', 'SuperAdmin', 'komite', 'Komite'].includes(user.role) && (
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeaderRow}>
-              <View style={[styles.sectionIconBg, {backgroundColor: '#E8F5E9'}]}>
+              <View style={[styles.sectionIconBg, {backgroundColor: brand[50]}]}>
                 <MaterialCommunityIcons name="clipboard-check-outline" size={18} color="#4CAF50" />
               </View>
               <Text style={styles.sectionTitle}>Penilaian Komite</Text>
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
   },
   scrollContent: {
     paddingBottom: Spacing.xxxl,
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 8,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
     width: '100%',
   },
   headerRow: {
@@ -313,16 +315,16 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
   },
   dateText: {
     fontSize: 13,
     color: Colors.textTertiary,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     lineHeight: 30,
     letterSpacing: -0.5,
@@ -331,11 +333,11 @@ const styles = StyleSheet.create({
   profileBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: slate[50],
     padding: Spacing.md,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.borderSubtle,
   },
   profileAvatar: {
     width: 40,
@@ -351,7 +353,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   profileRole: {
@@ -365,17 +367,17 @@ const styles = StyleSheet.create({
   },
   sectionTitleBold: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
   conditionBox: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: slate[50],
     borderRadius: 16,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.borderSubtle,
   },
   conditionHeader: {
     flexDirection: 'row',
@@ -390,7 +392,7 @@ const styles = StyleSheet.create({
   },
   conditionLabel: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   conditionImage: {
@@ -398,7 +400,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 12,
     marginBottom: Spacing.sm,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: Colors.borderSubtle,
   },
   conditionText: {
     fontSize: 14,
@@ -409,12 +411,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: Spacing.lg,
     padding: Spacing.md,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: Colors.serviceRed,
     borderRadius: 16,
   },
   alasanTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.danger,
     marginBottom: 4,
   },
@@ -437,14 +439,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#FFF3E0',
+    backgroundColor: Colors.serviceOrange,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.sm,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
   },
   manfaatCard: {
@@ -453,8 +455,8 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-    shadowColor: '#000',
+    borderColor: Colors.borderSubtle,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 4,
@@ -469,20 +471,20 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.sm,
   },
   manfaatIndex: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textSecondary,
   },
   manfaatTitle: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   manfaatDesc: {
@@ -492,11 +494,11 @@ const styles = StyleSheet.create({
     marginLeft: 32, // align with text
   },
   pqcdsmContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: slate[50],
     borderRadius: 16,
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.borderSubtle,
   },
   nilaiRow: {
     flexDirection: 'row',
@@ -504,34 +506,34 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEC',
+    borderBottomColor: Colors.borderSubtle,
   },
   nilaiLabel: {
     fontSize: 14,
     color: Colors.textSecondary,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   nilaiValue: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   nilaiTotalRow: {
     borderBottomWidth: 0,
-    backgroundColor: '#E8EAF6',
+    backgroundColor: Colors.serviceIndigo,
     borderRadius: 8,
     marginTop: 8,
     paddingVertical: 12,
   },
   nilaiTotalLabel: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#3F51B5',
+    fontFamily: fonts.extrabold,
+    color: '#4338ca',
   },
   nilaiTotalValue: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#3F51B5',
+    fontFamily: fonts.extrabold,
+    color: '#4338ca',
   },
   finalScoreContainer: {
     padding: Spacing.lg,
@@ -548,7 +550,7 @@ const styles = StyleSheet.create({
   },
   finalScoreTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.primary,
     marginBottom: 4,
   },
@@ -572,8 +574,8 @@ const styles = StyleSheet.create({
   },
   finalScoreNumber: {
     fontSize: 24,
-    fontWeight: '800',
-    color: '#00AA13', // Gojek green text for the final score
+    fontFamily: fonts.extrabold,
+    color: brand[600], // Gojek green text for the final score
   },
   komiteFormContainer: {
     marginTop: Spacing.sm,
@@ -589,22 +591,23 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
     color: Colors.textPrimary,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: slate[50],
+    ...inputReset,
   },
   submitBtn: {
-    backgroundColor: '#00AA13',
+    backgroundColor: brand[600],
     paddingVertical: 12,
     borderRadius: 24,
     alignItems: 'center',
@@ -612,7 +615,7 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: Colors.white,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     fontSize: 14,
   },
   errorText: {

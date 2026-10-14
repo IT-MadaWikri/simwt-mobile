@@ -11,6 +11,8 @@ export interface User {
   role?: string;
   avatar?: string;
   department?: string;
+  /** ID plant pengguna — dikirim endpoint /user (kolom `plant` di tabel pengguna). */
+  plant?: number | string;
   phone?: string;
   created_at?: string;
   updated_at?: string;

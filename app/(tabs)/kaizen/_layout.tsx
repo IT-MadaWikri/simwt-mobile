@@ -1,6 +1,8 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import Colors from '../../../constants/Colors';
+import { fonts } from '../../../constants/Typography';
+import TombolKembali from '../../../src/components/common/TombolKembali';
 
 export default function KaizenLayout() {
   return (
@@ -11,10 +13,17 @@ export default function KaizenLayout() {
         },
         headerTintColor: Colors.white,
         headerTitleStyle: {
-          fontWeight: '700',
+          fontFamily: fonts.bold,
         },
         headerShadowVisible: false,
-        animation: 'slide_from_right', // Smooth transition
+        // Sama seperti tumpukan Tiket: layar pertama tumpukan bersarang tidak
+        // mendapat tombol kembali otomatis. Lihat TombolKembali.tsx.
+        headerLeft: () => <TombolKembali />,
+        // Disamakan dengan Stack akar — lihat penjelasan pilihan
+        // `ios_from_right` di app/_layout.tsx.
+        animation: 'ios_from_right',
+        animationDuration: 260,
+        gestureEnabled: true,
       }}
     >
       <Stack.Screen 

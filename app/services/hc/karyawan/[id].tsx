@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { karyawanService, Employee } from '../../../../src/services/karyawanService';
-import Colors from '../../../../constants/Colors';
+import Colors, { brand, slate } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
+import { fonts } from '../../../../constants/Typography';
+import LoadingSpinner from '../../../../src/components/common/LoadingSpinner';
 
 // Gojek-style primary colors
-const GOJEK_GREEN = '#00AA13';
-const GOJEK_GREEN_LIGHT = '#E8F5E9';
-const GOJEK_DARK = '#1C1C1C';
+const GOJEK_GREEN = brand[600];
+const GOJEK_GREEN_LIGHT = brand[50];
+const GOJEK_DARK = Colors.textPrimary;
 const GOJEK_GREY = '#727272';
-const GOJEK_BG = '#F5F6F8';
+const GOJEK_BG = Colors.background;
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -48,8 +42,7 @@ export default function EmployeeDetailScreen() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centerContainer]}>
-        <ActivityIndicator size="large" color={GOJEK_GREEN} />
-        <Text style={styles.loadingText}>Memuat Detail Karyawan...</Text>
+        <LoadingSpinner message="Memuat Detail Karyawan..." />
       </View>
     );
   }
@@ -119,7 +112,7 @@ export default function EmployeeDetailScreen() {
         options={{
           headerShown: true,
           headerTitle: 'Detail Karyawan',
-          headerStyle: { backgroundColor: '#1565C0' },
+          headerStyle: { backgroundColor: brand[700] },
           headerTintColor: Colors.white,
           headerShadowVisible: false,
           headerLeft: () => (
@@ -159,8 +152,8 @@ export default function EmployeeDetailScreen() {
               <View style={styles.badgesColumn}>
                 {employee.nik && (
                   <View style={[styles.badge, styles.badgeBlue]}>
-                    <MaterialCommunityIcons name="card-account-details-outline" size={12} color="#1565C0" />
-                    <Text style={[styles.badgeText, { color: '#1565C0' }]}>{employee.nik}</Text>
+                    <MaterialCommunityIcons name="card-account-details-outline" size={12} color={brand[700]} />
+                    <Text style={[styles.badgeText, { color: brand[700] }]}>{employee.nik}</Text>
                   </View>
                 )}
                 <View style={styles.badgesRowHorizontal}>
@@ -183,14 +176,14 @@ export default function EmployeeDetailScreen() {
           <View style={styles.summaryRow}>
             <View style={styles.summaryBox}>
               <View style={styles.summaryLabelRow}>
-                <MaterialCommunityIcons name="briefcase-outline" size={14} color="#9E9E9E" />
+                <MaterialCommunityIcons name="briefcase-outline" size={14} color={Colors.textTertiary} />
                 <Text style={styles.summaryLabel}>MASA KERJA</Text>
               </View>
               <Text style={styles.summaryValue}>{calculateMasaKerja(employee.tanggal_masuk_kerja)}</Text>
             </View>
             <View style={styles.summaryBox}>
               <View style={styles.summaryLabelRow}>
-                <MaterialCommunityIcons name="cake-variant-outline" size={14} color="#9E9E9E" />
+                <MaterialCommunityIcons name="cake-variant-outline" size={14} color={Colors.textTertiary} />
                 <Text style={styles.summaryLabel}>USIA</Text>
               </View>
               <Text style={styles.summaryValue}>{employee.umur ? `${employee.umur} Tahun` : '-'}</Text>
@@ -322,7 +315,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     fontSize: 16,
     color: GOJEK_GREY,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   backBtn: {
     marginTop: Spacing.xl,
@@ -333,7 +326,7 @@ const styles = StyleSheet.create({
   },
   backBtnText: {
     color: Colors.white,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   headerContainer: {
     backgroundColor: GOJEK_BG,
@@ -353,7 +346,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: GOJEK_DARK,
   },
   scrollContent: {
@@ -365,7 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 12,
@@ -383,7 +376,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0A8852',
+    backgroundColor: brand[600],
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
@@ -399,7 +392,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: Colors.white,
     fontSize: 36,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   profileInfo: {
     flex: 1,
@@ -407,7 +400,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: fonts.extrabold,
     color: GOJEK_DARK,
     marginBottom: 10,
     textTransform: 'uppercase',
@@ -431,14 +424,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badgeBlue: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: brand[50],
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: brand[100],
   },
   badgeGreenOutline: {
     backgroundColor: GOJEK_GREEN_LIGHT,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: brand[100],
   },
   badgeGreenSolid: {
     backgroundColor: '#00D161',
@@ -448,7 +441,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   dot: {
     width: 6,
@@ -467,9 +460,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: Colors.borderSubtle,
     alignItems: 'center',
-    backgroundColor: '#FCFCFC',
+    backgroundColor: slate[50],
   },
   summaryLabelRow: {
     flexDirection: 'row',
@@ -479,20 +472,20 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 11,
-    color: '#9E9E9E',
-    fontWeight: '700',
+    color: Colors.textTertiary,
+    fontFamily: fonts.bold,
   },
   summaryValue: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#0A8852',
+    fontFamily: fonts.extrabold,
+    color: brand[600],
   },
   sectionCard: {
     backgroundColor: Colors.white,
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 12,
@@ -504,7 +497,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: slate[50],
   },
   sectionIconBg: {
     width: 36,
@@ -516,7 +509,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '900',
+    fontFamily: fonts.extrabold,
     color: GOJEK_DARK,
     marginLeft: 12,
     letterSpacing: 0.5,
@@ -542,13 +535,13 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#9E9E9E',
+    fontFamily: fonts.bold,
+    color: Colors.textTertiary,
     textTransform: 'uppercase',
   },
   infoValue: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: GOJEK_DARK,
     marginTop: 2,
     lineHeight: 20,

@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Keyboa
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../constants/Colors';
+import Colors, { brand, slate } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { fonts } from '../../constants/Typography';
+import { inputReset } from '../../constants/GlobalStyles';
 
 export default function EditProfileScreen() {
   const { user } = useAuth();
@@ -49,7 +51,7 @@ export default function EditProfileScreen() {
         options={{
           headerRight: () => (
             <TouchableOpacity style={{ marginRight: Spacing.screenPadding }}>
-              <Text style={{ color: '#00AA13', fontWeight: 'bold', fontSize: 16 }}>SIMPAN</Text>
+              <Text style={{ color: brand[600], fontFamily: fonts.bold, fontSize: 16 }}>SIMPAN</Text>
             </TouchableOpacity>
           ),
           headerLeft: () => (
@@ -67,7 +69,7 @@ export default function EditProfileScreen() {
         {/* INFORMASI KEPEGAWAIAN */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="account-tie-outline" size={20} color="#00AA13" />
+            <MaterialCommunityIcons name="account-tie-outline" size={20} color={brand[600]} />
             <Text style={styles.sectionTitle}>INFORMASI KEPEGAWAIAN</Text>
           </View>
           <View style={styles.sectionBody}>
@@ -81,7 +83,7 @@ export default function EditProfileScreen() {
         {/* INFORMASI KONTAK */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="email-outline" size={20} color="#00AA13" />
+            <MaterialCommunityIcons name="email-outline" size={20} color={brand[600]} />
             <Text style={styles.sectionTitle}>INFORMASI KONTAK</Text>
           </View>
           <View style={styles.sectionBody}>
@@ -93,7 +95,7 @@ export default function EditProfileScreen() {
         {/* KEAMANAN */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="shield-lock-outline" size={20} color="#00AA13" />
+            <MaterialCommunityIcons name="shield-lock-outline" size={20} color={brand[600]} />
             <Text style={styles.sectionTitle}>KEAMANAN</Text>
           </View>
           <Text style={styles.helperText}>Kosongkan password jika tidak ingin mengubah password pengguna.</Text>
@@ -110,8 +112,8 @@ export default function EditProfileScreen() {
               <Switch
                 value={useFingerprint}
                 onValueChange={setUseFingerprint}
-                trackColor={{ false: '#E0E0E0', true: '#00AA13' }}
-                thumbColor={Platform.OS === 'android' ? (useFingerprint ? '#FFFFFF' : '#F5F5F5') : ''}
+                trackColor={{ false: Colors.border, true: brand[600] }}
+                thumbColor={Platform.OS === 'android' ? (useFingerprint ? Colors.white : slate[50]) : ''}
               />
             </View>
           </View>
@@ -120,13 +122,13 @@ export default function EditProfileScreen() {
         {/* DATABASE KARYAWAN INFO */}
         <View style={styles.infoCard}>
           <View style={styles.infoHeader}>
-            <MaterialCommunityIcons name="check-circle" size={18} color="#00AA13" />
+            <MaterialCommunityIcons name="check-circle" size={18} color={brand[600]} />
             <Text style={styles.infoTitle}>Akun tersambung dengan data karyawan</Text>
           </View>
           <View style={styles.infoList}>
-            <Text style={styles.infoListItem}><Text style={{fontWeight: '700'}}>NIK:</Text> {nik}</Text>
-            <Text style={styles.infoListItem}><Text style={{fontWeight: '700'}}>Nama:</Text> {nama}</Text>
-            <Text style={styles.infoListItem}><Text style={{fontWeight: '700'}}>Jabatan:</Text> {jabatan}</Text>
+            <Text style={styles.infoListItem}><Text style={{fontFamily: fonts.bold}}>NIK:</Text> {nik}</Text>
+            <Text style={styles.infoListItem}><Text style={{fontFamily: fonts.bold}}>Nama:</Text> {nama}</Text>
+            <Text style={styles.infoListItem}><Text style={{fontFamily: fonts.bold}}>Jabatan:</Text> {jabatan}</Text>
           </View>
         </View>
 
@@ -138,7 +140,7 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F6F8', // Background ala Gojek
+    backgroundColor: Colors.background, // Background ala Gojek
   },
   scrollContent: {
     padding: Spacing.lg,
@@ -149,25 +151,25 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.borderSubtle,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F6F8',
+    borderBottomColor: Colors.background,
     paddingBottom: Spacing.md,
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginLeft: 8,
   },
@@ -179,19 +181,20 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textSecondary,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
     color: Colors.textPrimary,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: slate[50],
+    ...inputReset,
   },
   helperText: {
     fontSize: 12,
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F5F6F8',
+    borderTopColor: Colors.background,
     paddingTop: 16,
   },
   switchLabelContainer: {
@@ -216,14 +219,14 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 14,
     color: Colors.textPrimary,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   infoCard: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: brand[50],
     borderRadius: 16,
     padding: Spacing.lg,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: brand[100],
     marginBottom: Spacing.xl,
   },
   infoHeader: {
@@ -233,8 +236,8 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#00AA13',
+    fontFamily: fonts.extrabold,
+    color: brand[600],
     marginLeft: 8,
   },
   infoList: {
@@ -257,8 +260,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    shadowColor: '#000',
+    borderTopColor: Colors.borderSubtle,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -269,25 +272,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
     marginRight: Spacing.md,
   },
   btnCancelText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textSecondary,
   },
   btnSave: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00AA13',
+    backgroundColor: brand[600],
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 24,
   },
   btnSaveText: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.white,
     marginLeft: 6,
   },

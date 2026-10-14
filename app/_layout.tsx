@@ -3,23 +3,42 @@
  * Wraps the entire app with AuthProvider and handles routing
  */
 import { useFonts } from 'expo-font';
-import { 
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold 
-} from '@expo-google-fonts/inter';
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+} from '@expo-google-fonts/poppins';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import Colors from '../constants/Colors';
+import { fonts } from '../constants/Typography';
 import LoadingSpinner from '../src/components/common/LoadingSpinner';
+import { DialogHost } from '../src/components/common/AppDialog';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
+
+/**
+ * `enableFreeze` SENGAJA TIDAK DINYALAKAN.
+ *
+ * Sempat diaktifkan untuk memuluskan perpindahan (layar di belakang tumpukan
+ * berhenti di-render). Tetapi react-native-screens membekukan subtree lewat
+ * Suspense — dan subtree yang dibekukan berhenti me-render SEPENUHNYA,
+ * termasuk animasi di dalamnya. Akibatnya spinner pada layar yang sedang
+ * bertransisi berhenti mendadak di tengah putaran.
+ *
+ * Perpindahan yang sedikit lebih berat jauh lebih baik daripada indikator
+ * memuat yang membeku, karena pemuat yang mati membuat aplikasi tampak
+ * hang padahal datanya sedang diambil.
+ *
+ * enableFreeze(true);  ← jangan diaktifkan kembali tanpa menguji ulang
+ *                        spinner saat berpindah halaman.
+ */
 
 function RootLayoutNav() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,34 +70,57 @@ function RootLayoutNav() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          // Transisi halus ala Gojek: dorongan mendatar dengan parallax.
+          //
+          // Sengaja `ios_from_right`, BUKAN `slide_from_right`. Keduanya hanya
+          // berlaku di Android — bedanya `slide_from_right` menggeser layar
+          // lama dan baru dengan kecepatan sama (terasa kaku), sedangkan
+          // `ios_from_right` memakai kurva dan parallax gaya iOS. Di iOS
+          // keduanya sama-sama jatuh ke transisi default, yang memang sudah
+          // berbentuk dorongan ini — jadi hasilnya konsisten di dua platform.
+          animation: 'ios_from_right',
+          animationDuration: 260,
+          // Geser dari tepi untuk kembali (iOS).
+          gestureEnabled: true,
         }}
       >
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* Login & beranda bertukar lewat `router.replace`, bukan dorongan —
+            memudar lebih pas daripada menggeser, karena tidak ada hubungan
+            "maju/mundur" antara keduanya. */}
+        <Stack.Screen name="login" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen
           name="services/[id]"
           options={{
             headerShown: true,
             headerStyle: { backgroundColor: Colors.primary },
             headerTintColor: Colors.white,
+            headerTitleStyle: { fontFamily: fonts.semibold },
             headerBackTitle: 'Kembali',
-            animation: 'slide_from_right',
           }}
         />
-        <Stack.Screen 
-          name="scan-result" 
-          options={{ 
+        <Stack.Screen
+          name="scan-result"
+          options={{
             presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 280,
             headerShown: true,
             title: 'Detail Aset',
             headerStyle: { backgroundColor: Colors.primary },
             headerTintColor: Colors.white,
-            headerTitleStyle: { fontWeight: '700' },
-          }} 
+            headerTitleStyle: { fontFamily: fonts.semibold },
+          }}
         />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+        />
       </Stack>
+
+      {/* Dipasang sekali di sini supaya `dialog.alert()` / `dialog.confirm()`
+          bisa dipanggil dari layar mana pun. Lihat AppDialog.tsx. */}
+      <DialogHost />
     </>
   );
 }
@@ -87,12 +129,14 @@ function RootLayoutNav() {
 
 
 export default function RootLayout() {
+  // Nama key di sini menjadi nama `fontFamily` yang dipakai di style —
+  // harus sama persis dengan nilai di `constants/Typography.ts`.
   const [loaded, error] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_800ExtraBold,
   });
 
   useEffect(() => {

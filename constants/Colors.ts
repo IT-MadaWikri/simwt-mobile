@@ -1,72 +1,135 @@
 /**
- * SIMWT Mobile Color Palette — Gojek-Style Green Theme
+ * SIMWT Mobile — Palet warna.
+ *
+ * ── Arah desain: perpaduan Gojek × karir-mwt ─────────────────────────────
+ * Aplikasi ini mempertahankan **ergonomi mobile ala Gojek** (grid ikon layanan
+ * dengan ubin pastel, kartu putih di atas latar lembut, search bar pil, bottom
+ * tab) tetapi memakai **identitas visual karir-mwt**: skala hijau brand,
+ * netral slate, font Poppins, sudut membulat, dan tombol pil bergradien.
+ *
+ * Sumber nilai brand & netral adalah blok `@theme` di
+ * `karir-mwt/app/globals.css` (token Tailwind v4) — kalau di sana berubah,
+ * samakan di sini juga.
+ *
+ * Netral memakai skala **slate** Tailwind, persis seperti karir-mwt
+ * (`text-slate-600`, `border-slate-200`, dst.) — bukan abu-abu netral murni;
+ * slate sedikit kebiruan dan itu memang disengaja.
+ *
+ * Yang tetap dari Gojek: ubin ikon pastel (`service*` di bawah) dan latar
+ * halaman yang lebih terang dari kartunya, supaya kartu terasa "mengambang".
  */
 
-const tintColorLight = '#00880F';
-const tintColorDark = '#4ADE80';
+/** Skala hijau brand PT Mada Wikri Tunggal. Identik dengan --color-brand-* di karir-mwt. */
+export const brand = {
+  50: '#ecfdf3',
+  100: '#d1fadf',
+  200: '#a6f4c5',
+  300: '#6ce9a6',
+  400: '#32d583',
+  500: '#12b76a',
+  600: '#05924e',
+  700: '#065b32',
+  800: '#054a2a',
+  900: '#043d23',
+  950: '#011a0e',
+} as const;
+
+/** Skala netral Tailwind `slate`. */
+export const slate = {
+  50: '#f8fafc',
+  100: '#f1f5f9',
+  200: '#e2e8f0',
+  300: '#cbd5e1',
+  400: '#94a3b8',
+  500: '#64748b',
+  600: '#475569',
+  700: '#334155',
+  800: '#1e293b',
+  900: '#0f172a',
+} as const;
 
 export const Colors = {
-  // Primary Brand
-  primary: '#00880F',
-  primaryDark: '#006B0D',
-  primaryLight: '#E8F5E9',
-  primaryGradientStart: '#00AA13',
-  primaryGradientEnd: '#006B0D',
+  brand,
+  slate,
 
-  // Secondary
-  secondary: '#1C1C1C',
-  accent: '#00AED6',
+  /** Warna teks utama karir-mwt (--color-ink) — hijau sangat gelap, bukan hitam. */
+  ink: '#0f1b14',
 
-  // Status
-  danger: '#EF4123',
-  warning: '#FFB800',
-  success: '#00880F',
-  info: '#2196F3',
+  // ── Brand (alias yang dipakai di seluruh aplikasi) ──────────────────
+  primary: brand[600],
+  primaryDark: brand[700],
+  primaryDarker: brand[900],
+  primaryLight: brand[50],
+  /** Gradien tombol utama karir-mwt: from-brand-700 → to-brand-500. */
+  primaryGradientStart: brand[700],
+  primaryGradientEnd: brand[500],
 
-  // Neutrals
-  white: '#FFFFFF',
+  secondary: '#0f1b14',
+  accent: brand[400],
+
+  // ── Status ──────────────────────────────────────────────────────────
+  danger: '#ef4444',
+  dangerDark: '#dc2626',
+  /** Dipakai karir-mwt untuk label "Ditutup" (text-rose-500). */
+  rose: '#f43f5e',
+  warning: '#f59e0b',
+  success: brand[600],
+  info: '#0ea5e9',
+
+  // ── Netral ──────────────────────────────────────────────────────────
+  white: '#ffffff',
   black: '#000000',
-  background: '#F2F3F5',
-  card: '#FFFFFF',
-  textPrimary: '#1C1C1C',
-  textSecondary: '#6B6B6B',
-  textTertiary: '#9E9E9E',
-  border: '#E8E8E8',
-  disabled: '#BDBDBD',
-  placeholder: '#C4C4C4',
+  /** Latar halaman bersuasana brand — `.section-bg` di karir-mwt. */
+  background: '#f3faf7',
+  /** Latar putih polos, dipakai kalau konten sudah penuh kartu. */
+  backgroundPlain: '#ffffff',
+  card: '#ffffff',
 
-  // Service Icon Backgrounds (pastel)
-  serviceBlue: '#E3F2FD',
-  serviceGreen: '#E8F5E9',
-  serviceOrange: '#FFF3E0',
-  servicePurple: '#F3E5F5',
-  serviceRed: '#FFEBEE',
-  serviceTeal: '#E0F2F1',
-  serviceAmber: '#FFF8E1',
-  serviceIndigo: '#E8EAF6',
-  serviceCyan: '#E0F7FA',
-  serviceLime: '#F9FBE7',
+  textPrimary: '#0f1b14',
+  textSecondary: slate[600],
+  textTertiary: slate[400],
+  textOnBrand: '#ffffff',
 
-  // Theme variants
+  border: slate[200],
+  borderSubtle: slate[100],
+  disabled: slate[300],
+  placeholder: slate[400],
+
+  // ── Latar ikon lembut ───────────────────────────────────────────────
+  // karir-mwt memakai `bg-brand-50 text-brand-600` untuk kotak ikon. Varian
+  // non-brand di bawah dipakai untuk membedakan kategori layanan di beranda.
+  serviceBrand: brand[50],
+  serviceBlue: '#eff6ff',
+  serviceGreen: brand[50],
+  serviceOrange: '#fff7ed',
+  servicePurple: '#faf5ff',
+  serviceRed: '#fef2f2',
+  serviceTeal: '#f0fdfa',
+  serviceAmber: '#fffbeb',
+  serviceIndigo: '#eef2ff',
+  serviceCyan: '#ecfeff',
+  serviceLime: '#f7fee7',
+
+  // ── Varian tema (dipakai komponen bawaan Expo) ──────────────────────
   light: {
-    text: '#1C1C1C',
-    textSecondary: '#6B6B6B',
-    background: '#F2F3F5',
-    card: '#FFFFFF',
-    tint: tintColorLight,
-    tabIconDefault: '#9E9E9E',
-    tabIconSelected: tintColorLight,
-    border: '#E8E8E8',
+    text: '#0f1b14',
+    textSecondary: slate[600],
+    background: '#f3faf7',
+    card: '#ffffff',
+    tint: brand[600],
+    tabIconDefault: slate[400],
+    tabIconSelected: brand[600],
+    border: slate[200],
   },
   dark: {
-    text: '#ECEDEE',
-    textSecondary: '#9BA1A6',
-    background: '#121212',
-    card: '#1E1E1E',
-    tint: tintColorDark,
-    tabIconDefault: '#6B6B6B',
-    tabIconSelected: tintColorDark,
-    border: '#2C2C2C',
+    text: '#e8f5ee',
+    textSecondary: slate[400],
+    background: brand[950],
+    card: brand[900],
+    tint: brand[400],
+    tabIconDefault: slate[500],
+    tabIconSelected: brand[400],
+    border: brand[800],
   },
 };
 

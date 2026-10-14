@@ -38,7 +38,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor — handle 401 (unauthorized)
+// Response interceptor — 401 dan kegagalan jaringan
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -46,6 +46,21 @@ api.interceptors.response.use(
       // Token expired — clear storage
       await storage.clearAll();
     }
+
+    // Kegagalan jaringan & timeout tidak punya `response`, dan pesan bawaan
+    // axios-nya ("Network Error" / "timeout of 15000ms exceeded") tidak
+    // memberi tahu apa pun kepada pengguna di lapangan. Tanpa ini, layar
+    // hanya berputar sampai timeout lalu gagal tanpa penjelasan — persis
+    // gejala "loading stuck".
+    if (!error.response) {
+      const timeout = error.code === 'ECONNABORTED';
+      error.message = timeout
+        ? 'Server terlalu lama merespons. Periksa koneksi Anda, lalu coba lagi.'
+        : `Tidak dapat terhubung ke server (${API_CONFIG.BASE_URL}). ` +
+          'Pastikan Anda berada di jaringan yang benar.';
+      error.isNetworkError = true;
+    }
+
     return Promise.reject(error);
   }
 );

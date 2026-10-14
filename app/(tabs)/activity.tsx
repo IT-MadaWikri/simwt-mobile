@@ -1,196 +1,328 @@
 /**
- * Activity Screen — Riwayat aktivitas user
+ * Approval Center — semua yang menunggu keputusan Anda, dalam satu layar.
+ *
+ * Menggantikan tab "Aktivitas" yang sebelumnya berisi daftar contoh statis.
+ * Daftar dibaca dari GET /approval (gabungan Kaizen + Tiket, sudah disaring
+ * ke plant/departemen pengguna); tindakannya memakai endpoint modul
+ * masing-masing lewat `approvalService`.
+ *
+ * Pola mobile yang dipakai:
+ *  - chip penyaring di atas (Semua / Kaizen / Tiket) dengan angka antrean
+ *  - kartu ringkas: nomor, judul, pengaju, waktu relatif
+ *  - aksi langsung di kartu — Setujui / Tolak untuk Kaizen, Proses untuk
+ *    Tiket — supaya tidak perlu masuk ke halaman lain hanya untuk satu klik
+ *  - item hilang dari daftar begitu diputuskan (optimistis), lalu daftar
+ *    disegarkan dari server
  */
-import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
+import { gs } from '../../constants/GlobalStyles';
+import LoadingSpinner from '../../src/components/common/LoadingSpinner';
+import BrandSpinner from '../../src/components/common/BrandSpinner';
+import { dialog } from '../../src/components/common/AppDialog';
+import {
+  approvalService,
+  ItemApproval,
+  RingkasanApproval,
+} from '../../src/services/approvalService';
+import { jalankanSetelahTransisi } from '../../src/utils/useSetelahTransisi';
 
-interface Activity {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  iconColor: string;
-  iconBg: string;
-  time: string;
-  status: 'completed' | 'pending' | 'in_progress';
+type Saring = 'semua' | 'kaizen' | 'tiket';
+
+function jarakWaktu(iso: string | null): string {
+  if (!iso) return '';
+  const selisih = Date.now() - new Date(iso).getTime();
+  const jam = Math.floor(selisih / 3600000);
+  if (jam < 1) return 'Baru saja';
+  if (jam < 24) return `${jam} jam lalu`;
+  const hari = Math.floor(jam / 24);
+  if (hari < 30) return `${hari} hari lalu`;
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const MOCK_ACTIVITIES: Activity[] = [
-  {
-    id: '1',
-    title: 'Tiket #1024 Disubmit',
-    description: 'Printer lantai 3 tidak berfungsi',
-    icon: 'ticket-confirmation-outline',
-    iconColor: '#C62828',
-    iconBg: '#FFEBEE',
-    time: '2 jam lalu',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    title: 'Audit Selesai',
-    description: 'Audit safety departemen produksi',
-    icon: 'clipboard-check-outline',
-    iconColor: '#2E7D32',
-    iconBg: '#E8F5E9',
-    time: '5 jam lalu',
-    status: 'completed',
-  },
-  {
-    id: '3',
-    title: 'Kaizen Diajukan',
-    description: 'Optimasi layout gudang B',
-    icon: 'lightbulb-on-outline',
-    iconColor: '#F57F17',
-    iconBg: '#FFF8E1',
-    time: 'Kemarin',
-    status: 'in_progress',
-  },
-  {
-    id: '4',
-    title: 'Aset Baru Ditambahkan',
-    description: 'Laptop Dell Latitude 5540 - IT Dept',
-    icon: 'database-outline',
-    iconColor: '#1565C0',
-    iconBg: '#E3F2FD',
-    time: 'Kemarin',
-    status: 'completed',
-  },
-  {
-    id: '5',
-    title: 'Kegiatan Terdaftar',
-    description: 'Training K3 - 15 Juni 2026',
-    icon: 'calendar-check-outline',
-    iconColor: '#E65100',
-    iconBg: '#FFF3E0',
-    time: '2 hari lalu',
-    status: 'pending',
-  },
-];
-
-const statusColors = {
-  completed: Colors.success,
-  pending: Colors.warning,
-  in_progress: Colors.info,
+const RUPA: Record<JenisKunci, { icon: string; label: string }> = {
+  kaizen: { icon: 'lightbulb-on-outline', label: 'Kaizen' },
+  tiket: { icon: 'ticket-outline', label: 'Tiket' },
 };
+type JenisKunci = 'kaizen' | 'tiket';
 
-const statusLabels = {
-  completed: 'Selesai',
-  pending: 'Pending',
-  in_progress: 'Proses',
-};
+export default function ApprovalCenterScreen() {
+  const insets = useSafeAreaInsets();
+  const [ringkasan, setRingkasan] = useState<RingkasanApproval>({ total: 0, kaizen: 0, tiket: 0 });
+  const [kaizen, setKaizen] = useState<ItemApproval[]>([]);
+  const [tiket, setTiket] = useState<ItemApproval[]>([]);
+  const [saring, setSaring] = useState<Saring>('semua');
+  const [memuat, setMemuat] = useState(true);
+  const [menyegarkan, setMenyegarkan] = useState(false);
+  const [galat, setGalat] = useState<string | null>(null);
+  /** Id item yang sedang diproses — tombolnya diganti spinner. */
+  const [sibuk, setSibuk] = useState<string | null>(null);
 
-export default function ActivityScreen() {
-  const renderItem = ({ item }: { item: Activity }) => (
-    <View style={styles.card}>
-      <View style={[styles.iconBg, { backgroundColor: item.iconBg }]}>
-        <MaterialCommunityIcons
-          name={item.icon as any}
-          size={24}
-          color={item.iconColor}
-        />
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description} numberOfLines={1}>
-          {item.description}
-        </Text>
-        <Text style={styles.time}>{item.time}</Text>
-      </View>
-      <View
-        style={[
-          styles.statusBadge,
-          { backgroundColor: statusColors[item.status] + '20' },
-        ]}
-      >
-        <Text
-          style={[styles.statusText, { color: statusColors[item.status] }]}
-        >
-          {statusLabels[item.status]}
-        </Text>
-      </View>
-    </View>
+  const muat = useCallback(async () => {
+    try {
+      setGalat(null);
+      const hasil = await approvalService.antrean();
+      setRingkasan(hasil.ringkasan);
+      setKaizen(hasil.kaizen);
+      setTiket(hasil.tiket);
+    } catch (err: any) {
+      setGalat(err?.message ?? 'Gagal memuat antrean persetujuan.');
+    } finally {
+      setMemuat(false);
+      setMenyegarkan(false);
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => jalankanSetelahTransisi(() => muat()), [muat]));
+
+  const daftar = useMemo(() => {
+    if (saring === 'kaizen') return kaizen;
+    if (saring === 'tiket') return tiket;
+    // Gabungan diurut terbaru dulu supaya yang paling mendesak di atas.
+    return [...kaizen, ...tiket].sort(
+      (a, b) => new Date(b.tanggal ?? 0).getTime() - new Date(a.tanggal ?? 0).getTime()
+    );
+  }, [saring, kaizen, tiket]);
+
+  /** Buang item dari daftar tanpa menunggu server — terasa responsif. */
+  const buang = (item: ItemApproval) => {
+    if (item.jenis === 'kaizen') setKaizen((isi) => isi.filter((x) => x.id !== item.id));
+    else setTiket((isi) => isi.filter((x) => x.id !== item.id));
+    setRingkasan((r) => ({
+      total: Math.max(0, r.total - 1),
+      kaizen: item.jenis === 'kaizen' ? Math.max(0, r.kaizen - 1) : r.kaizen,
+      tiket: item.jenis === 'tiket' ? Math.max(0, r.tiket - 1) : r.tiket,
+    }));
+  };
+
+  const setujui = async (item: ItemApproval) => {
+    const setuju = await dialog.confirm({
+      title: 'Setujui Kaizen',
+      message: `Setujui "${item.judul}" dari ${item.pengaju ?? 'pengaju'}?`,
+      confirmText: 'Setujui',
+    });
+    if (!setuju) return;
+
+    setSibuk(`${item.jenis}-${item.id}`);
+    try {
+      await approvalService.setujuiKaizen(item.id);
+      buang(item);
+    } catch (err: any) {
+      dialog.alert('Gagal Menyetujui', err?.message ?? 'Terjadi kesalahan.', 'danger');
+    } finally {
+      setSibuk(null);
+    }
+  };
+
+  const tolak = async (item: ItemApproval) => {
+    // Alasan diketik pengaju keputusan, bukan teks baku — alasannya ikut
+    // terkirim ke email pemberitahuan dan tercatat permanen di kolom
+    // `alasan`, jadi kalimat generik tidak menolong siapa pun.
+    // Tombol "Tolak" di dialog mati sampai kolomnya terisi (`wajib`),
+    // sehingga tidak mungkin lolos lalu ditolak server dengan 422.
+    const alasan = await dialog.prompt({
+      title: 'Tolak Kaizen',
+      message: `Sebutkan alasan penolakan "${item.judul}". Alasan ini dikirimkan ke pengaju.`,
+      confirmText: 'Tolak',
+      destructive: true,
+      isian: {
+        placeholder: 'Contoh: Ide sudah pernah diterapkan di line 2.',
+        multiline: true,
+        // Batas 255 mengikuti VALIDASI server (`alasan` => max:255), bukan
+        // tipe kolomnya — kolomnya sendiri `text`, jadi validasi yang lebih
+        // ketat. Tanpa batas ini, teks panjang baru ditolak setelah terkirim.
+        maxLength: 255,
+      },
+    });
+    if (!alasan) return;
+
+    setSibuk(`${item.jenis}-${item.id}`);
+    try {
+      await approvalService.tolakKaizen(item.id, alasan);
+      buang(item);
+    } catch (err: any) {
+      dialog.alert('Gagal Menolak', err?.message ?? 'Terjadi kesalahan.', 'danger');
+    } finally {
+      setSibuk(null);
+    }
+  };
+
+  const proses = async (item: ItemApproval) => {
+    const setuju = await dialog.confirm({
+      title: 'Proses Tiket',
+      message: `Tandai tiket "${item.judul}" mulai diproses?`,
+      confirmText: 'Proses',
+    });
+    if (!setuju) return;
+
+    setSibuk(`${item.jenis}-${item.id}`);
+    try {
+      await approvalService.prosesTiket(item.id);
+      buang(item);
+    } catch (err: any) {
+      dialog.alert('Gagal Memproses', err?.message ?? 'Terjadi kesalahan.', 'danger');
+    } finally {
+      setSibuk(null);
+    }
+  };
+
+  const Chip = ({ nilai, label, jumlah }: { nilai: Saring; label: string; jumlah: number }) => (
+    <TouchableOpacity
+      style={[gs.badge, saring === nilai ? gs.badgeBrand : gs.badgeMuted]}
+      onPress={() => setSaring(nilai)}
+      activeOpacity={0.8}
+    >
+      <Text style={[gs.badgeText, saring === nilai ? gs.badgeTextBrand : gs.badgeTextMuted]}>
+        {label} {jumlah > 0 ? `(${jumlah})` : ''}
+      </Text>
+    </TouchableOpacity>
   );
 
+  if (memuat) {
+    return (
+      <View style={gs.screen}>
+        <LoadingSpinner message="Memuat antrean persetujuan..." />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={gs.screen}>
+      {/* Ringkasan + penyaring */}
+      <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
+        <View style={[gs.cardBrand, gs.row, gs.gapMd]}>
+          <View style={[gs.iconTile, { backgroundColor: Colors.white }]}>
+            <MaterialCommunityIcons name="clipboard-check-outline" size={22} color={brand[600]} />
+          </View>
+          <View style={gs.flex1}>
+            <Text style={[gs.metric, { fontSize: 24, color: brand[800] }]}>
+              {ringkasan.total}
+            </Text>
+            <Text style={[gs.bodySm, { color: brand[800] }]}>
+              {ringkasan.total === 0
+                ? 'Tidak ada yang menunggu persetujuan'
+                : 'menunggu keputusan Anda'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={[gs.row, gs.gapSm, { marginTop: Spacing.md, marginBottom: Spacing.sm }]}>
+          <Chip nilai="semua" label="Semua" jumlah={ringkasan.total} />
+          <Chip nilai="kaizen" label="Kaizen" jumlah={ringkasan.kaizen} />
+          <Chip nilai="tiket" label="Tiket" jumlah={ringkasan.tiket} />
+        </View>
+      </View>
+
       <FlatList
-        data={MOCK_ACTIVITIES}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <Text style={styles.header}>Aktivitas Terbaru</Text>
+        data={daftar}
+        keyExtractor={(item) => `${item.jenis}-${item.id}`}
+        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+        initialNumToRender={10}
+        windowSize={7}
+        removeClippedSubviews
+        refreshControl={
+          <RefreshControl
+            refreshing={menyegarkan}
+            onRefresh={() => {
+              setMenyegarkan(true);
+              muat();
+            }}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
         }
+        ListEmptyComponent={
+          <View style={[gs.card, gs.center, { marginTop: Spacing.lg }]}>
+            <MaterialCommunityIcons
+              name={galat ? 'alert-circle-outline' : 'check-circle-outline'}
+              size={44}
+              color={galat ? Colors.textTertiary : brand[400]}
+            />
+            <Text style={gs.emptyTitle}>{galat ? 'Gagal memuat' : 'Semua beres'}</Text>
+            <Text style={gs.emptyText}>
+              {galat ?? 'Tidak ada pengajuan yang menunggu keputusan Anda.'}
+            </Text>
+          </View>
+        }
+        renderItem={({ item }) => {
+          const rupa = RUPA[item.jenis];
+          const sedangSibuk = sibuk === `${item.jenis}-${item.id}`;
+
+          return (
+            <View style={[gs.card, { marginBottom: Spacing.md }]}>
+              <View style={gs.rowBetween}>
+                <View style={[gs.badge, gs.badgeBrand]}>
+                  <MaterialCommunityIcons name={rupa.icon as any} size={12} color={brand[700]} />
+                  <Text style={[gs.badgeText, gs.badgeTextBrand]}>{rupa.label}</Text>
+                </View>
+                <Text style={gs.caption}>{jarakWaktu(item.tanggal)}</Text>
+              </View>
+
+              <Text style={[gs.title, { marginTop: Spacing.sm }]} numberOfLines={2}>
+                {item.judul}
+              </Text>
+
+              {item.nomor ? (
+                <Text style={gs.caption} numberOfLines={1}>
+                  #{item.nomor}
+                </Text>
+              ) : null}
+              {item.pengaju ? (
+                <Text style={[gs.bodySm, { marginTop: 2 }]} numberOfLines={1}>
+                  Diajukan oleh {item.pengaju}
+                </Text>
+              ) : null}
+              {item.keterangan ? (
+                <Text style={[gs.bodySm, { marginTop: Spacing.xs }]} numberOfLines={2}>
+                  {item.keterangan}
+                </Text>
+              ) : null}
+
+              <View style={[gs.row, gs.gapSm, { marginTop: Spacing.lg }]}>
+                {sedangSibuk ? (
+                  <View style={[gs.flex1, gs.center, { paddingVertical: Spacing.sm }]}>
+                    <BrandSpinner size={24} />
+                  </View>
+                ) : item.jenis === 'kaizen' ? (
+                  <>
+                    <TouchableOpacity
+                      style={[gs.btn, gs.btnMuted, gs.btnSm, gs.flex1]}
+                      onPress={() => tolak(item)}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={[gs.btnText, gs.btnTextMuted, gs.btnTextSm]}>Tolak</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[gs.btn, gs.btnPrimary, gs.btnSm, gs.flex1]}
+                      onPress={() => setujui(item)}
+                      activeOpacity={0.85}
+                    >
+                      <MaterialCommunityIcons name="check" size={16} color={Colors.white} />
+                      <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>Setujui</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    style={[gs.btn, gs.btnPrimary, gs.btnSm, gs.flex1]}
+                    onPress={() => proses(item)}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialCommunityIcons name="progress-wrench" size={16} color={Colors.white} />
+                    <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>
+                      Mulai Proses
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          );
+        }}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  list: {
-    padding: Spacing.screenPadding,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.lg,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.md,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  iconBg: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  description: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  time: {
-    fontSize: 11,
-    color: Colors.textTertiary,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: Spacing.radius.full,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-});

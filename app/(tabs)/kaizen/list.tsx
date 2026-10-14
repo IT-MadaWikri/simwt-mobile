@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  TouchableOpacity, 
-  TextInput,
-  ActivityIndicator
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../../constants/Colors';
+import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { kaizenService } from '../../../src/services/kaizenService';
+import { fonts } from '../../../constants/Typography';
+import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
+import { inputReset } from '../../../constants/GlobalStyles';
 
 export default function KaizenList() {
   const router = useRouter();
@@ -82,7 +77,7 @@ export default function KaizenList() {
             <Text style={styles.nomorText}>{item.nomor || 'No Nomor'}</Text>
           </View>
           <View style={styles.statusBadge}>
-            <MaterialCommunityIcons name="check" size={14} color="#16A34A" />
+            <MaterialCommunityIcons name="check" size={14} color={brand[500]} />
             <Text style={styles.statusText}>{item.status}</Text>
           </View>
         </View>
@@ -112,7 +107,7 @@ export default function KaizenList() {
         </View>
 
         {/* Bottom Row: Tanggal */}
-        <View style={[styles.cardRow, { marginTop: Spacing.md, borderTopWidth: 1, borderTopColor: '#F0F0F0', paddingTop: Spacing.sm }]}>
+        <View style={[styles.cardRow, { marginTop: Spacing.md, borderTopWidth: 1, borderTopColor: Colors.borderSubtle, paddingTop: Spacing.sm }]}>
           <View>
             <Text style={styles.label}>TANGGAL SUBMIT</Text>
             <Text style={styles.valueText}>
@@ -171,7 +166,7 @@ export default function KaizenList() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <LoadingSpinner />
         </View>
       ) : (
         <FlatList
@@ -189,15 +184,15 @@ export default function KaizenList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: Colors.background,
   },
   filterContainer: {
     backgroundColor: Colors.white,
     padding: Spacing.lg,
     paddingTop: Spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEC',
-    shadowColor: '#000',
+    borderBottomColor: Colors.borderSubtle,
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -211,7 +206,7 @@ const styles = StyleSheet.create({
   },
   filterTitle: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: Colors.textSecondary,
     marginLeft: 6,
     letterSpacing: 0.5,
@@ -225,20 +220,20 @@ const styles = StyleSheet.create({
   },
   filterLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 4,
   },
   filterDropdown: {
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: slate[50],
   },
   filterDropdownText: {
     fontSize: 12,
@@ -249,11 +244,11 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: {
     borderWidth: 1,
-    borderColor: '#EAEAEC',
+    borderColor: Colors.borderSubtle,
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: slate[50],
     paddingHorizontal: 10,
   },
   searchInput: {
@@ -261,6 +256,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 13,
     color: Colors.textPrimary,
+    ...inputReset,
   },
   searchIcon: {
     marginLeft: 8,
@@ -280,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     flexDirection: 'row',
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -288,7 +284,7 @@ const styles = StyleSheet.create({
   },
   cardBorderLeft: {
     width: 6,
-    backgroundColor: '#16A34A', // Green border
+    backgroundColor: brand[500], // Green border
   },
   cardContent: {
     flex: 1,
@@ -301,13 +297,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textTertiary,
     marginBottom: 4,
   },
   nomorText: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: fonts.extrabold,
     color: '#2563EB', // Blue link color
   },
   statusBadge: {
@@ -319,14 +315,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusText: {
-    color: '#16A34A',
-    fontWeight: '800',
+    color: brand[500],
+    fontFamily: fonts.extrabold,
     fontSize: 10,
     marginLeft: 4,
   },
   valueText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: Colors.textPrimary,
     textTransform: 'uppercase',
   },

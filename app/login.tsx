@@ -1,8 +1,29 @@
 /**
- * Login Screen — SIMWT Mobile
- * Premium green-themed login with fingerprint auth & custom alert
+ * Layar Masuk — SIMWT Mobile.
+ *
+ * ── Kenapa ditulis ulang (11 Agustus 2026) ───────────────────────────────
+ * Versi sebelumnya membangun dekorasinya dari `Dimensions.get('window')` yang
+ * dibaca SEKALI saat modul dimuat, lalu dipakai untuk menghitung lingkaran
+ * raksasa pembentuk efek gelombang (`width * 1.5`, `borderRadius: width*0.75`,
+ * `left: -width*0.25`) dan tinggi header (`height * 0.35`).
+ *
+ * Dua masalahnya:
+ *  1. Angka itu tidak pernah dihitung ulang saat ukuran berubah (rotasi
+ *     perangkat, atau jendela peramban di mode web).
+ *  2. Di web, `window` adalah jendela PERAMBAN — bukan kolom tempat aplikasi
+ *     dirender. Gelombangnya jadi dihitung untuk lebar yang salah, dan
+ *     ilustrasi yang diposisikan `absolute` terpotong `overflow: hidden`.
+ *
+ * Sekarang: `useWindowDimensions()` (hook, ikut berubah), dan lengkungan
+ * header memakai `borderBottomRadius` biasa — tidak ada lagi geometri yang
+ * harus ditebak. Kartu formulir sengaja naik menimpa header supaya
+ * peralihannya tetap terasa berlapis tanpa trik lingkaran.
+ *
+ * Sekaligus: komponen `CustomAlert` bawaan layar ini DIHAPUS. Isinya
+ * menduplikasi `AppDialog` yang sudah dipakai seluruh aplikasi — satu rupa
+ * dialog untuk semua layar, dan satu tempat saja untuk memperbaikinya.
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,829 +33,438 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
-  Modal,
+  Image,
   Animated,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as LocalAuthentication from 'expo-local-authentication';
-import Colors from '../constants/Colors';
-import Spacing from '../constants/Spacing';
+import Colors, { brand, slate } from '../constants/Colors';
+import Spacing, { Shadows } from '../constants/Spacing';
+import Typography, { fonts } from '../constants/Typography';
+import { gs, gradients, inputReset } from '../constants/GlobalStyles';
 import { useAuth } from '../src/contexts/AuthContext';
+import { biometric } from '../src/utils/biometric';
+import { dialog } from '../src/components/common/AppDialog';
+import BrandSpinner from '../src/components/common/BrandSpinner';
 
-const { width, height } = Dimensions.get('window');
+const LOGO = require('../assets/images/logo-loader.png');
 
-// ─── Custom Alert Component ───────────────────────────────────
-interface CustomAlertProps {
-  visible: boolean;
-  type: 'error' | 'success' | 'info';
-  title: string;
-  message: string;
-  onClose: () => void;
-}
-
-function CustomAlert({ visible, type, title, message, onClose }: CustomAlertProps) {
-  const scaleAnim = useRef(new Animated.Value(0.5)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-          tension: 80,
-          friction: 8,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      scaleAnim.setValue(0.5);
-      opacityAnim.setValue(0);
-    }
-  }, [visible]);
-
-  const handleClose = () => {
-    Animated.parallel([
-      Animated.timing(scaleAnim, { toValue: 0.5, duration: 150, useNativeDriver: true }),
-      Animated.timing(opacityAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-    ]).start(() => onClose());
-  };
-
-  const config = {
-    error: { icon: 'alert-circle' as const, color: '#EF4123', bg: '#FFF5F5', borderColor: '#FFE0E0', btnColor: '#EF4123' },
-    success: { icon: 'check-circle' as const, color: '#00AA13', bg: '#F0FFF4', borderColor: '#C6F6D5', btnColor: '#00AA13' },
-    info: { icon: 'information' as const, color: '#2196F3', bg: '#EBF8FF', borderColor: '#BEE3F8', btnColor: '#2196F3' },
-  }[type];
-
-  if (!visible) return null;
-
-  return (
-    <Modal transparent visible={visible} animationType="none">
-      <Animated.View style={[alertStyles.overlay, { opacity: opacityAnim }]}>
-        <Animated.View style={[alertStyles.container, { transform: [{ scale: scaleAnim }] }]}>
-          {/* Alert Icon Circle */}
-          <View style={[alertStyles.iconCircle, { backgroundColor: config.bg, borderColor: config.borderColor }]}>  
-            <MaterialCommunityIcons name={config.icon} size={40} color={config.color} />
-          </View>
-
-          <Text style={alertStyles.title}>{title}</Text>
-          <Text style={alertStyles.message}>{message}</Text>
-
-          <TouchableOpacity
-            style={[alertStyles.button, { backgroundColor: config.btnColor }]}
-            onPress={handleClose}
-            activeOpacity={0.85}
-          >
-            <Text style={alertStyles.buttonText}>OK, Mengerti</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </Animated.View>
-    </Modal>
-  );
-}
-
-// ─── Main Login Screen ─────────────────────────────────────────
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
-  const { login, error, clearError } = useAuth();
+  const [lihatSandi, setLihatSandi] = useState(false);
+  const [mengirim, setMengirim] = useState(false);
+  const [biometrikSiap, setBiometrikSiap] = useState(false);
+  const [namaBiometrik, setNamaBiometrik] = useState('Sidik Jari');
+
+  const { login, clearError } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
 
-  // Custom Alert State
-  const [alertConfig, setAlertConfig] = useState({
-    visible: false,
-    type: 'error' as 'error' | 'success' | 'info',
-    title: '',
-    message: '',
-  });
+  // Header mengambil sepertiga tinggi yang tersedia, dengan batas atas-bawah
+  // supaya tetap masuk akal di layar kecil maupun jendela peramban tinggi.
+  const tinggiHeader = Math.min(340, Math.max(250, height * 0.38));
 
-  // Animations
-  const shieldBounce = useRef(new Animated.Value(0)).current;
-  const formSlide = useRef(new Animated.Value(50)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
+  const masuk = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Check biometric availability
-    checkBiometricAvailability();
-
-    // Entrance animations
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shieldBounce, { toValue: -8, duration: 1500, useNativeDriver: true }),
-        Animated.timing(shieldBounce, { toValue: 0, duration: 1500, useNativeDriver: true }),
-      ])
-    ).start();
-
-    Animated.parallel([
-      Animated.timing(formSlide, { toValue: 0, duration: 600, useNativeDriver: true }),
-      Animated.timing(formOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
-    ]).start();
+    cekBiometrik();
+    Animated.timing(masuk, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
-  const checkBiometricAvailability = async () => {
-    const compatible = await LocalAuthentication.hasHardwareAsync();
-    const enrolled = await LocalAuthentication.isEnrolledAsync();
-    setIsBiometricAvailable(compatible && enrolled);
-  };
-
-  const showAlert = (type: 'error' | 'success' | 'info', title: string, message: string) => {
-    setAlertConfig({ visible: true, type, title, message });
+  const cekBiometrik = async () => {
+    setBiometrikSiap(await biometric.siapDipakai());
+    setNamaBiometrik(await biometric.namaJenis());
   };
 
   const handleLogin = async () => {
-    let finalUsername = username.trim();
-    if (!finalUsername) {
-      showAlert('error', 'Username Kosong', 'Silakan masukkan username Anda terlebih dahulu.');
+    let namaAkhir = username.trim();
+
+    if (!namaAkhir) {
+      dialog.alert('Username Kosong', 'Silakan masukkan username Anda terlebih dahulu.', 'danger');
       return;
     }
-
-    // Automatically add mwt- prefix if not superadmin and doesn't already have it
-    if (
-      finalUsername.toLowerCase() !== 'superadmin' &&
-      !finalUsername.toLowerCase().startsWith('mwt-')
-    ) {
-      finalUsername = `mwt-${finalUsername}`;
-    }
-
     if (!password.trim()) {
-      showAlert('error', 'Password Kosong', 'Silakan masukkan password Anda terlebih dahulu.');
+      dialog.alert('Password Kosong', 'Silakan masukkan password Anda terlebih dahulu.', 'danger');
       return;
     }
 
-    setIsSubmitting(true);
+    // Awalan `mwt-` ditambahkan otomatis, kecuali akun superadmin.
+    if (namaAkhir.toLowerCase() !== 'superadmin' && !namaAkhir.toLowerCase().startsWith('mwt-')) {
+      namaAkhir = `mwt-${namaAkhir}`;
+    }
+
+    setMengirim(true);
     clearError();
 
     try {
-      await login(finalUsername, password);
+      await login(namaAkhir, password);
+      await tawarkanBiometrik(namaAkhir, password);
       router.replace('/(tabs)');
     } catch (err: any) {
-      showAlert('error', 'Login Gagal', err.message || 'Username atau password salah. Silakan coba lagi.');
+      dialog.alert(
+        'Masuk Gagal',
+        err?.message || 'Username atau password salah. Silakan coba lagi.',
+        'danger'
+      );
     } finally {
-      setIsSubmitting(false);
+      setMengirim(false);
     }
   };
 
-  const handleBiometricLogin = async () => {
+  /** Tawarkan masuk cepat — hanya di sini kata sandi ada di tangan. */
+  const tawarkanBiometrik = async (namaPengguna: string, sandi: string) => {
+    if (!(await biometric.didukung()) || (await biometric.siapDipakai())) return;
+
+    const jenis = await biometric.namaJenis();
+    const setuju = await dialog.confirm({
+      title: `Aktifkan Masuk dengan ${jenis}?`,
+      message: `Lain kali cukup memindai ${jenis.toLowerCase()} tanpa mengetik kata sandi. Bisa dimatikan kapan saja lewat halaman Profil.`,
+      confirmText: 'Aktifkan',
+      cancelText: 'Nanti Saja',
+    });
+    if (!setuju) return;
+
     try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Verifikasi identitas Anda',
-        cancelLabel: 'Batal',
-        disableDeviceFallback: false,
-        fallbackLabel: 'Gunakan Password',
-      });
-
-      if (result.success) {
-        // For biometric login, we need saved credentials
-        // For now, show info that credentials need to be saved first
-        showAlert(
-          'info',
-          'Fingerprint Terverifikasi',
-          'Login dengan fingerprint membutuhkan login manual terlebih dahulu. Silakan login dengan username & password.'
-        );
-      } else if (result.error === 'user_cancel') {
-        // User cancelled, do nothing
-      } else {
-        showAlert('error', 'Verifikasi Gagal', 'Sidik jari tidak dikenali. Silakan coba lagi.');
-      }
-    } catch (err) {
-      showAlert('error', 'Error', 'Terjadi kesalahan pada sistem biometrik.');
+      await biometric.nyalakan({ username: namaPengguna, password: sandi });
+    } catch {
+      dialog.alert('Gagal Mengaktifkan', 'Kredensial tidak bisa disimpan di perangkat ini.', 'danger');
     }
   };
+
+  const masukBiometrik = async () => {
+    if (!biometrikSiap) {
+      const didukung = await biometric.didukung();
+      dialog.alert(
+        `Masuk dengan ${namaBiometrik} Belum Aktif`,
+        didukung
+          ? `Masuk sekali dengan kata sandi, lalu pilih "Aktifkan" saat ditawarkan.`
+          : 'Perangkat ini tidak mendukung biometrik, atau belum ada sidik jari/wajah yang terdaftar.'
+      );
+      return;
+    }
+
+    try {
+      const kredensial = await biometric.verifikasiDanAmbil();
+      if (!kredensial) return; // dibatalkan — tidak perlu diributkan
+
+      setMengirim(true);
+      clearError();
+      await login(kredensial.username, kredensial.password);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      // Kata sandi tersimpan sudah basi — buang supaya pengguna tidak
+      // terjebak memindai jari berulang kali yang selalu ditolak.
+      await biometric.matikan();
+      setBiometrikSiap(false);
+      dialog.alert(
+        'Masuk Cepat Dinonaktifkan',
+        err?.message || 'Kata sandi tersimpan sudah tidak berlaku. Masuk dengan kata sandi, lalu aktifkan kembali.',
+        'danger'
+      );
+    } finally {
+      setMengirim(false);
+    }
+  };
+
+  const geser = masuk.interpolate({ inputRange: [0, 1], outputRange: [24, 0] });
+
+  /** Lingkaran sepusat di latar header — ukuran & kepekatan sebagai argumen. */
+  const lingkaran = (ukuran: number, opacity: number) => ({
+    width: ukuran,
+    height: ukuran,
+    borderRadius: ukuran / 2,
+    marginLeft: -ukuran / 2,
+    marginTop: -ukuran / 2,
+    opacity,
+  });
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.layar}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
 
-      {/* Custom Alert */}
-      <CustomAlert
-        visible={alertConfig.visible}
-        type={alertConfig.type}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
-      />
-
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl, flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
-        bounces={false}
+        showsVerticalScrollIndicator={false}
       >
-        {/* ═══ Green Gradient Header ═══ */}
+        {/* ── Kepala brand ───────────────────────────────────────────────
+            Komposisi terpusat: lencana logo, nama produk, nama perusahaan.
+            Semua dekorasi diukur relatif terhadap tinggi header itu sendiri,
+            jadi tidak ada geometri yang perlu ditebak dari ukuran jendela. */}
         <LinearGradient
-          colors={['#00AA13', '#007A0D', '#005A08']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.header, { paddingTop: insets.top + 30 }]}
+          colors={[brand[400], brand[600], brand[900]]}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
+          style={[
+            styles.kepala,
+            { height: tinggiHeader, paddingTop: insets.top + Spacing.lg },
+          ]}
         >
-          {/* Decorative circles */}
-          <View style={styles.decorCircle1} />
-          <View style={styles.decorCircle2} />
-          <View style={styles.decorCircle3} />
+          {/* Tiga lingkaran sepusat di belakang logo — memberi kedalaman
+              tanpa aset gambar tambahan. */}
+          <View style={[styles.cincin, lingkaran(tinggiHeader * 1.5, 0.05)]} />
+          <View style={[styles.cincin, lingkaran(tinggiHeader * 1.1, 0.07)]} />
+          <View style={[styles.cincin, lingkaran(tinggiHeader * 0.78, 0.09)]} />
 
-          {/* Brand Text — Left aligned */}
-          <View style={styles.brandContainer}>
-            <Text style={styles.brandName}>SIMWT</Text>
-            <Text style={styles.brandSub}>Mobile</Text>
-            <Text style={styles.companyName}>PT Mada Wikri Tunggal</Text>
-          </View>
+          <View style={gs.center}>
+            <View style={styles.lencanaLogo}>
+              <Image source={LOGO} style={styles.logo} resizeMode="contain" />
+            </View>
 
-          {/* Floating Background Icons */}
-          <View style={[styles.floatingIcon, { top: insets.top + 50, right: 20, transform: [{ rotate: '15deg' }] }]}>
-            <MaterialCommunityIcons name="account" size={24} color="#00AA13" />
-          </View>
-          <View style={[styles.floatingIcon, { top: insets.top + 130, right: 40, transform: [{ rotate: '-10deg' }] }]}>
-            <MaterialCommunityIcons name="lock" size={24} color="#00AA13" />
-          </View>
-          <View style={[styles.floatingIcon, { top: insets.top + 100, right: 120, transform: [{ rotate: '-20deg' }] }]}>
-            <MaterialCommunityIcons name="chart-bar" size={24} color="#00AA13" />
-          </View>
+            <Text style={styles.merek}>SIMWT</Text>
+            <Text style={styles.merekSub}>MOBILE</Text>
 
-          {/* Floating Shield Icon (Centered now) */}
-          <View style={styles.shieldWrapper}>
-            <Animated.View style={[styles.shieldContainer, { transform: [{ translateY: shieldBounce }] }]}>
-              <View style={styles.shieldBase}>
-                <View style={styles.shieldOuter}>
-                  <View style={styles.shieldInner}>
-                    <MaterialCommunityIcons name="shield-check" size={60} color="#00AA13" />
-                  </View>
-                </View>
-                {/* Glow ring */}
-                <View style={styles.shieldGlow} />
-              </View>
-              {/* Podium shadow/base */}
-              <View style={styles.podiumBase} />
-              <View style={styles.podiumShadow} />
-            </Animated.View>
-          </View>
+            <View style={styles.garisMerek} />
 
-          {/* CSS Wave Effect */}
-          <View style={styles.waveContainer}>
-            <View style={styles.waveLeft} />
-            <View style={styles.waveRight} />
+            <Text style={styles.perusahaan}>PT Mada Wikri Tunggal</Text>
           </View>
         </LinearGradient>
 
-        {/* ═══ White Card Form ═══ */}
-        <View style={styles.formWrapper}>
-          <Animated.View
-            style={[
-              styles.formContainer,
-              { transform: [{ translateY: formSlide }], opacity: formOpacity },
-            ]}
+        {/* ── Kartu formulir ─────────────────────────────────────────────
+            Naik menimpa header agar peralihannya terasa berlapis. */}
+        <Animated.View
+          style={[styles.kartu, { opacity: masuk, transform: [{ translateY: geser }] }]}
+        >
+          <Text style={gs.h2}>Selamat Datang</Text>
+          <Text style={[gs.bodySm, { marginTop: 2, marginBottom: Spacing.xl }]}>
+            Masuk untuk melanjutkan ke akun Anda
+          </Text>
+
+          {/* Username — awalan mwt- ditampilkan sebagai bagian kolom supaya
+              pengguna tahu apa yang otomatis ditambahkan. */}
+          <Text style={gs.label}>Username</Text>
+          <View style={[gs.fieldWrap, styles.kolom]}>
+            <MaterialCommunityIcons name="account-outline" size={19} color={Colors.textTertiary} />
+            <Text style={styles.awalan}>mwt-</Text>
+            <View style={styles.pemisahKolom} />
+            <TextInput
+              style={[gs.fieldInner, styles.isian]}
+              placeholder="username"
+              placeholderTextColor={Colors.placeholder}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+          </View>
+
+          <Text style={[gs.label, { marginTop: Spacing.lg }]}>Password</Text>
+          <View style={[gs.fieldWrap, styles.kolom]}>
+            <MaterialCommunityIcons name="lock-outline" size={19} color={Colors.textTertiary} />
+            <TextInput
+              style={[gs.fieldInner, styles.isian]}
+              placeholder="Masukkan kata sandi"
+              placeholderTextColor={Colors.placeholder}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!lihatSandi}
+              autoCapitalize="none"
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+            <TouchableOpacity
+              onPress={() => setLihatSandi((tampil) => !tampil)}
+              accessibilityLabel={lihatSandi ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+              hitSlop={8}
+            >
+              <MaterialCommunityIcons
+                name={lihatSandi ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={Colors.textTertiary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.lupa} activeOpacity={0.7}>
+            <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>Lupa Password?</Text>
+          </TouchableOpacity>
+
+          {/* Tombol utama bergradien — padanan .btn-primary karir-mwt. */}
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={mengirim}
+            activeOpacity={0.85}
+            style={[styles.tombolUtama, mengirim && { opacity: 0.7 }]}
           >
-            {/* Greeting */}
-            <View style={styles.greetingRow}>
-              <Text style={styles.formTitle}>Selamat Datang!</Text>
-              <Text style={{ fontSize: 24 }}>👋</Text>
-            </View>
-            <Text style={styles.formSubtitle}>Masuk untuk melanjutkan ke akun Anda</Text>
+            <LinearGradient
+              colors={gradients.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[gs.btn, styles.isiTombol]}
+            >
+              {mengirim ? (
+                <BrandSpinner size={22} color={Colors.white} />
+              ) : (
+                <>
+                  <Text style={[gs.btnText, gs.btnTextOnBrand]}>Masuk</Text>
+                  <MaterialCommunityIcons name="arrow-right" size={18} color={Colors.white} />
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
 
-            {/* Username Input */}
-            <View style={styles.inputContainer}>
-              <View style={styles.prefixBox}>
-                <MaterialCommunityIcons name="account-outline" size={18} color="#9E9E9E" />
-                <Text style={styles.prefixText}>mwt-</Text>
+          {biometrikSiap && (
+            <>
+              <View style={[gs.row, gs.gapMd, { marginVertical: Spacing.lg }]}>
+                <View style={styles.garis} />
+                <Text style={gs.caption}>atau</Text>
+                <View style={styles.garis} />
               </View>
-              <View style={styles.prefixDivider} />
-              <TextInput
-                style={styles.input}
-                placeholder="Username"
-                placeholderTextColor="#C4C4C4"
-                value={username}
-                onChangeText={(text) => {
-                  setUsername(text);
-                  clearError();
-                }}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
-            </View>
 
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconBox}>
-                <MaterialCommunityIcons name="lock-outline" size={18} color="#9E9E9E" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#C4C4C4"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  clearError();
-                }}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
               <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeButton}
+                style={[gs.btn, gs.btnOutline, gs.btnBlock]}
+                onPress={masukBiometrik}
+                activeOpacity={0.8}
               >
-                <MaterialCommunityIcons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color="#9E9E9E"
-                />
+                <MaterialCommunityIcons name="fingerprint" size={20} color={brand[700]} />
+                <Text style={[gs.btnText, gs.btnTextOutline]}>Masuk dengan {namaBiometrik}</Text>
               </TouchableOpacity>
-            </View>
+            </>
+          )}
+        </Animated.View>
 
-            {/* Login Button */}
-            <TouchableOpacity
-              style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
-              onPress={handleLogin}
-              disabled={isSubmitting}
-              activeOpacity={0.85}
-            >
-              <LinearGradient
-                colors={isSubmitting ? ['#8BC34A', '#8BC34A'] : ['#00CC16', '#00AA13']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.loginGradient}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <>
-                    <Text style={styles.loginButtonText}>Masuk</Text>
-                    <View style={styles.arrowCircle}>
-                      <MaterialCommunityIcons name="arrow-right" size={18} color="#00AA13" />
-                    </View>
-                  </>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Divider */}
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>atau</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Fingerprint Button */}
-            <TouchableOpacity
-              style={styles.fingerprintButton}
-              onPress={handleBiometricLogin}
-              activeOpacity={0.8}
-            >
-              <MaterialCommunityIcons name="fingerprint" size={24} color="#00AA13" style={{ marginRight: 12 }} />
-              <Text style={styles.fingerprintText}>Masuk dengan Fingerprint</Text>
-              <MaterialCommunityIcons name="chevron-right" size={20} color="#00AA13" />
-            </TouchableOpacity>
-
-            {/* Forgot Password */}
-            <TouchableOpacity style={styles.forgotButton} activeOpacity={0.7}>
-              <Text style={styles.forgotText}>Lupa Password?</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>SIMWT Mobile v1.0.0</Text>
-          <Text style={styles.footerText}>© 2026 PT Mada Wikri Tunggal</Text>
+        <View style={[gs.center, styles.kaki]}>
+          <Text style={gs.caption}>SIMWT Mobile v1.0.0</Text>
+          <Text style={gs.caption}>© 2026 PT Mada Wikri Tunggal</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-// ─── Alert Styles ─────────────────────────────────────────────
-const alertStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  container: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 28,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 320,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 12,
-  },
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 2,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#1C1C1C',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: 14,
-    color: '#6B6B6B',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  button: {
-    width: '100%',
-    paddingVertical: 14,
-    borderRadius: 50,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});
-
-// ─── Main Styles ──────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
+  layar: {
     flex: 1,
-    backgroundColor: '#F5F6F8',
-  },
-  scrollContent: {
-    flexGrow: 1,
+    backgroundColor: Colors.background,
   },
 
-  // ═══ Header ═══
-  header: {
-    paddingBottom: 80,
-    paddingHorizontal: 24,
-    position: 'relative',
+  kepala: {
+    paddingHorizontal: Spacing.xxl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomLeftRadius: Spacing.radius.xxl + 12,
+    borderBottomRightRadius: Spacing.radius.xxl + 12,
     overflow: 'hidden',
-    minHeight: height * 0.35,
   },
-  decorCircle1: {
+  // Semua cincin bertitik pusat sama (50%/50%), digeser balik separuh
+  // ukurannya lewat margin negatif — lihat helper `lingkaran()`.
+  cincin: {
     position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    top: -100,
-    right: -100,
+    top: '50%',
+    left: '50%',
+    backgroundColor: Colors.white,
   },
-  decorCircle2: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    top: 100,
-    left: -80,
+  lencanaLogo: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
   },
-  decorCircle3: {
-    position: 'absolute',
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    bottom: 50,
-    right: 80,
+  logo: {
+    width: 44,
+    height: 44,
+    tintColor: Colors.white,
   },
-  brandContainer: {
-    marginTop: 20,
-    marginBottom: 40,
-    zIndex: 10,
-  },
-  brandName: {
+  merek: {
+    fontFamily: fonts.extrabold,
     fontSize: 32,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    color: Colors.white,
     letterSpacing: 2,
+    lineHeight: 38,
   },
-  brandSub: {
-    fontSize: 18,
-    fontWeight: '400',
-    color: 'rgba(255,255,255,0.85)',
-    letterSpacing: 4,
-    marginTop: -4,
-    fontStyle: 'italic',
+  merekSub: {
+    fontFamily: fonts.semibold,
+    fontSize: Typography.sizes.sm,
+    color: 'rgba(255,255,255,0.9)',
+    letterSpacing: 7,
+    // Diberi indent kiri sebesar jarak antarhurufnya sendiri: letterSpacing
+    // menambahkan ruang SESUDAH huruf terakhir juga, sehingga tanpa ini
+    // teksnya tampak bergeser ke kiri terhadap "SIMWT" di atasnya.
+    marginLeft: 7,
+    marginTop: 2,
   },
-  companyName: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.6)',
-    marginTop: 8,
-    fontWeight: '500',
+  garisMerek: {
+    width: 40,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    marginTop: Spacing.md,
   },
-  shieldWrapper: {
-    position: 'absolute',
-    right: -20,
-    bottom: 80,
-    width: 240,
-    height: 240,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 5,
-  },
-  shieldContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shieldBase: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2,
-  },
-  shieldOuter: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  shieldInner: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  shieldGlow: {
-    position: 'absolute',
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
-  podiumBase: {
-    width: 140,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    marginTop: 10,
-    zIndex: 1,
-  },
-  podiumShadow: {
-    width: 180,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    marginTop: -10,
-    zIndex: 0,
-  },
-  floatingIcon: {
-    position: 'absolute',
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-    zIndex: 10,
-  },
-  waveContainer: {
-    position: 'absolute',
-    bottom: -2, // to prevent 1px gap
-    left: 0,
-    right: 0,
-    height: 80,
-    overflow: 'hidden',
-  },
-  waveLeft: {
-    position: 'absolute',
-    width: width * 1.5,
-    height: 200,
-    backgroundColor: '#FFFFFF',
-    borderRadius: width * 0.75,
-    bottom: -150,
-    left: -width * 0.25,
-  },
-  waveRight: {
-    position: 'absolute',
-    width: width,
-    height: 150,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: width * 0.5,
-    bottom: -110,
-    right: -width * 0.2,
-    transform: [{ rotate: '15deg' }],
+  perusahaan: {
+    fontFamily: fonts.regular,
+    fontSize: Typography.sizes.sm,
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: Spacing.md,
   },
 
-  // ═══ Form ═══
-  formWrapper: {
-    marginTop: 0, // removed negative margin because of wave
-    flex: 1,
-    backgroundColor: '#FFFFFF',
+  kartu: {
+    marginHorizontal: Spacing.screenPadding,
+    // Naik menimpa header — inilah yang menggantikan trik gelombang.
+    marginTop: -Spacing.xxxl,
+    backgroundColor: Colors.card,
+    borderRadius: Spacing.radius.xxl,
+    padding: Spacing.xl + Spacing.xs,
+    ...Shadows.raised,
   },
-  formContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingTop: 10,
-    paddingBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 6,
+  kolom: {
+    backgroundColor: slate[50],
+    paddingVertical: 2,
   },
-  greetingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
+  awalan: {
+    fontFamily: fonts.semibold,
+    fontSize: Typography.sizes.md,
+    color: Colors.textSecondary,
   },
-  formTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#1C1C1C',
-    letterSpacing: -0.5,
-  },
-  formSubtitle: {
-    fontSize: 14,
-    color: '#9E9E9E',
-    marginBottom: 28,
-    lineHeight: 20,
-  },
-
-  // ═══ Inputs ═══
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F7F8FA',
-    borderRadius: 16,
-    marginBottom: 14,
-    borderWidth: 1.5,
-    borderColor: '#EEEEEE',
-    height: 54,
-    overflow: 'hidden',
-  },
-  prefixBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    gap: 6,
-  },
-  prefixDivider: {
+  pemisahKolom: {
     width: 1,
-    height: 28,
-    backgroundColor: '#E0E0E0',
+    height: 22,
+    backgroundColor: Colors.border,
   },
-  prefixText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#9E9E9E',
+  isian: {
+    paddingVertical: Spacing.md,
+    ...inputReset,
   },
-  inputIconBox: {
-    paddingLeft: 16,
-    paddingRight: 4,
+  lupa: {
+    alignSelf: 'flex-end',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
+    padding: Spacing.xs,
   },
-  input: {
-    flex: 1,
-    height: 54,
-    fontSize: 15,
-    color: '#1C1C1C',
-    paddingHorizontal: 12,
-  },
-  eyeButton: {
-    padding: 14,
-  },
-
-  // ═══ Login Button ═══
-  loginButton: {
-    marginTop: 8,
-    borderRadius: 50,
+  tombolUtama: {
+    borderRadius: Spacing.radius.full,
     overflow: 'hidden',
-    shadowColor: '#00AA13',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    ...Shadows.brand,
   },
-  loginButtonDisabled: {
-    opacity: 0.7,
-    shadowOpacity: 0,
+  isiTombol: {
+    paddingVertical: Spacing.md + 2,
   },
-  loginGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 24,
-  },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: 32, // offset for the arrow circle
-  },
-  arrowCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  // ═══ Divider ═══
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  dividerLine: {
+  garis: {
     flex: 1,
     height: 1,
-    backgroundColor: '#EEEEEE',
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    color: '#BDBDBD',
-    fontSize: 13,
-    fontWeight: '600',
+    backgroundColor: Colors.borderSubtle,
   },
 
-  // ═══ Fingerprint Button ═══
-  fingerprintButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: '#00AA13',
-  },
-  fingerprintText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#00AA13',
-    textAlign: 'center',
-  },
-
-  // ═══ Forgot ═══
-  forgotButton: {
-    alignItems: 'center',
-    marginTop: 22,
-    paddingVertical: 8,
-  },
-  forgotText: {
-    color: '#00AA13',
-    fontSize: 14,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-    textDecorationColor: '#00AA1340',
-  },
-
-  // ═══ Footer ═══
-  footer: {
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    paddingBottom: 20,
-    paddingTop: 10,
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#BDBDBD',
-    lineHeight: 20,
-    fontWeight: '500',
+  kaki: {
+    marginTop: Spacing.xxl,
+    gap: 2,
   },
 });

@@ -1,8 +1,27 @@
+/**
+ * BirthdayBanner — banner karyawan berulang tahun + bottom sheet daftarnya.
+ *
+ * Pola bottom sheet-nya tetap ala Gojek (muncul dari bawah, header berwarna
+ * brand); warna, font, dan sudutnya mengikuti karir-mwt.
+ */
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, Image, Dimensions, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  Image,
+  Dimensions,
+  Animated,
+} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Colors from '../../../constants/Colors';
-import Spacing from '../../../constants/Spacing';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { brand } from '../../../constants/Colors';
+import Spacing, { Shadows } from '../../../constants/Spacing';
+import { fonts } from '../../../constants/Typography';
+import { gs, gradients } from '../../../constants/GlobalStyles';
 import { Employee, karyawanService } from '../../services/karyawanService';
 
 const { height } = Dimensions.get('window');
@@ -33,7 +52,10 @@ export default function BirthdayBanner() {
     if (!dateString) return '-';
     const date = new Date(dateString);
     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
     return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
@@ -52,82 +74,80 @@ export default function BirthdayBanner() {
       toValue: height,
       duration: 250,
       useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false);
-    });
+    }).start(() => setModalVisible(false));
   };
+
+  const renderDetail = (icon: string, label: string, value: string) => (
+    <View style={styles.detailItem}>
+      <View style={[gs.row, gs.gapXs]}>
+        <MaterialCommunityIcons name={icon as any} size={14} color={Colors.textTertiary} />
+        <Text style={styles.detailLabel}>{label}</Text>
+      </View>
+      <Text style={styles.detailValue}>{value}</Text>
+    </View>
+  );
 
   const renderEmployee = ({ item }: { item: Employee }) => {
     const age = calculateAge(item.tanggal_lahir);
-    const jabatanText = typeof item.jabatan === 'string' ? item.jabatan : (item.jabatan?.nama || 'Unknown Role');
+    const jabatanText =
+      typeof item.jabatan === 'string' ? item.jabatan : item.jabatan?.nama || 'Tidak diketahui';
 
     return (
-      <View style={styles.employeeCard}>
-        {/* Top Section: Avatar, Name, Age Badge */}
-        <View style={styles.cardHeader}>
+      <View style={[gs.card, styles.employeeCard]}>
+        <View style={[gs.row, gs.gapMd]}>
           {item.foto_profil ? (
-            <Image 
-              source={{ uri: item.foto_profil.startsWith('http') ? item.foto_profil : `https://mwtpart.co.id/storage/${item.foto_profil}` }} 
-              style={styles.avatar} 
+            <Image
+              source={{
+                uri: item.foto_profil.startsWith('http')
+                  ? item.foto_profil
+                  : `https://mwtpart.co.id/storage/${item.foto_profil}`,
+              }}
+              style={styles.avatar}
             />
           ) : (
-            <View style={styles.avatarFallback}>
+            <View style={[styles.avatar, gs.center, { backgroundColor: brand[600] }]}>
               <MaterialCommunityIcons name="account" size={28} color={Colors.white} />
             </View>
           )}
-          
-          <View style={styles.headerText}>
-            <Text style={styles.employeeName}>{item.nama_lengkap}</Text>
-            <View style={styles.turningRow}>
-              <MaterialCommunityIcons name="party-popper" size={14} color="#00AA13" style={{ marginRight: 4 }} />
-              <Text style={styles.turningText}>Ulang Tahun ke-{age}</Text>
+
+          <View style={gs.flex1}>
+            <Text style={gs.title} numberOfLines={1}>
+              {item.nama_lengkap}
+            </Text>
+            <View style={[gs.badge, gs.badgeBrand, { marginTop: Spacing.xs }]}>
+              <MaterialCommunityIcons name="party-popper" size={13} color={brand[700]} />
+              <Text style={[gs.badgeText, gs.badgeTextBrand]}>Ulang Tahun ke-{age}</Text>
             </View>
           </View>
 
           <View style={styles.ageBadge}>
-            <Text style={styles.ageBadgeText}>{age} THN</Text>
+            <Text style={styles.ageBadgeText}>{age}</Text>
+            <Text style={styles.ageBadgeUnit}>THN</Text>
           </View>
         </View>
 
-        <View style={styles.divider} />
+        <View style={gs.divider} />
 
-        {/* Bottom Section: Details Grid */}
-        <View style={styles.detailsGrid}>
-          <View style={styles.detailColumn}>
-            <View style={styles.detailItem}>
-              <View style={styles.detailLabelRow}>
-                <MaterialCommunityIcons name="badge-account-horizontal-outline" size={14} color="#4A4A4A" />
-                <Text style={styles.detailLabel}>NIK</Text>
-              </View>
-              <Text style={styles.detailValue}>{item.nik || '-'}</Text>
-            </View>
-
-            <View style={styles.detailItem}>
-              <View style={styles.detailLabelRow}>
-                <MaterialCommunityIcons name="cake-variant-outline" size={14} color="#4A4A4A" />
-                <Text style={styles.detailLabel}>TANGGAL LAHIR</Text>
-              </View>
-              <Text style={styles.detailValue}>{formatIndonesianDate(item.tanggal_lahir)}</Text>
-            </View>
+        <View style={gs.row}>
+          <View style={gs.flex1}>
+            {renderDetail('badge-account-horizontal-outline', 'NIK', item.nik || '-')}
+            {renderDetail(
+              'cake-variant-outline',
+              'TANGGAL LAHIR',
+              formatIndonesianDate(item.tanggal_lahir)
+            )}
           </View>
-
-          <View style={styles.detailColumn}>
-            <View style={styles.detailItem}>
-              <View style={styles.detailLabelRow}>
-                <MaterialCommunityIcons name="briefcase-outline" size={14} color="#4A4A4A" />
-                <Text style={styles.detailLabel}>JABATAN</Text>
-              </View>
-              <Text style={styles.detailValue}>{jabatanText}</Text>
-            </View>
+          <View style={gs.flex1}>
+            {renderDetail('briefcase-outline', 'JABATAN', jabatanText)}
           </View>
         </View>
 
-        {/* Beri Ucapan */}
-        <View style={styles.ucapanDivider} />
-        <TouchableOpacity style={styles.ucapanRow} activeOpacity={0.7}>
-          <MaterialCommunityIcons name="chat-outline" size={16} color="#00AA13" />
-          <Text style={styles.ucapanText}>Beri ucapan</Text>
-          <MaterialCommunityIcons name="chevron-right" size={16} color="#00AA13" />
+        <View style={gs.divider} />
+
+        <TouchableOpacity style={[gs.row, gs.gapSm]} activeOpacity={0.7}>
+          <MaterialCommunityIcons name="chat-outline" size={16} color={brand[600]} />
+          <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand, gs.flex1]}>Beri ucapan</Text>
+          <MaterialCommunityIcons name="chevron-right" size={16} color={brand[600]} />
         </TouchableOpacity>
       </View>
     );
@@ -135,38 +155,55 @@ export default function BirthdayBanner() {
 
   return (
     <>
-      <TouchableOpacity style={styles.bannerContainer} activeOpacity={0.9} onPress={openModal}>
-        <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="gift" size={28} color="#00AA13" />
+      <TouchableOpacity
+        style={[gs.card, gs.row, gs.gapMd, styles.banner]}
+        activeOpacity={0.9}
+        onPress={openModal}
+      >
+        <View style={[gs.iconTile, styles.bannerIcon]}>
+          <MaterialCommunityIcons name="gift" size={26} color={brand[600]} />
         </View>
-        <View style={styles.bannerTextContainer}>
-          <Text style={styles.bannerTitle}>Karyawan Berulang Tahun</Text>
-          <Text style={styles.bannerSubtitle}>
-            Hari ini ada <Text style={{ fontWeight: 'bold' }}>{birthdays.length}</Text> karyawan berulang tahun 🎉
+
+        <View style={gs.flex1}>
+          <Text style={gs.title}>Karyawan Berulang Tahun</Text>
+          <Text style={gs.bodySm}>
+            Hari ini ada{' '}
+            <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>{birthdays.length}</Text>{' '}
+            karyawan berulang tahun 🎉
           </Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={24} color="#00AA13" />
+
+        <MaterialCommunityIcons name="chevron-right" size={24} color={brand[600]} />
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} transparent={true} animationType="fade" onRequestClose={closeModal}>
+      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closeModal}>
         <View style={styles.modalOverlay}>
-          <TouchableOpacity style={styles.modalDismissArea} activeOpacity={1} onPress={closeModal} />
+          <TouchableOpacity style={gs.flex1} activeOpacity={1} onPress={closeModal} />
+
           <Animated.View style={[styles.bottomSheet, { transform: [{ translateY: slideAnim }] }]}>
-            {/* Gojek-style Green Header */}
-            <View style={styles.sheetHeaderWrap}>
-              <View style={styles.sheetHeaderRow}>
-                <View style={styles.sheetHeaderIconCircle}>
+            <LinearGradient
+              colors={gradients.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.sheetHeader}
+            >
+              <View style={[gs.row, gs.gapMd]}>
+                <View style={styles.sheetHeaderIcon}>
                   <Text style={{ fontSize: 22 }}>🎂</Text>
                 </View>
-                <View style={styles.sheetHeaderTextContainer}>
+
+                <View style={gs.flex1}>
                   <Text style={styles.sheetTitle}>Ulang Tahun Hari Ini</Text>
-                  <Text style={styles.sheetSubtitle}>{birthdays.length} karyawan sedang merayakan 🎂</Text>
+                  <Text style={styles.sheetSubtitle}>
+                    {birthdays.length} karyawan sedang merayakan
+                  </Text>
                 </View>
-                <TouchableOpacity onPress={closeModal} style={styles.closeButtonCircle}>
-                  <MaterialCommunityIcons name="close" size={18} color="#FFFFFF" />
+
+                <TouchableOpacity onPress={closeModal} style={styles.sheetClose}>
+                  <MaterialCommunityIcons name="close" size={18} color={Colors.white} />
                 </TouchableOpacity>
               </View>
-            </View>
+            </LinearGradient>
 
             <FlatList
               data={birthdays}
@@ -183,236 +220,112 @@ export default function BirthdayBanner() {
 }
 
 const styles = StyleSheet.create({
-  /* Banner on Home Screen */
-  bannerContainer: {
-    backgroundColor: '#FFFFFF',
+  banner: {
     marginHorizontal: Spacing.screenPadding,
-    borderRadius: 20,
-    padding: Spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: Spacing.xl,
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
-    // Gojek soft shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
   },
-  iconContainer: {
-    backgroundColor: '#E5F6E8', // Light Gojek green background
+  bannerIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
+    borderRadius: Spacing.radius.full,
   },
-  bannerTextContainer: { flex: 1 },
-  bannerTitle: { color: '#1C1C1C', fontSize: 16, fontWeight: 'bold', marginBottom: 2 },
-  bannerSubtitle: { color: '#68737D', fontSize: 13, lineHeight: 18 },
-  
-  /* Modal Overlay */
+
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(28, 28, 28, 0.6)',
+    backgroundColor: 'rgba(4, 61, 35, 0.55)',
     justifyContent: 'flex-end',
   },
-  modalDismissArea: {
-    flex: 1,
-  },
-  /* Bottom Sheet */
   bottomSheet: {
-    backgroundColor: '#F5F6F8',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: Colors.background,
+    borderTopLeftRadius: Spacing.radius.xxl,
+    borderTopRightRadius: Spacing.radius.xxl,
     maxHeight: '85%',
     minHeight: '50%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 10,
     overflow: 'hidden',
+    ...Shadows.raised,
   },
-  /* Green Header */
-  sheetHeaderWrap: {
-    backgroundColor: '#00AA13',
-    paddingTop: 20,
-    paddingBottom: 20,
+  sheetHeader: {
+    paddingVertical: Spacing.xl,
     paddingHorizontal: Spacing.lg,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
   },
-  sheetHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sheetHeaderIconCircle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  sheetHeaderIcon: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  sheetHeaderTextContainer: {
-    flex: 1,
   },
   sheetTitle: {
+    fontFamily: fonts.bold,
     fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 2,
+    color: Colors.white,
   },
   sheetSubtitle: {
+    fontFamily: fonts.regular,
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontWeight: '500',
+    color: 'rgba(255,255,255,0.85)',
   },
-  closeButtonCircle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  sheetClose: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   listContainer: {
     padding: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: 40,
+    paddingBottom: Spacing.xxxl + Spacing.sm,
   },
-  
-  /* Premium Employee Card */
   employeeCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: Spacing.lg,
     marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   avatar: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: Spacing.radius.full,
     borderWidth: 2,
-    borderColor: '#E5F6E8',
-  },
-  avatarFallback: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#00AA13',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E5F6E8',
-  },
-  headerText: {
-    flex: 1,
-    marginLeft: Spacing.md,
-  },
-  employeeName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1C1C1C',
-    marginBottom: 4,
-  },
-  turningRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E5F6E8', // Light green pill
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  turningText: {
-    fontSize: 12,
-    color: '#00AA13',
-    fontWeight: '600',
+    borderColor: brand[100],
+    backgroundColor: brand[50],
   },
   ageBadge: {
-    backgroundColor: '#00AA13',
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: brand[600],
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#00AA13',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Shadows.brand,
   },
   ageBadgeText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 12,
-    textAlign: 'center',
+    fontFamily: fonts.bold,
+    fontSize: 15,
+    color: Colors.white,
+    lineHeight: 17,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#F0F0F0',
-    marginVertical: Spacing.md,
+  ageBadgeUnit: {
+    fontFamily: fonts.medium,
+    fontSize: 8,
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 0.5,
   },
-  /* Grid Details */
-  detailsGrid: {
-    flexDirection: 'row',
-  },
-  detailColumn: {
-    flex: 1,
-  },
+
   detailItem: {
     marginBottom: Spacing.sm,
   },
-  detailLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
   detailLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#9E9E9E',
-    marginLeft: 6,
+    fontFamily: fonts.semibold,
+    fontSize: 10,
+    color: Colors.textTertiary,
     letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 14,
-    color: '#1C1C1C',
-    fontWeight: '500',
-    paddingLeft: 20,
-  },
-  ucapanDivider: {
-    height: 1,
-    backgroundColor: '#F0F0F0',
-    marginTop: Spacing.sm,
-  },
-  ucapanRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: Spacing.md,
-  },
-  ucapanText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#00AA13',
-    marginLeft: 8,
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: Colors.textPrimary,
+    marginTop: 2,
+    paddingLeft: 18,
   },
 });

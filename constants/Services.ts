@@ -1,3 +1,5 @@
+import Colors, { brand } from '../constants/Colors';
+
 /**
  * SIMWT Mobile — Service Definitions
  * 10 layanan utama sesuai requirement
@@ -20,8 +22,8 @@ export const SERVICES: ServiceItem[] = [
     name: 'Database\nAset',
     icon: 'database-outline',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#E3F2FD',
-    iconColor: '#1565C0',
+    backgroundColor: brand[50],
+    iconColor: brand[700],
     route: '/services/database-aset',
     description: 'Manajemen data aset perusahaan',
   },
@@ -30,8 +32,8 @@ export const SERVICES: ServiceItem[] = [
     name: 'Tiket\nMasalah',
     icon: 'ticket-confirmation-outline',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#FFEBEE',
-    iconColor: '#C62828',
+    backgroundColor: Colors.serviceRed,
+    iconColor: Colors.dangerDark,
     route: '/services/tiket-masalah',
     description: 'Sistem ticketing & helpdesk',
   },
@@ -40,8 +42,8 @@ export const SERVICES: ServiceItem[] = [
     name: 'Audit',
     icon: 'clipboard-check-outline',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#E8F5E9',
-    iconColor: '#2E7D32',
+    backgroundColor: brand[50],
+    iconColor: brand[700],
     route: '/services/audit',
     description: 'Proses audit internal',
   },
@@ -50,8 +52,8 @@ export const SERVICES: ServiceItem[] = [
     name: 'Human\nCapital',
     icon: 'account-group-outline',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#F3E5F5',
-    iconColor: '#7B1FA2',
+    backgroundColor: Colors.servicePurple,
+    iconColor: '#7e22ce',
     route: '/services/human-capital',
     description: 'Manajemen SDM / HR',
   },
@@ -60,9 +62,11 @@ export const SERVICES: ServiceItem[] = [
     name: 'Kaizen',
     icon: 'lightbulb-on-outline',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#FFF8E1',
-    iconColor: '#F57F17',
-    route: '/services/kaizen',
+    backgroundColor: Colors.serviceAmber,
+    iconColor: '#b45309',
+    // Kaizen punya tumpukan layarnya sendiri di dalam tab, bukan halaman
+    // layanan generik — karena itu rutenya keluar dari pola `/services/*`.
+    route: '/kaizen',
     description: 'Continuous improvement',
   },
   {
@@ -80,8 +84,8 @@ export const SERVICES: ServiceItem[] = [
     name: 'Kegiatan',
     icon: 'calendar-check-outline',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#FFF3E0',
-    iconColor: '#E65100',
+    backgroundColor: Colors.serviceOrange,
+    iconColor: '#c2410c',
     route: '/services/kegiatan',
     description: 'Jadwal kegiatan perusahaan',
   },
@@ -90,7 +94,7 @@ export const SERVICES: ServiceItem[] = [
     name: 'Unifi\nController',
     icon: 'access-point-network',
     iconFamily: 'MaterialCommunityIcons',
-    backgroundColor: '#E8EAF6',
+    backgroundColor: Colors.serviceIndigo,
     iconColor: '#283593',
     route: '/services/unifi-controller',
     description: 'Network Management System',
@@ -114,6 +118,16 @@ export const SERVICES: ServiceItem[] = [
     iconColor: '#827717',
     route: '/services/access-token',
     description: 'Token management / API keys',
+  },
+  {
+    id: 'stok-opname',
+    name: 'Stok\nOpname',
+    icon: 'clipboard-list-outline',
+    iconFamily: 'MaterialCommunityIcons',
+    backgroundColor: brand[50],
+    iconColor: brand[600],
+    route: '/services/sto',
+    description: 'Periode, lembar, dan progres perhitungan stok',
   },
 ];
 
