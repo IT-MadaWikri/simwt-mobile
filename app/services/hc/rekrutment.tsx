@@ -18,19 +18,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Stack } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, judulAppBar } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import {
   rekrutmentService,
   RekrutmentDashboardResponse,
 } from '../../../src/services/rekrutmentService';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
-import TombolKembali from '../../../src/components/common/TombolKembali';
+import AppBar from '../../../src/components/common/AppBar';
+import { SkeletonDasbor } from '../../../src/components/common/Skeleton';
 
 /** Urutan & warna tahap pipeline — tahap akhir diberi warna tegas. */
 const WARNA_TAHAP: Record<string, string> = {
@@ -65,17 +65,7 @@ export default function RekrutmentScreen() {
   }, [muat]);
 
   const layar = (
-    <Stack.Screen
-      options={{
-        headerShown: true,
-        headerTitle: 'Rekrutmen',
-        headerLeft: () => <TombolKembali />,
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: Colors.white,
-        headerTitleStyle: { fontFamily: fonts.semibold },
-        headerShadowVisible: false,
-      }}
-    />
+    <AppBar judul={'Rekrutmen'} />
   );
 
   if (memuat) {
@@ -83,7 +73,7 @@ export default function RekrutmentScreen() {
       <>
         {layar}
         <View style={gs.screen}>
-          <LoadingSpinner message="Memuat ringkasan rekrutmen..." />
+          <SkeletonDasbor />
         </View>
       </>
     );
@@ -94,7 +84,7 @@ export default function RekrutmentScreen() {
       <>
         {layar}
         <View style={[gs.screen, gs.centerFill]}>
-          <MaterialCommunityIcons
+          <Icon
             name="alert-circle-outline"
             size={48}
             color={Colors.textTertiary}
@@ -168,7 +158,7 @@ export default function RekrutmentScreen() {
         {/* Rincian surat hanya muncul kalau memang ada yang menunggak. */}
         {ringkasan.surat_belum_terkirim > 0 && (
           <View style={[gs.cardBrand, gs.row, gs.gapSm, { marginTop: Spacing.md }]}>
-            <MaterialCommunityIcons name="information-outline" size={18} color={brand[700]} />
+            <Icon name="information-outline" size={18} color={brand[700]} />
             <Text style={[gs.bodySm, gs.flex1, { color: brand[800] }]}>
               Interview {surat_belum_terkirim.interview} surat · PKWT{' '}
               {surat_belum_terkirim.pkwt} surat. Pengiriman dilakukan dari SIMWT web.
@@ -224,7 +214,7 @@ export default function RekrutmentScreen() {
         {jadwal_hari_ini.length === 0 ? (
           <View style={[gs.card, gs.row, gs.gapMd]}>
             <View style={gs.iconTile}>
-              <MaterialCommunityIcons name="calendar-check" size={20} color={brand[600]} />
+              <Icon name="calendar-check" size={20} color={brand[600]} />
             </View>
             <Text style={[gs.bodySm, gs.flex1]}>
               Tidak ada jadwal psikotes atau wawancara hari ini.
@@ -234,7 +224,7 @@ export default function RekrutmentScreen() {
           jadwal_hari_ini.map((jadwal) => (
             <View key={jadwal.id} style={[gs.card, gs.row, gs.gapMd, { marginBottom: Spacing.sm }]}>
               <View style={gs.iconTile}>
-                <MaterialCommunityIcons
+                <Icon
                   name={jadwal.metode === 'Online' ? 'video-outline' : 'map-marker-outline'}
                   size={20}
                   color={brand[600]}
@@ -321,7 +311,7 @@ function Metrik({
           genting && { backgroundColor: Colors.serviceRed },
         ]}
       >
-        <MaterialCommunityIcons
+        <Icon
           name={icon as any}
           size={20}
           color={genting ? Colors.dangerDark : brand[600]}

@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { karyawanService, Employee } from '../../../../src/services/karyawanService';
 import Colors, { brand, slate } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
-import { fonts } from '../../../../constants/Typography';
-import LoadingSpinner from '../../../../src/components/common/LoadingSpinner';
+import { fonts, judulAppBar } from '../../../../constants/Typography';
+import AppBar from '../../../../src/components/common/AppBar';
+import { SkeletonDetail } from '../../../../src/components/common/Skeleton';
 
 // Gojek-style primary colors
 const GOJEK_GREEN = brand[600];
 const GOJEK_GREEN_LIGHT = brand[50];
 const GOJEK_DARK = Colors.textPrimary;
-const GOJEK_GREY = '#727272';
+const GOJEK_GREY = Colors.textSecondary;
 const GOJEK_BG = Colors.background;
 
 export default function EmployeeDetailScreen() {
@@ -41,8 +42,8 @@ export default function EmployeeDetailScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centerContainer]}>
-        <LoadingSpinner message="Memuat Detail Karyawan..." />
+      <View style={styles.container}>
+        <SkeletonDetail avatar="bulat" />
       </View>
     );
   }
@@ -50,7 +51,7 @@ export default function EmployeeDetailScreen() {
   if (!employee) {
     return (
       <View style={[styles.container, styles.centerContainer]}>
-        <MaterialCommunityIcons name="account-off-outline" size={48} color={GOJEK_GREY} />
+        <Icon name="account-off-outline" size={48} color={GOJEK_GREY} />
         <Text style={styles.errorText}>Data karyawan tidak ditemukan</Text>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backBtnText}>Kembali</Text>
@@ -108,20 +109,7 @@ export default function EmployeeDetailScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          headerTitle: 'Detail Karyawan',
-          headerStyle: { backgroundColor: brand[700] },
-          headerTintColor: Colors.white,
-          headerShadowVisible: false,
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8, padding: 8 }}>
-              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.white} />
-            </TouchableOpacity>
-          ),
-        }}
-      />
+      <AppBar judul={'Detail Karyawan'} />
 
       <ScrollView 
         style={styles.container} 
@@ -152,13 +140,13 @@ export default function EmployeeDetailScreen() {
               <View style={styles.badgesColumn}>
                 {employee.nik && (
                   <View style={[styles.badge, styles.badgeBlue]}>
-                    <MaterialCommunityIcons name="card-account-details-outline" size={12} color={brand[700]} />
+                    <Icon name="card-account-details-outline" size={12} color={brand[700]} />
                     <Text style={[styles.badgeText, { color: brand[700] }]}>{employee.nik}</Text>
                   </View>
                 )}
                 <View style={styles.badgesRowHorizontal}>
                   <View style={[styles.badge, styles.badgeGreenOutline]}>
-                    <MaterialCommunityIcons name="account-tie-outline" size={12} color={GOJEK_GREEN} />
+                    <Icon name="account-tie-outline" size={12} color={GOJEK_GREEN} />
                     <Text style={[styles.badgeText, { color: GOJEK_GREEN }]} numberOfLines={1}>
                       {roleName || 'Staff'}
                     </Text>
@@ -176,14 +164,14 @@ export default function EmployeeDetailScreen() {
           <View style={styles.summaryRow}>
             <View style={styles.summaryBox}>
               <View style={styles.summaryLabelRow}>
-                <MaterialCommunityIcons name="briefcase-outline" size={14} color={Colors.textTertiary} />
+                <Icon name="briefcase-outline" size={14} color={Colors.textTertiary} />
                 <Text style={styles.summaryLabel}>MASA KERJA</Text>
               </View>
               <Text style={styles.summaryValue}>{calculateMasaKerja(employee.tanggal_masuk_kerja)}</Text>
             </View>
             <View style={styles.summaryBox}>
               <View style={styles.summaryLabelRow}>
-                <MaterialCommunityIcons name="cake-variant-outline" size={14} color={Colors.textTertiary} />
+                <Icon name="cake-variant-outline" size={14} color={Colors.textTertiary} />
                 <Text style={styles.summaryLabel}>USIA</Text>
               </View>
               <Text style={styles.summaryValue}>{employee.umur ? `${employee.umur} Tahun` : '-'}</Text>
@@ -195,38 +183,38 @@ export default function EmployeeDetailScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconBg}>
-              <MaterialCommunityIcons name="account-outline" size={20} color={GOJEK_GREEN} />
+              <Icon name="account-outline" size={20} color={GOJEK_GREEN} />
             </View>
             <Text style={styles.sectionTitle}>INFORMASI PRIBADI</Text>
             <View style={{ flex: 1 }} />
-            <MaterialCommunityIcons name="dots-horizontal" size={24} color={GOJEK_GREEN} />
+            <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
           </View>
           
           <View style={styles.gridContainer}>
             <View style={styles.gridItem}>
               <View style={styles.infoLabelRow}>
-                <MaterialCommunityIcons name="card-account-details-outline" size={16} color={GOJEK_GREEN} />
+                <Icon name="card-account-details-outline" size={16} color={GOJEK_GREEN} />
                 <Text style={styles.infoLabel}>NIK</Text>
               </View>
               <Text style={styles.infoValue}>{employee.nik || '-'}</Text>
             </View>
             <View style={styles.gridItem}>
               <View style={styles.infoLabelRow}>
-                <MaterialCommunityIcons name="account-details-outline" size={16} color={GOJEK_GREEN} />
+                <Icon name="account-details-outline" size={16} color={GOJEK_GREEN} />
                 <Text style={styles.infoLabel}>NAMA LENGKAP</Text>
               </View>
               <Text style={styles.infoValue}>{fullName}</Text>
             </View>
             <View style={styles.gridItem}>
               <View style={styles.infoLabelRow}>
-                <MaterialCommunityIcons name="calendar-blank-outline" size={16} color={GOJEK_GREEN} />
+                <Icon name="calendar-blank-outline" size={16} color={GOJEK_GREEN} />
                 <Text style={styles.infoLabel}>TANGGAL LAHIR</Text>
               </View>
               <Text style={styles.infoValue}>{formatDate(employee.tanggal_lahir)}</Text>
             </View>
             <View style={styles.gridItem}>
               <View style={styles.infoLabelRow}>
-                <MaterialCommunityIcons name="map-marker-outline" size={16} color={GOJEK_GREEN} />
+                <Icon name="map-marker-outline" size={16} color={GOJEK_GREEN} />
                 <Text style={styles.infoLabel}>TEMPAT LAHIR</Text>
               </View>
               <Text style={styles.infoValue}>{employee.tempat_lahir || '-'}</Text>
@@ -235,7 +223,7 @@ export default function EmployeeDetailScreen() {
 
           <View style={styles.fullWidthItem}>
             <View style={styles.infoLabelRow}>
-              <MaterialCommunityIcons name="home-outline" size={16} color={GOJEK_GREEN} />
+              <Icon name="home-outline" size={16} color={GOJEK_GREEN} />
               <Text style={styles.infoLabel}>ALAMAT DOMISILI</Text>
             </View>
             <Text style={styles.infoValue}>{employee.alamat || '-'}</Text>
@@ -246,24 +234,24 @@ export default function EmployeeDetailScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconBg}>
-              <MaterialCommunityIcons name="briefcase-outline" size={20} color={GOJEK_GREEN} />
+              <Icon name="briefcase-outline" size={20} color={GOJEK_GREEN} />
             </View>
             <Text style={styles.sectionTitle}>INFORMASI KEPEGAWAIAN</Text>
             <View style={{ flex: 1 }} />
-            <MaterialCommunityIcons name="dots-horizontal" size={24} color={GOJEK_GREEN} />
+            <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
           </View>
           
           <View style={styles.gridContainer}>
             <View style={styles.gridItem}>
               <View style={styles.infoLabelRow}>
-                <MaterialCommunityIcons name="account-tie-outline" size={16} color={GOJEK_GREEN} />
+                <Icon name="account-tie-outline" size={16} color={GOJEK_GREEN} />
                 <Text style={styles.infoLabel}>JABATAN</Text>
               </View>
               <Text style={styles.infoValue}>{roleName || '-'}</Text>
             </View>
             <View style={styles.gridItem}>
               <View style={styles.infoLabelRow}>
-                <MaterialCommunityIcons name="calendar-check-outline" size={16} color={GOJEK_GREEN} />
+                <Icon name="calendar-check-outline" size={16} color={GOJEK_GREEN} />
                 <Text style={styles.infoLabel}>TANGGAL MASUK KERJA</Text>
               </View>
               <Text style={styles.infoValue}>{formatDate(employee.tanggal_masuk_kerja)}</Text>
@@ -275,11 +263,11 @@ export default function EmployeeDetailScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconBg}>
-              <MaterialCommunityIcons name="check-circle-outline" size={20} color={GOJEK_GREEN} />
+              <Icon name="check-circle-outline" size={20} color={GOJEK_GREEN} />
             </View>
             <Text style={styles.sectionTitle}>STATUS KEAKTIFAN</Text>
             <View style={{ flex: 1 }} />
-            <MaterialCommunityIcons name="dots-horizontal" size={24} color={GOJEK_GREEN} />
+            <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
           </View>
           
           <View style={styles.fullWidthItem}>
@@ -355,14 +343,10 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     padding: 20,
     marginBottom: 20,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
   },
   profileHeader: {
     flexDirection: 'row',
@@ -420,7 +404,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: Spacing.radius.full,
     gap: 6,
   },
   badgeBlue: {
@@ -458,7 +442,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     alignItems: 'center',
@@ -482,14 +467,10 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     padding: 20,
     marginBottom: 20,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
   },
   sectionHeader: {
     flexDirection: 'row',

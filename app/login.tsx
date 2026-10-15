@@ -38,14 +38,13 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../src/components/common/Icon';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import Colors, { brand, slate } from '../constants/Colors';
-import Spacing, { Shadows } from '../constants/Spacing';
+import Spacing from '../constants/Spacing';
 import Typography, { fonts } from '../constants/Typography';
-import { gs, gradients, inputReset } from '../constants/GlobalStyles';
+import { gs, inputReset } from '../constants/GlobalStyles';
 import { useAuth } from '../src/contexts/AuthContext';
 import { biometric } from '../src/utils/biometric';
 import { dialog } from '../src/components/common/AppDialog';
@@ -204,13 +203,10 @@ export default function LoginScreen() {
             Komposisi terpusat: lencana logo, nama produk, nama perusahaan.
             Semua dekorasi diukur relatif terhadap tinggi header itu sendiri,
             jadi tidak ada geometri yang perlu ditebak dari ukuran jendela. */}
-        <LinearGradient
-          colors={[brand[400], brand[600], brand[900]]}
-          start={{ x: 0.1, y: 0 }}
-          end={{ x: 0.9, y: 1 }}
+        <View
           style={[
             styles.kepala,
-            { height: tinggiHeader, paddingTop: insets.top + Spacing.lg },
+            { height: tinggiHeader, paddingTop: insets.top + Spacing.lg, backgroundColor: Colors.primary },
           ]}
         >
           {/* Tiga lingkaran sepusat di belakang logo — memberi kedalaman
@@ -231,7 +227,7 @@ export default function LoginScreen() {
 
             <Text style={styles.perusahaan}>PT Mada Wikri Tunggal</Text>
           </View>
-        </LinearGradient>
+        </View>
 
         {/* ── Kartu formulir ─────────────────────────────────────────────
             Naik menimpa header agar peralihannya terasa berlapis. */}
@@ -247,7 +243,7 @@ export default function LoginScreen() {
               pengguna tahu apa yang otomatis ditambahkan. */}
           <Text style={gs.label}>Username</Text>
           <View style={[gs.fieldWrap, styles.kolom]}>
-            <MaterialCommunityIcons name="account-outline" size={19} color={Colors.textTertiary} />
+            <Icon name="account-outline" size={19} color={Colors.textTertiary} />
             <Text style={styles.awalan}>mwt-</Text>
             <View style={styles.pemisahKolom} />
             <TextInput
@@ -264,7 +260,7 @@ export default function LoginScreen() {
 
           <Text style={[gs.label, { marginTop: Spacing.lg }]}>Password</Text>
           <View style={[gs.fieldWrap, styles.kolom]}>
-            <MaterialCommunityIcons name="lock-outline" size={19} color={Colors.textTertiary} />
+            <Icon name="lock-outline" size={19} color={Colors.textTertiary} />
             <TextInput
               style={[gs.fieldInner, styles.isian]}
               placeholder="Masukkan kata sandi"
@@ -281,7 +277,7 @@ export default function LoginScreen() {
               accessibilityLabel={lihatSandi ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
               hitSlop={8}
             >
-              <MaterialCommunityIcons
+              <Icon
                 name={lihatSandi ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
                 color={Colors.textTertiary}
@@ -300,21 +296,16 @@ export default function LoginScreen() {
             activeOpacity={0.85}
             style={[styles.tombolUtama, mengirim && { opacity: 0.7 }]}
           >
-            <LinearGradient
-              colors={gradients.primary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={[gs.btn, styles.isiTombol]}
-            >
+            <View style={[gs.btn, styles.isiTombol, { backgroundColor: Colors.primary }]}>
               {mengirim ? (
                 <BrandSpinner size={22} color={Colors.white} />
               ) : (
                 <>
                   <Text style={[gs.btnText, gs.btnTextOnBrand]}>Masuk</Text>
-                  <MaterialCommunityIcons name="arrow-right" size={18} color={Colors.white} />
+                  <Icon name="arrow-right" size={18} color={Colors.white} />
                 </>
               )}
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
 
           {biometrikSiap && (
@@ -330,7 +321,7 @@ export default function LoginScreen() {
                 onPress={masukBiometrik}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons name="fingerprint" size={20} color={brand[700]} />
+                <Icon name="fingerprint" size={20} color={brand[700]} />
                 <Text style={[gs.btnText, gs.btnTextOutline]}>Masuk dengan {namaBiometrik}</Text>
               </TouchableOpacity>
             </>
@@ -423,7 +414,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderRadius: Spacing.radius.xxl,
     padding: Spacing.xl + Spacing.xs,
-    ...Shadows.raised,
   },
   kolom: {
     backgroundColor: slate[50],
@@ -452,7 +442,6 @@ const styles = StyleSheet.create({
   tombolUtama: {
     borderRadius: Spacing.radius.full,
     overflow: 'hidden',
-    ...Shadows.brand,
   },
   isiTombol: {
     paddingVertical: Spacing.md + 2,

@@ -2,8 +2,8 @@
  * SearchBar — search bar pil ala Gojek, warna & font mengikuti karir-mwt.
  */
 import React from 'react';
-import { View, TextInput, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, TextInput, TouchableOpacity, type TextStyle, type ViewStyle } from 'react-native';
+import Icon from './Icon';
 import Colors from '../../../constants/Colors';
 import { gs } from '../../../constants/GlobalStyles';
 
@@ -13,6 +13,8 @@ interface SearchBarProps {
   onChangeText?: (text: string) => void;
   onPress?: () => void;
   editable?: boolean;
+  style?: ViewStyle;
+  inputStyle?: TextStyle;
 }
 
 export default function SearchBar({
@@ -21,14 +23,16 @@ export default function SearchBar({
   onChangeText,
   onPress,
   editable = true,
+  style,
+  inputStyle,
 }: SearchBarProps) {
   const Container = onPress ? TouchableOpacity : View;
 
   return (
-    <Container style={gs.searchBar} onPress={onPress} activeOpacity={0.7}>
-      <MaterialCommunityIcons name="magnify" size={22} color={Colors.primary} />
+    <Container style={[gs.searchBar, style]} onPress={onPress} activeOpacity={0.7}>
+      <Icon name="magnify" size={22} color={Colors.primary} />
       <TextInput
-        style={gs.fieldInner}
+        style={[gs.fieldInner, inputStyle]}
         placeholder={placeholder}
         placeholderTextColor={Colors.placeholder}
         value={value}

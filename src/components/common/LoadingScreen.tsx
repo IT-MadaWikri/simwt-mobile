@@ -11,7 +11,7 @@
  *
  * Perbedaan yang disengaja dari versi web:
  *   - Radial gradient tidak ada di React Native. Didekati dengan
- *     `<LinearGradient>` diagonal plus satu lingkaran cahaya di tengah —
+ *     latar `brand[900]` polos plus satu lingkaran cahaya di tengah —
  *     secara visual sangat mirip, tanpa perlu SVG atau pustaka tambahan.
  *   - Roda gigi watermark yang berputar dihilangkan: di web ia dekoratif
  *     dan hampir tak terlihat (opasitas 0.025), sementara di ponsel ia
@@ -23,7 +23,6 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, Dimensions, Image, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import Typography, { fonts } from '../../../constants/Typography';
@@ -194,12 +193,7 @@ export default function LoadingScreen({
   const Gambar: any = DI_WEB ? Image : Animated.Image;
 
   return (
-    <LinearGradient
-      colors={[brand[800], brand[900], brand[950]]}
-      start={{ x: 0.2, y: 0 }}
-      end={{ x: 0.8, y: 1 }}
-      style={styles.overlay}
-    >
+    <View style={[styles.overlay, { backgroundColor: brand[900] }]}>
       {/* Watermark logo raksasa, berputar sangat lambat. Dekoratif — memberi
           kedalaman pada latar supaya tidak terasa datar. */}
       <Gambar
@@ -277,15 +271,10 @@ export default function LoadingScreen({
         <Animated.View
           style={[styles.progressBar, { transform: [{ translateX: shuttleShift }] }]}
         >
-          <LinearGradient
-            colors={[brand[700], brand[500], brand[400]]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: brand[500] }]} />
         </Animated.View>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 

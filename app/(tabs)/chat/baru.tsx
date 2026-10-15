@@ -6,19 +6,20 @@
  * kontak menandai percakapannya aktif lalu langsung membuka ruang chat.
  */
 import React, { useMemo, useState } from 'react';
+import AppBar from '../../../src/components/common/AppBar';
 import { View, Text, SectionList, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import Typography, { fonts } from '../../../constants/Typography';
+import Typography, { fonts, judulAppBar } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { chatService } from '../../../src/services/chatService';
 import { KontakChat } from '../../../src/types/chat';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
+import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
 function inisial(nama: string): string {
   return nama
@@ -74,26 +75,15 @@ export default function ChatBaruScreen() {
   };
 
   return (
-    <View style={[gs.screenPlain, { paddingTop: insets.top }]}>
-      <View style={[gs.row, styles.kepala]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.tombolKembali}
-          accessibilityLabel="Kembali"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={brand[700]} />
-        </TouchableOpacity>
-        <View style={gs.flex1}>
-          <Text style={styles.judul}>Chat Baru</Text>
-          <Text style={gs.caption}>
-            {memuat ? 'Memuat kontak...' : `${kontak.length} pengguna`}
-          </Text>
-        </View>
-      </View>
+    <View style={gs.screenPlain}>
+      <AppBar judul="Chat Baru" />
 
-      <View style={[gs.containerX, { marginBottom: Spacing.sm }]}>
+      <View style={[gs.containerX, { marginVertical: Spacing.sm }]}>
+        <Text style={[gs.caption, { marginBottom: Spacing.xs }]}>
+          {memuat ? 'Memuat kontak...' : `${kontak.length} pengguna`}
+        </Text>
         <View style={[gs.searchBar, { paddingVertical: Spacing.xs }]}>
-          <MaterialCommunityIcons name="magnify" size={20} color={Colors.textTertiary} />
+          <Icon name="magnify" size={20} color={Colors.textTertiary} />
           <TextInput
             style={gs.fieldInner}
             placeholder="Cari nama atau jabatan..."
@@ -105,7 +95,7 @@ export default function ChatBaruScreen() {
       </View>
 
       {memuat ? (
-        <LoadingSpinner message="Memuat daftar pengguna..." />
+        <SkeletonDaftar avatar="bulat" />
       ) : (
         <SectionList
           sections={seksi}
@@ -151,21 +141,6 @@ export default function ChatBaruScreen() {
 const AVATAR = 46;
 
 const styles = {
-  kepala: {
-    paddingHorizontal: Spacing.screenPadding,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.md,
-    gap: Spacing.sm,
-  },
-  tombolKembali: {
-    padding: Spacing.xs,
-    marginLeft: -Spacing.xs,
-  },
-  judul: {
-    fontFamily: fonts.bold,
-    fontSize: Typography.sizes.xl,
-    color: brand[700],
-  },
   kepalaSeksi: {
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.screenPadding,

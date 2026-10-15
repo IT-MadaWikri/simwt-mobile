@@ -7,13 +7,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import { tiketService } from '../../../src/services/tiketService';
+import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 
 function waktu(iso: string | null | undefined): string {
   if (!iso) return '-';
@@ -49,7 +49,7 @@ export default function DetailTiketScreen() {
   if (memuat) {
     return (
       <View style={gs.screen}>
-        <LoadingSpinner message="Memuat detail tiket..." />
+        <SkeletonDetail />
       </View>
     );
   }
@@ -57,7 +57,7 @@ export default function DetailTiketScreen() {
   if (!tiket) {
     return (
       <View style={[gs.screen, gs.centerFill]}>
-        <MaterialCommunityIcons name="ticket-outline" size={48} color={Colors.textTertiary} />
+        <Icon name="ticket-outline" size={48} color={Colors.textTertiary} />
         <Text style={gs.emptyTitle}>Tiket tidak ditemukan</Text>
         <Text style={gs.emptyText}>Nomor {nomor} tidak ada di sistem.</Text>
       </View>
@@ -137,7 +137,7 @@ export default function DetailTiketScreen() {
                   ]}
                 >
                   {langkah.selesai && (
-                    <MaterialCommunityIcons name="check" size={10} color={Colors.white} />
+                    <Icon name="check" size={10} color={Colors.white} />
                   )}
                 </View>
                 {indeks < linimasa.length - 1 && <View style={styles.garis} />}
@@ -159,7 +159,7 @@ export default function DetailTiketScreen() {
 function Info({ icon, teks }: { icon: string; teks: string }) {
   return (
     <View style={[gs.row, gs.gapXs]}>
-      <MaterialCommunityIcons name={icon as any} size={14} color={brand[600]} />
+      <Icon name={icon as any} size={14} color={brand[600]} />
       <Text style={gs.bodySm}>{teks}</Text>
     </View>
   );

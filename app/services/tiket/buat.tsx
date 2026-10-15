@@ -21,16 +21,16 @@ import {
   Easing,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
+import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
 import BrandSpinner from '../../../src/components/common/BrandSpinner';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import { dialog } from '../../../src/components/common/AppDialog';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { tiketService, OpsiRef } from '../../../src/services/tiketService';
+import { SkeletonForm } from '../../../src/components/common/Skeleton';
 
 export default function BuatTiketScreen() {
   const router = useRouter();
@@ -117,7 +117,7 @@ export default function BuatTiketScreen() {
   if (memuat) {
     return (
       <View style={gs.screen}>
-        <LoadingSpinner message="Menyiapkan formulir..." />
+        <SkeletonForm />
       </View>
     );
   }
@@ -142,7 +142,7 @@ export default function BuatTiketScreen() {
         <Text style={[gs.fieldInner, !nilai && { color: Colors.placeholder }]}>
           {nilai ?? `Pilih ${label.toLowerCase()}`}
         </Text>
-        <MaterialCommunityIcons name="chevron-down" size={22} color={Colors.textTertiary} />
+        <Icon name="chevron-down" size={22} color={Colors.textTertiary} />
       </TouchableOpacity>
     </View>
   );
@@ -157,7 +157,7 @@ export default function BuatTiketScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={[gs.cardBrand, gs.row, gs.gapSm, { marginBottom: Spacing.lg }]}>
-          <MaterialCommunityIcons name="information-outline" size={18} color={brand[700]} />
+          <Icon name="information-outline" size={18} color={brand[700]} />
           <Text style={[gs.bodySm, gs.flex1, { color: brand[800] }]}>
             Jelaskan masalah sedetail mungkin agar tim terkait bisa langsung menindaklanjuti.
           </Text>
@@ -207,7 +207,7 @@ export default function BuatTiketScreen() {
             <BrandSpinner size={22} color={Colors.white} />
           ) : (
             <>
-              <MaterialCommunityIcons name="send" size={18} color={Colors.white} />
+              <Icon name="send" size={18} color={Colors.white} />
               <Text style={[gs.btnText, gs.btnTextOnBrand]}>Kirim Tiket</Text>
             </>
           )}
@@ -249,7 +249,7 @@ export default function BuatTiketScreen() {
                   <Text style={[gs.textBase, gs.flex1]}>{item.nama}</Text>
                   {((pilih === 'jenis' && jenis?.id === item.id) ||
                     (pilih === 'departemen' && departemen?.id === item.id)) && (
-                    <MaterialCommunityIcons name="check" size={20} color={brand[600]} />
+                    <Icon name="check" size={20} color={brand[600]} />
                   )}
                 </TouchableOpacity>
               )}
@@ -272,7 +272,6 @@ const styles = {
     borderTopLeftRadius: Spacing.radius.xxl,
     borderTopRightRadius: Spacing.radius.xxl,
     padding: Spacing.xl,
-    ...Shadows.raised,
   },
   opsi: {
     paddingVertical: Spacing.md,

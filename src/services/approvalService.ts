@@ -43,7 +43,7 @@ export const approvalService = {
 
   /** Setujui satu Kaizen. */
   async setujuiKaizen(id: number): Promise<void> {
-    await api.get(`/kaizen/${id}/approve`);
+    await api.post(`/kaizen/${id}/approve`);
   },
 
   /** Tolak satu Kaizen — alasan WAJIB diisi (divalidasi server). */

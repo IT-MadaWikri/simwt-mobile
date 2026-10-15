@@ -29,9 +29,9 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, Animated, TextInput } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from './Icon';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
+import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
 
 type DialogTone = 'info' | 'success' | 'danger';
@@ -172,7 +172,7 @@ export function DialogHost() {
       <Animated.View style={[styles.overlay, { opacity }]}>
         <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
           <View style={[styles.iconCircle, { backgroundColor: tone.bg }]}>
-            <MaterialCommunityIcons name={tone.icon as any} size={36} color={tone.color} />
+            <Icon name={tone.icon as any} size={36} color={tone.color} />
           </View>
 
           <Text style={[gs.h3, gs.textCenter]}>{req.title}</Text>
@@ -245,7 +245,6 @@ const styles = {
     borderRadius: Spacing.radius.xxl,
     padding: Spacing.xxl,
     alignItems: 'center' as const,
-    ...Shadows.raised,
   },
   iconCircle: {
     width: 68,

@@ -1,4 +1,13 @@
-import React, { useState } from 'react';
+/**
+ * Buat Kaizen — wizard 2 langkah, setara formulir website (sim-mwt):
+ *   1. Kaizen: tema, pelaksana & pemberi saran (bottom sheet cari karyawan),
+ *      kontak, departemen (hanya bila pilihannya > 1), plant akun, kondisi
+ *      sebelum/sesudah, dan satu kolom foto (maks 2, di-crop & ditandai
+ *      Sebelum/Sesudah).
+ *   2. Manfaat: minimal satu, ditambah/diubah lewat bottom sheet.
+ * Semuanya dikirim sekali ke `POST /kaizen/buat` (multipart).
+ */
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,317 +15,1188 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation, useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Icon from '../../../src/components/common/Icon';
+import Avatar from '../../../src/components/common/Avatar';
+import BottomSheet from '../../../src/components/common/BottomSheet';
+import BrandSpinner from '../../../src/components/common/BrandSpinner';
+import { SkeletonForm } from '../../../src/components/common/Skeleton';
+import { dialog } from '../../../src/components/common/AppDialog';
+import SheetKaryawan from '../../../src/components/kaizen/SheetKaryawan';
+import EditorFoto, { FotoKaizen, TagFoto } from '../../../src/components/kaizen/EditorFoto';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
-import api from '../../../src/services/api';
-import { fonts } from '../../../constants/Typography';
-import { dialog } from '../../../src/components/common/AppDialog';
-import { inputReset } from '../../../constants/GlobalStyles';
-import BrandSpinner from '../../../src/components/common/BrandSpinner';
+import { kaizenService } from '../../../src/services/kaizenService';
+import { KaizenOpsiBuat, KaryawanRingkas } from '../../../src/types/kaizen';
+import { LENCANA } from '../../../src/utils/kaizen';
 
-export default function BuatKaizenScreen() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const insets = useSafeAreaInsets();
-  
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    tema: '',
-    nama_pelaksana: user?.nama_lengkap || user?.name || '',
-    nik_nama_pelaksana: '',
-    disarankan_oleh: '',
-    nomor_whatsapp: user?.phone || '',
-    email: user?.email || '',
-    detail_sebelum: '',
-    detail_sesudah: '',
-  });
+type Orang = { nama: string; nik: string };
 
-  const handleChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+interface Manfaat {
+  kategori: number | null;
+  sebelum: string;
+  sesudah: string;
+  hemat: string;
+  pelaksanaan: 'Internal' | 'Eksternal';
+  area: string;
+  pic: Orang | null;
+}
 
-  const handleSubmit = async () => {
-    if (!formData.tema || !formData.nama_pelaksana) {
-      dialog.alert('Error', 'Tema dan Nama Pelaksana wajib diisi.');
-      return;
-    }
+const MANFAAT_KOSONG: Manfaat = {
+  kategori: null,
+  sebelum: '',
+  sesudah: '',
+  hemat: '',
+  pelaksanaan: 'Internal',
+  area: '',
+  pic: null,
+};
 
-    try {
-      setLoading(true);
-      
-      const submitData = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        submitData.append(key, value);
-      });
+const RE_WA = /^08[0-9]{8,11}$/;
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      // Import `api` from our services (need to add import at top if missing)
-      // We will assume `api.post` handles it
-      const response = await api.post('/kaizen/buat', submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
+/** Aturan langkah 1, sama dgn FormBuatkaizen di website. */
+function cekLangkah1(f: {
+  tema: string;
+  pelaksana: Orang | null;
+  nomor_whatsapp: string;
+  email: string;
+  detail_sebelum: string;
+  detail_sesudah: string;
+}, fotos: FotoKaizen[]) {
+  const e: Record<string, string> = {};
+  if (!f.tema.trim()) e.tema = 'Tema wajib diisi.';
+  if (!f.pelaksana?.nik) e.pelaksana = 'Pilih pelaksana dari daftar karyawan.';
+  if (!RE_WA.test(f.nomor_whatsapp.trim())) e.nomor_whatsapp = 'Diawali 08, 10-13 angka.';
+  if (!RE_EMAIL.test(f.email.trim())) e.email = 'Format email tidak valid.';
+  if (!f.detail_sebelum.trim()) e.detail_sebelum = 'Kondisi sebelum wajib diisi.';
+  if (!f.detail_sesudah.trim()) e.detail_sesudah = 'Kondisi sesudah wajib diisi.';
+  if (!fotos.some((x) => x.tag === 'sesudah')) e.foto = 'Foto bertanda Sesudah wajib ada.';
+  return e;
+}
 
-      if (response.data && response.data.success) {
-        await dialog.alert('Sukses', 'Pengajuan Kaizen berhasil dibuat!', 'success');
-        router.back();
-      } else {
-        throw new Error(response.data?.message || 'Gagal mengirim data');
-      }
+function cekManfaat(m: Manfaat) {
+  const e: Record<string, string> = {};
+  if (!m.kategori) e.kategori = 'Pilih kategori.';
+  if (!m.sebelum.trim()) e.sebelum = 'Wajib diisi.';
+  if (!m.sesudah.trim()) e.sesudah = 'Wajib diisi.';
+  if (!m.hemat.trim()) e.hemat = 'Wajib diisi.';
+  if (!m.area.trim()) e.area = 'Wajib diisi.';
+  if (!m.pic?.nik) e.pic = 'Pilih PIC dari daftar karyawan.';
+  return e;
+}
 
-    } catch (error: any) {
-      console.error('Submit Kaizen Error:', error);
-      dialog.alert(
-        'Gagal Mengirim',
-        error.response?.data?.message ||
-          error.message ||
-          'Terjadi kesalahan saat mengirim pengajuan Kaizen.',
-        'danger'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
+/** Kolom isian: label, input, penghitung opsional, dan pesan galat di bawahnya. */
+function Kolom({
+  label,
+  wajib,
+  galat,
+  maks,
+  value,
+  ...props
+}: React.ComponentProps<typeof TextInput> & { label: string; wajib?: boolean; galat?: string; maks?: number; value: string }) {
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]} showsVerticalScrollIndicator={false}>
-        
-        <View style={styles.alertBox}>
-          <MaterialCommunityIcons name="information" size={20} color={brand[700]} />
-          <Text style={styles.alertText}>
-            Isi detail inovasi / kaizen Anda di bawah ini. Pastikan informasi sudah benar sebelum mengirim.
-          </Text>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Tema Kaizen <Text style={styles.required}>*</Text></Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Masukkan tema inovasi Anda" 
-            value={formData.tema}
-            onChangeText={(val) => handleChange('tema', val)}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Nama Pelaksana <Text style={styles.required}>*</Text></Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Nama lengkap pelaksana" 
-            value={formData.nama_pelaksana}
-            onChangeText={(val) => handleChange('nama_pelaksana', val)}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>NIK Pelaksana</Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Nomor Induk Karyawan" 
-            keyboardType="numeric"
-            value={formData.nik_nama_pelaksana}
-            onChangeText={(val) => handleChange('nik_nama_pelaksana', val)}
-          />
-        </View>
-
-        <View style={styles.rowGroup}>
-          <View style={[styles.formGroup, {flex: 1, marginRight: 8}]}>
-            <Text style={styles.label}>No. WhatsApp</Text>
-            <TextInput 
-              style={styles.input} 
-              placeholder="0812..." 
-              keyboardType="phone-pad"
-              value={formData.nomor_whatsapp}
-              onChangeText={(val) => handleChange('nomor_whatsapp', val)}
-            />
-          </View>
-          <View style={[styles.formGroup, {flex: 1, marginLeft: 8}]}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput 
-              style={styles.input} 
-              placeholder="email@perusahaan.com" 
-              keyboardType="email-address"
-              value={formData.email}
-              onChangeText={(val) => handleChange('email', val)}
-            />
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <Text style={styles.sectionTitle}>Kondisi Kaizen</Text>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Kondisi Sebelum</Text>
-          <TextInput 
-            style={[styles.input, styles.textArea]} 
-            placeholder="Jelaskan kondisi sebelum kaizen diterapkan..." 
-            multiline
-            numberOfLines={4}
-            value={formData.detail_sebelum}
-            onChangeText={(val) => handleChange('detail_sebelum', val)}
-          />
-          <TouchableOpacity style={styles.uploadBtn}>
-            <MaterialCommunityIcons name="camera-plus-outline" size={20} color={Colors.primary} />
-            <Text style={styles.uploadBtnText}>Upload Foto Sebelum</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Kondisi Sesudah</Text>
-          <TextInput 
-            style={[styles.input, styles.textArea]} 
-            placeholder="Jelaskan hasil setelah kaizen diterapkan..." 
-            multiline
-            numberOfLines={4}
-            value={formData.detail_sesudah}
-            onChangeText={(val) => handleChange('detail_sesudah', val)}
-          />
-          <TouchableOpacity style={styles.uploadBtn}>
-            <MaterialCommunityIcons name="camera-plus-outline" size={20} color={Colors.primary} />
-            <Text style={styles.uploadBtnText}>Upload Foto Sesudah</Text>
-          </TouchableOpacity>
-        </View>
-
-      </ScrollView>
-
-      {/* Submit Button */}
-      <View style={styles.footer}>
-        <TouchableOpacity 
-          style={styles.submitButton} 
-          activeOpacity={0.8}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <BrandSpinner size={22} color={Colors.white} />
-          ) : (
-            <Text style={styles.submitButtonText}>Kirim Pengajuan Kaizen</Text>
-          )}
-        </TouchableOpacity>
+    <View style={styles.field}>
+      <View style={gs.rowBetween}>
+        <Text style={styles.label}>
+          {label}
+          {wajib ? <Text style={styles.wajib}> *</Text> : null}
+        </Text>
+        {maks ? <Text style={styles.hitung}>{value.length}/{maks}</Text> : null}
       </View>
+      <TextInput
+        style={[styles.input, props.multiline && styles.textArea, galat ? styles.inputGalat : null]}
+        placeholderTextColor={Colors.placeholder}
+        maxLength={maks}
+        value={value}
+        {...props}
+      />
+      {galat ? <Text style={styles.galat}>{galat}</Text> : null}
     </View>
   );
 }
 
+/** Baris orang terpilih (avatar + nama + NIK) dengan tombol Ganti/Pilih. */
+function BarisOrang({
+  label,
+  wajib,
+  orang,
+  galat,
+  onPilih,
+  onHapus,
+}: {
+  label: string;
+  wajib?: boolean;
+  orang: Orang | null;
+  galat?: string;
+  onPilih: () => void;
+  onHapus?: () => void;
+}) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>
+        {label}
+        {wajib ? <Text style={styles.wajib}> *</Text> : <Text style={styles.opsional}> (opsional)</Text>}
+      </Text>
+      <TouchableOpacity
+        style={[styles.orang, galat ? styles.inputGalat : null]}
+        activeOpacity={0.7}
+        onPress={onPilih}
+      >
+        {orang ? (
+          <>
+            <Avatar nama={orang.nama} ukuran={32} />
+            <View style={gs.flex1}>
+              <Text style={styles.namaOrang} numberOfLines={1}>{orang.nama}</Text>
+              <Text style={styles.nikOrang} numberOfLines={1}>{orang.nik}</Text>
+            </View>
+            {onHapus ? (
+              <TouchableOpacity onPress={onHapus} hitSlop={10} accessibilityLabel={`Hapus ${label}`}>
+                <Icon name="close" size={16} color={Colors.textTertiary} />
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.ganti}>Ganti</Text>
+            )}
+          </>
+        ) : (
+          <>
+            <View style={styles.ikonCari}>
+              <Icon name="account-search-outline" size={16} color={Colors.textTertiary} />
+            </View>
+            <Text style={[gs.flex1, styles.placeholderOrang]}>Cari nama atau NIK</Text>
+            <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+          </>
+        )}
+      </TouchableOpacity>
+      {galat ? <Text style={styles.galat}>{galat}</Text> : null}
+    </View>
+  );
+}
+
+export default function BuatKaizenScreen() {
+  const router = useRouter();
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const [opsi, setOpsi] = useState<KaizenOpsiBuat | null>(null);
+  const [gagalOpsi, setGagalOpsi] = useState(false);
+  const [langkah, setLangkah] = useState<1 | 2>(1);
+  const [mengirim, setMengirim] = useState(false);
+  const [galat, setGalat] = useState<Record<string, string>>({});
+
+  const [form, setForm] = useState({
+    tema: '',
+    pelaksana: (user?.nik ? { nama: user.nama_lengkap || user.name, nik: user.nik } : null) as Orang | null,
+    saran: null as Orang | null,
+    nomor_whatsapp: (user?.phone || '').replace(/[^0-9+]/g, ''),
+    email: user?.email || '',
+    id_departemen: null as number | null,
+    detail_sebelum: '',
+    detail_sesudah: '',
+  });
+  const [fotos, setFotos] = useState<FotoKaizen[]>([]);
+  const [manfaat, setManfaat] = useState<Manfaat[]>([]);
+
+  const [sheetOrang, setSheetOrang] = useState<null | 'pelaksana' | 'saran' | 'pic'>(null);
+  const [sheetSumber, setSheetSumber] = useState(false);
+  const [editor, setEditor] = useState<{ fotos: FotoKaizen[]; awal: number } | null>(null);
+  const [draf, setDraf] = useState<{ data: Manfaat; index: number | null; galat: Record<string, string> } | null>(null);
+
+  const muatOpsi = () => {
+    setGagalOpsi(false);
+    kaizenService
+      .getOpsiBuat()
+      .then((o) => {
+        setOpsi(o);
+        setForm((f) => ({ ...f, id_departemen: f.id_departemen ?? o.id_departemen }));
+      })
+      .catch(() => setGagalOpsi(true));
+  };
+  useEffect(muatOpsi, []);
+
+  // Kembali dari langkah 2 = ke langkah 1; keluar dgn isian terisi = konfirmasi.
+  const selesai = useRef(false);
+  const kondisi = useRef({ langkah, kotor: false });
+  kondisi.current = {
+    langkah,
+    kotor: !!(form.tema || form.detail_sebelum || form.detail_sesudah || fotos.length || manfaat.length),
+  };
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (e) => {
+        if (selesai.current) return;
+        if (kondisi.current.langkah === 2) {
+          e.preventDefault();
+          setLangkah(1);
+          return;
+        }
+        if (!kondisi.current.kotor) return;
+        e.preventDefault();
+        dialog
+          .confirm({
+            title: 'Buang Kaizen ini?',
+            message: 'Isian yang sudah kamu tulis akan hilang.',
+            confirmText: 'Buang',
+            cancelText: 'Lanjut mengisi',
+            destructive: true,
+          })
+          .then((ya) => ya && navigation.dispatch(e.data.action));
+      }),
+    [navigation]
+  );
+
+  const ubah = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    if (galat[k as string]) setGalat((g) => ({ ...g, [k]: '' }));
+  };
+
+  const pilihOrang = (k: KaryawanRingkas) => {
+    const orang = { nama: k.nama, nik: k.nik };
+    if (sheetOrang === 'pelaksana') {
+      // Seperti website: WA & email hanya diisi bila masih kosong, tidak menimpa.
+      setForm((f) => ({
+        ...f,
+        pelaksana: orang,
+        nomor_whatsapp: f.nomor_whatsapp || k.phone || '',
+        email: f.email || k.email || '',
+      }));
+      setGalat((g) => ({ ...g, pelaksana: '' }));
+    } else if (sheetOrang === 'saran') {
+      ubah('saran', orang);
+    } else if (sheetOrang === 'pic' && draf) {
+      setDraf({ ...draf, data: { ...draf.data, pic: orang }, galat: { ...draf.galat, pic: '' } });
+    }
+  };
+
+  // --- Foto ---------------------------------------------------------------
+  const tambahFoto = async (sumber: 'kamera' | 'galeri') => {
+    const sisa = 2 - fotos.length;
+    if (sisa <= 0) return;
+    const izin =
+      sumber === 'kamera'
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!izin.granted) {
+      dialog.alert('Izin Ditolak', `Aplikasi butuh izin ${sumber === 'kamera' ? 'kamera' : 'galeri'} untuk menambah foto.`);
+      return;
+    }
+    const opsiPicker: ImagePicker.ImagePickerOptions = {
+      mediaTypes: ['images'],
+      quality: 0.9,
+      allowsMultipleSelection: sumber === 'galeri' && sisa > 1,
+      selectionLimit: sisa,
+    };
+    const hasil =
+      sumber === 'kamera'
+        ? await ImagePicker.launchCameraAsync(opsiPicker)
+        : await ImagePicker.launchImageLibraryAsync(opsiPicker);
+    if (hasil.canceled) return;
+
+    const terpakai = new Set(fotos.map((x) => x.tag));
+    const baru: FotoKaizen[] = hasil.assets.slice(0, sisa).map((a) => {
+      const tag: TagFoto = !terpakai.has('sebelum') ? 'sebelum' : 'sesudah';
+      terpakai.add(tag);
+      return { uri: a.uri, width: a.width, height: a.height, rasio: 'asli', zoom: 1, nx: 0, ny: 0, tag };
+    });
+    setEditor({ fotos: [...fotos, ...baru], awal: fotos.length });
+  };
+
+  const hapusFoto = (i: number) => setFotos((d) => d.filter((_, j) => j !== i));
+
+  // --- Langkah ------------------------------------------------------------
+  const lanjut = () => {
+    const e = cekLangkah1(form, fotos);
+    setGalat(e);
+    if (Object.values(e).some(Boolean)) {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      dialog.alert('Belum Lengkap', 'Lengkapi isian yang bertanda merah.');
+      return;
+    }
+    setLangkah(2);
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  };
+
+  const simpanDraf = () => {
+    if (!draf) return;
+    const e = cekManfaat(draf.data);
+    if (Object.keys(e).length) {
+      setDraf({ ...draf, galat: e });
+      return;
+    }
+    setManfaat((d) => (draf.index === null ? [...d, draf.data] : d.map((x, i) => (i === draf.index ? draf.data : x))));
+    setDraf(null);
+  };
+
+  const hapusManfaat = async (i: number) => {
+    const ya = await dialog.confirm({ title: 'Hapus manfaat ini?', confirmText: 'Hapus', destructive: true });
+    if (ya) setManfaat((d) => d.filter((_, j) => j !== i));
+  };
+
+  const kirim = async () => {
+    if (!manfaat.length) {
+      dialog.alert('Belum Ada Manfaat', 'Tambahkan minimal satu manfaat.');
+      return;
+    }
+    const data = new FormData();
+    data.append('tema', form.tema.trim());
+    data.append('nama_pelaksana', form.pelaksana!.nama);
+    data.append('nik_nama_pelaksana', form.pelaksana!.nik);
+    if (form.saran) {
+      data.append('disarankan_oleh', form.saran.nama);
+      data.append('nik_disarankan_oleh', form.saran.nik);
+    }
+    data.append('nomor_whatsapp', form.nomor_whatsapp.trim());
+    data.append('email', form.email.trim());
+    if (form.id_departemen) data.append('id_departemen', String(form.id_departemen));
+    data.append('detail_sebelum', form.detail_sebelum.trim());
+    data.append('detail_sesudah', form.detail_sesudah.trim());
+    fotos.forEach((x) => {
+      const h = x.hasil ?? { uri: x.uri };
+      data.append(`foto_${x.tag}`, { uri: h.uri, name: `foto_${x.tag}.jpg`, type: 'image/jpeg' } as any);
+    });
+    manfaat.forEach((m, i) => {
+      data.append(`manfaat[${i}][kategori]`, String(m.kategori));
+      data.append(`manfaat[${i}][sebelum]`, m.sebelum.trim());
+      data.append(`manfaat[${i}][sesudah]`, m.sesudah.trim());
+      data.append(`manfaat[${i}][hemat]`, m.hemat.trim());
+      data.append(`manfaat[${i}][pelaksanaan]`, m.pelaksanaan);
+      data.append(`manfaat[${i}][area]`, m.area.trim());
+      data.append(`manfaat[${i}][pic]`, m.pic!.nama);
+    });
+
+    try {
+      setMengirim(true);
+      const hasil = await kaizenService.buat(data);
+      selesai.current = true;
+      await dialog.alert('Kaizen Terkirim', `Nomor Kaizen kamu ${hasil.nomor}. Tunggu penilaian dari panitia ya.`, 'success');
+      router.back();
+    } catch (err: any) {
+      const errors: Record<string, string[]> | undefined = err.response?.data?.errors;
+      // Galat isian langkah 1 dikembalikan ke kolomnya supaya mudah diperbaiki.
+      if (errors) {
+        const peta: Record<string, string> = {
+          nik_nama_pelaksana: 'pelaksana',
+          nama_pelaksana: 'pelaksana',
+          foto_sesudah: 'foto',
+          foto_sebelum: 'foto',
+        };
+        const e: Record<string, string> = {};
+        Object.entries(errors).forEach(([k, v]) => {
+          if (!k.startsWith('manfaat')) e[peta[k] ?? k] = v[0];
+        });
+        if (Object.keys(e).length) {
+          setGalat(e);
+          setLangkah(1);
+        }
+      }
+      dialog.alert(
+        'Gagal Mengirim',
+        err.response?.data?.message || err.message || 'Terjadi kesalahan saat mengirim Kaizen.',
+        'danger'
+      );
+    } finally {
+      setMengirim(false);
+    }
+  };
+
+  // --- Tampilan -----------------------------------------------------------
+  if (!opsi) {
+    return (
+      <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+        {gagalOpsi ? (
+          <View style={styles.gagal}>
+            <Text style={gs.emptyTitle}>Gagal memuat formulir</Text>
+            <TouchableOpacity style={styles.tombolUlang} onPress={muatOpsi}>
+              <Text style={styles.teksUlang}>Coba lagi</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <SkeletonForm />
+        )}
+      </View>
+    );
+  }
+
+  const kategoriNama = (id: number | null) => opsi.kategori.find((k) => k.id === id)?.kategori ?? '';
+  const ikonKategori = (id: number | null) => LENCANA[kategoriNama(id)] ?? { ikon: 'lightbulb-on-outline', warna: ['#e2e8f0', '#94a3b8', '#475569'] as const };
+
+  const langkah1 = (
+    <>
+      <Text style={styles.judulBagian}>Ide perbaikan</Text>
+      <View style={styles.kartu}>
+        <Kolom
+          label="Tema / Judul"
+          wajib
+          maks={255}
+          placeholder="Contoh: Mengurangi waktu setup mesin press"
+          value={form.tema}
+          onChangeText={(v) => ubah('tema', v)}
+          galat={galat.tema}
+        />
+        <BarisOrang
+          label="Disarankan oleh"
+          orang={form.saran}
+          onPilih={() => setSheetOrang('saran')}
+          onHapus={form.saran ? () => ubah('saran', null) : undefined}
+        />
+      </View>
+
+      <Text style={styles.judulBagian}>Pelaksana</Text>
+      <View style={styles.kartu}>
+        <BarisOrang
+          label="Pelaksana"
+          wajib
+          orang={form.pelaksana}
+          galat={galat.pelaksana}
+          onPilih={() => setSheetOrang('pelaksana')}
+        />
+        <View style={[gs.row, { gap: Spacing.sm, alignItems: 'flex-start' }]}>
+          <View style={gs.flex1}>
+            <Kolom
+              label="No. WhatsApp"
+              wajib
+              placeholder="08…"
+              keyboardType="phone-pad"
+              value={form.nomor_whatsapp}
+              onChangeText={(v) => ubah('nomor_whatsapp', v.replace(/[^0-9]/g, ''))}
+              galat={galat.nomor_whatsapp}
+            />
+          </View>
+          <View style={gs.flex1}>
+            <Kolom
+              label="Email"
+              wajib
+              placeholder="nama@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={form.email}
+              onChangeText={(v) => ubah('email', v)}
+              galat={galat.email}
+            />
+          </View>
+        </View>
+        {opsi.departemen.length > 1 ? (
+          <View style={styles.field}>
+            <Text style={styles.label}>Departemen</Text>
+            <View style={styles.chips}>
+              {opsi.departemen.map((d) => {
+                const on = d.id === form.id_departemen;
+                return (
+                  <TouchableOpacity
+                    key={d.id}
+                    style={[styles.chip, on && styles.chipAktif]}
+                    onPress={() => ubah('id_departemen', d.id)}
+                  >
+                    <Text style={[styles.teksChip, on && styles.teksChipAktif]}>{d.nama}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+        <View style={[gs.row, styles.plant]}>
+          <Icon name="office-building-outline" size={14} color={Colors.textTertiary} />
+          <Text style={styles.teksPlant}>
+            {[opsi.departemen.length === 1 ? opsi.departemen[0].nama : null, opsi.plant?.nama ? `Plant ${opsi.plant.nama}` : null]
+              .filter(Boolean)
+              .join(' · ') || 'Plant mengikuti akun'}
+          </Text>
+        </View>
+      </View>
+
+      <Text style={styles.judulBagian}>Kondisi</Text>
+      <View style={styles.kartu}>
+        <Kolom
+          label="Sebelum Kaizen"
+          wajib
+          maks={500}
+          multiline
+          placeholder="Apa masalahnya sebelum diperbaiki?"
+          value={form.detail_sebelum}
+          onChangeText={(v) => ubah('detail_sebelum', v)}
+          galat={galat.detail_sebelum}
+        />
+        <Kolom
+          label="Sesudah Kaizen"
+          wajib
+          maks={500}
+          multiline
+          placeholder="Apa hasilnya setelah diperbaiki?"
+          value={form.detail_sesudah}
+          onChangeText={(v) => ubah('detail_sesudah', v)}
+          galat={galat.detail_sesudah}
+        />
+      </View>
+
+      <View style={[gs.rowBetween, { alignItems: 'flex-end' }]}>
+        <Text style={styles.judulBagian}>Foto</Text>
+        <Text style={[styles.hitung, { marginBottom: Spacing.sm }]}>{fotos.length}/2</Text>
+      </View>
+      <View style={[styles.kartu, galat.foto ? styles.inputGalat : null]}>
+        <View style={styles.gridFoto}>
+          {fotos.map((x, i) => (
+            <TouchableOpacity
+              key={x.uri}
+              style={styles.ubinFoto}
+              activeOpacity={0.85}
+              onPress={() => setEditor({ fotos, awal: i })}
+            >
+              <Image source={{ uri: x.hasil?.uri ?? x.uri }} style={styles.gambar} />
+              <View style={[styles.tagFoto, x.tag === 'sesudah' && { backgroundColor: Colors.primary }]}>
+                <Text style={styles.teksTag}>{x.tag === 'sebelum' ? 'Sebelum' : 'Sesudah'}</Text>
+              </View>
+              <TouchableOpacity style={styles.hapusFoto} onPress={() => hapusFoto(i)} hitSlop={8} accessibilityLabel="Hapus foto">
+                <Icon name="close" size={14} color={Colors.white} />
+              </TouchableOpacity>
+            </TouchableOpacity>
+          ))}
+          {fotos.length < 2 ? (
+            <TouchableOpacity
+              style={[styles.ubinFoto, styles.ubinTambah, fotos.length === 0 && styles.ubinKosong]}
+              activeOpacity={0.8}
+              onPress={() => setSheetSumber(true)}
+            >
+              <Icon name="camera-plus-outline" size={22} color={brand[700]} />
+              <Text style={styles.teksSumber}>{fotos.length ? 'Tambah foto' : 'Upload foto'}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+        <Text style={[styles.ket, galat.foto ? { color: Colors.danger } : null]}>
+          {galat.foto || 'Maks 2 foto. Tap foto untuk crop & menandai Sebelum / Sesudah. Foto Sesudah wajib.'}
+        </Text>
+      </View>
+    </>
+  );
+
+  const langkah2 = (
+    <>
+      <View style={styles.ringkas}>
+        <Text style={styles.ringkasLabel}>Kaizen</Text>
+        <Text style={styles.ringkasTema} numberOfLines={2}>{form.tema}</Text>
+      </View>
+
+      <View style={[gs.rowBetween, { alignItems: 'flex-end' }]}>
+        <Text style={styles.judulBagian}>Manfaat</Text>
+        <Text style={[styles.hitung, { marginBottom: Spacing.sm }]}>{manfaat.length} ditambahkan</Text>
+      </View>
+      <View style={[styles.kartu, { paddingVertical: Spacing.xs }]}>
+        {manfaat.length === 0 ? (
+          <Text style={styles.kosongManfaat}>
+            Belum ada manfaat. Ceritakan dampak Kaizen ini, misalnya waktu, biaya, atau keselamatan yang membaik.
+          </Text>
+        ) : (
+          manfaat.map((m, i) => {
+            const l = ikonKategori(m.kategori);
+            return (
+              <TouchableOpacity
+                key={i}
+                style={[styles.barisManfaat, i > 0 && styles.garisAtas]}
+                activeOpacity={0.6}
+                onPress={() => setDraf({ data: m, index: i, galat: {} })}
+              >
+                <View style={[styles.logoManfaat, { backgroundColor: l.warna[1] }]}>
+                  <Icon name={l.ikon} size={16} color={Colors.white} />
+                </View>
+                <View style={gs.flex1}>
+                  <Text style={styles.judulManfaat} numberOfLines={1}>{kategoriNama(m.kategori)}</Text>
+                  <Text style={styles.subManfaat} numberOfLines={1}>{m.sebelum} → {m.sesudah}</Text>
+                  <Text style={styles.subManfaat} numberOfLines={1}>Hemat: {m.hemat}</Text>
+                </View>
+                <TouchableOpacity onPress={() => hapusManfaat(i)} hitSlop={10} accessibilityLabel="Hapus manfaat">
+                  <Icon name="delete-outline" size={18} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            );
+          })
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.tombolTambah}
+        activeOpacity={0.8}
+        onPress={() => setDraf({ data: { ...MANFAAT_KOSONG }, index: null, galat: {} })}
+      >
+        <Icon name="plus" size={16} color={brand[700]} />
+        <Text style={styles.teksTambah}>Tambah manfaat</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  const d = draf?.data;
+  const ubahDraf = (k: keyof Manfaat, v: any) =>
+    draf && setDraf({ ...draf, data: { ...draf.data, [k]: v }, galat: { ...draf.galat, [k]: '' } });
+
+  return (
+    <KeyboardAvoidingView
+      style={[gs.screen, { backgroundColor: slate[100] }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <View style={styles.langkah}>
+        {[
+          { n: 1, label: 'Kaizen' },
+          { n: 2, label: 'Manfaat' },
+        ].map((s) => {
+          const on = langkah >= s.n;
+          return (
+            <View key={s.n} style={gs.flex1}>
+              <View style={[styles.batang, on && styles.batangAktif]} />
+              <Text style={[styles.teksLangkah, on && styles.teksLangkahAktif]}>
+                {s.n}. {s.label}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.isi}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {langkah === 1 ? langkah1 : langkah2}
+      </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md }]}>
+        {langkah === 2 ? (
+          <TouchableOpacity style={styles.kembali} onPress={() => setLangkah(1)} disabled={mengirim}>
+            <Icon name="arrow-left" size={18} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity
+          style={[styles.kirim, gs.flex1, (mengirim || (langkah === 2 && !manfaat.length)) && { opacity: 0.6 }]}
+          activeOpacity={0.85}
+          onPress={langkah === 1 ? lanjut : kirim}
+          disabled={mengirim}
+        >
+          {mengirim ? (
+            <BrandSpinner size={22} color={Colors.white} />
+          ) : (
+            <Text style={styles.kirimText}>{langkah === 1 ? 'Lanjut ke Manfaat' : 'Kirim Kaizen'}</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <SheetKaryawan
+        visible={sheetOrang !== null}
+        judul={sheetOrang === 'pelaksana' ? 'Pilih Pelaksana' : sheetOrang === 'saran' ? 'Disarankan Oleh' : 'Pilih PIC'}
+        onClose={() => setSheetOrang(null)}
+        onPilih={pilihOrang}
+      />
+
+      <BottomSheet visible={sheetSumber} onClose={() => setSheetSumber(false)} title="Upload foto">
+        {[
+          { sumber: 'kamera' as const, ikon: 'camera-plus-outline', label: 'Ambil dari kamera' },
+          { sumber: 'galeri' as const, ikon: 'image', label: `Pilih dari galeri${fotos.length === 0 ? ' (maks 2)' : ''}` },
+        ].map((o) => (
+          <TouchableOpacity
+            key={o.sumber}
+            style={styles.barisSumber}
+            activeOpacity={0.6}
+            onPress={() => {
+              setSheetSumber(false);
+              // Beri waktu sheet tertutup sebelum picker sistem terbuka.
+              setTimeout(() => tambahFoto(o.sumber), 250);
+            }}
+          >
+            <View style={styles.ikonSumber}>
+              <Icon name={o.ikon} size={18} color={brand[700]} />
+            </View>
+            <Text style={styles.teksBarisSumber}>{o.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </BottomSheet>
+
+      <EditorFoto
+        visible={editor !== null}
+        fotos={editor?.fotos ?? []}
+        awal={editor?.awal ?? 0}
+        onBatal={() => setEditor(null)}
+        onSelesai={(hasil) => {
+          setFotos(hasil);
+          setEditor(null);
+          setGalat((g) => ({ ...g, foto: '' }));
+        }}
+      />
+
+      <BottomSheet
+        visible={draf !== null && sheetOrang === null}
+        onClose={() => setDraf(null)}
+        title={draf?.index === null ? 'Tambah Manfaat' : 'Ubah Manfaat'}
+        penuh
+      >
+        {d && draf ? (
+          <View style={styles.isiSheet}>
+            <View style={styles.field}>
+              <Text style={styles.label}>
+                Kategori manfaat<Text style={styles.wajib}> *</Text>
+              </Text>
+              <View style={styles.chips}>
+                {opsi.kategori.map((k) => {
+                  const on = d.kategori === k.id;
+                  const l = LENCANA[k.kategori];
+                  return (
+                    <TouchableOpacity
+                      key={k.id}
+                      style={[styles.chip, styles.chipIkon, on && { backgroundColor: l?.warna[1] ?? Colors.textPrimary, borderColor: l?.warna[1] ?? Colors.textPrimary }]}
+                      onPress={() => ubahDraf('kategori', k.id)}
+                    >
+                      {l ? <Icon name={l.ikon} size={14} color={on ? Colors.white : l.warna[2]} /> : null}
+                      <Text style={[styles.teksChip, on && styles.teksChipAktif]}>{k.kategori}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              {draf.galat.kategori ? <Text style={styles.galat}>{draf.galat.kategori}</Text> : null}
+            </View>
+            <Kolom label="Kondisi sebelum" wajib maks={255} placeholder="Bagaimana kondisinya sebelum Kaizen?" value={d.sebelum} onChangeText={(v) => ubahDraf('sebelum', v)} galat={draf.galat.sebelum} />
+            <Kolom label="Hasil sesudah" wajib maks={255} placeholder="Bagaimana hasilnya sesudah Kaizen?" value={d.sesudah} onChangeText={(v) => ubahDraf('sesudah', v)} galat={draf.galat.sesudah} />
+            <Kolom label="Penghematan yang dihasilkan" wajib maks={255} placeholder="Contoh: Rp 2 juta/bulan, 15 menit/shift" value={d.hemat} onChangeText={(v) => ubahDraf('hemat', v)} galat={draf.galat.hemat} />
+            <View style={styles.field}>
+              <Text style={styles.label}>Pelaksanaan</Text>
+              <View style={styles.segmen}>
+                {(['Internal', 'Eksternal'] as const).map((p) => {
+                  const on = d.pelaksanaan === p;
+                  return (
+                    <TouchableOpacity key={p} style={[styles.ruas, on && styles.ruasAktif]} onPress={() => ubahDraf('pelaksanaan', p)}>
+                      <Text style={[styles.teksRuas, on && styles.teksRuasAktif]}>
+                        {p === 'Internal' ? 'Dalam perusahaan' : 'Luar perusahaan'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+            <Kolom label="Area / tempat" wajib maks={255} placeholder="Nama area atau tempat Kaizen" value={d.area} onChangeText={(v) => ubahDraf('area', v)} galat={draf.galat.area} />
+            <BarisOrang label="PIC area setelah Kaizen" wajib orang={d.pic} galat={draf.galat.pic} onPilih={() => setSheetOrang('pic')} />
+            <TouchableOpacity style={styles.kirim} activeOpacity={0.85} onPress={simpanDraf}>
+              <Text style={styles.kirimText}>{draf.index === null ? 'Tambahkan' : 'Simpan perubahan'}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      </BottomSheet>
+    </KeyboardAvoidingView>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  header: {
+  langkah: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl * 1.5,
-    paddingBottom: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
     backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
   },
-  backButton: {
-    padding: 4,
+  batang: {
+    height: 4,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: slate[200],
   },
-  headerTitle: {
-    fontSize: 16,
-    fontFamily: fonts.bold,
+  batangAktif: {
+    backgroundColor: Colors.primary,
+  },
+  teksLangkah: {
+    marginTop: 6,
+    fontSize: 11,
+    fontFamily: fonts.semibold,
+    color: Colors.textTertiary,
+  },
+  teksLangkahAktif: {
     color: Colors.textPrimary,
   },
-  scrollContent: {
+  isi: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.xxl,
   },
-  alertBox: {
-    flexDirection: 'row',
-    backgroundColor: brand[50],
+  isiSheet: {
+    paddingHorizontal: Spacing.lg,
+  },
+  judulBagian: {
+    fontSize: 11,
+    fontFamily: fonts.semibold,
+    color: Colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: Spacing.sm,
+    marginLeft: Spacing.xs,
+  },
+  kartu: {
+    ...gs.card,
     padding: Spacing.md,
-    borderRadius: 8,
-    marginBottom: Spacing.xl,
-    alignItems: 'flex-start',
-  },
-  alertText: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 12,
-    color: brand[700],
-    lineHeight: 18,
-  },
-  formGroup: {
+    paddingBottom: Spacing.xs,
     marginBottom: Spacing.lg,
   },
-  rowGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  field: {
+    marginBottom: Spacing.md,
   },
   label: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.medium,
     color: Colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  required: {
+  wajib: {
     color: Colors.danger,
+  },
+  opsional: {
+    color: Colors.textTertiary,
+    fontFamily: fonts.regular,
+  },
+  hitung: {
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.borderSubtle,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderColor: Colors.border,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
     color: Colors.textPrimary,
     backgroundColor: slate[50],
     ...inputReset,
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 84,
     textAlignVertical: 'top',
   },
-  uploadBtn: {
+  inputGalat: {
+    borderColor: Colors.danger,
+  },
+  galat: {
+    marginTop: 4,
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.danger,
+  },
+  orang: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 8,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
+    backgroundColor: slate[50],
   },
-  uploadBtnText: {
-    marginLeft: 8,
+  ikonCari: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  namaOrang: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.semibold,
+    color: Colors.textPrimary,
+  },
+  nikOrang: {
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+  },
+  placeholderOrang: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.placeholder,
+  },
+  ganti: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.semibold,
+    color: brand[700],
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  chip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.white,
+  },
+  chipIkon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  chipAktif: {
+    backgroundColor: Colors.textPrimary,
+    borderColor: Colors.textPrimary,
+  },
+  teksChip: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.medium,
+    color: Colors.textSecondary,
+  },
+  teksChipAktif: {
+    color: Colors.white,
+    fontFamily: fonts.semibold,
+  },
+  plant: {
+    gap: 6,
+    marginBottom: Spacing.sm,
+  },
+  teksPlant: {
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+  },
+  gridFoto: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  ubinFoto: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
+    overflow: 'hidden',
+    backgroundColor: slate[100],
+  },
+  ubinKosong: {
+    aspectRatio: undefined,
+    height: 88,
+    flexDirection: 'row',
+  },
+  ubinTambah: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: brand[200],
+    backgroundColor: brand[50],
+  },
+  gambar: {
+    width: '100%',
+    height: '100%',
+  },
+  tagFoto: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    backgroundColor: 'rgba(15,23,42,0.75)',
+  },
+  teksTag: {
+    fontSize: 10,
+    fontFamily: fonts.semibold,
+    color: Colors.white,
+  },
+  hapusFoto: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  barisSumber: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+  },
+  ikonSumber: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: brand[50],
+  },
+  teksBarisSumber: {
     fontSize: 13,
     fontFamily: fonts.semibold,
-    color: Colors.primary,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.borderSubtle,
-    marginVertical: Spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
+  },
+  teksSumber: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.semibold,
+    color: brand[700],
+  },
+  ket: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.sm,
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+  },
+  ringkas: {
+    ...gs.card,
+    padding: Spacing.md,
     marginBottom: Spacing.lg,
   },
+  ringkasLabel: {
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+  },
+  ringkasTema: {
+    marginTop: 2,
+    fontSize: 13,
+    fontFamily: fonts.semibold,
+    color: Colors.textPrimary,
+  },
+  kosongManfaat: {
+    paddingVertical: Spacing.md,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  barisManfaat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  garisAtas: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.border,
+  },
+  logoManfaat: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  judulManfaat: {
+    fontSize: 13,
+    fontFamily: fonts.semibold,
+    color: Colors.textPrimary,
+  },
+  subManfaat: {
+    marginTop: 1,
+    fontSize: 11,
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary,
+  },
+  tombolTambah: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: brand[200],
+    backgroundColor: brand[50],
+  },
+  teksTambah: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.semibold,
+    color: brand[700],
+  },
+  segmen: {
+    flexDirection: 'row',
+    padding: 3,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    backgroundColor: slate[100],
+  },
+  ruas: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 7,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+  },
+  ruasAktif: {
+    backgroundColor: Colors.white,
+  },
+  teksRuas: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.medium,
+    color: Colors.textSecondary,
+  },
+  teksRuasAktif: {
+    color: Colors.textPrimary,
+    fontFamily: fonts.semibold,
+  },
   footer: {
-    padding: Spacing.lg,
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
     borderTopColor: Colors.borderSubtle,
   },
-  submitButton: {
-    backgroundColor: brand[600],
-    paddingVertical: 14,
-    borderRadius: 24,
+  kembali: {
+    width: 48,
+    height: 48,
+    borderRadius: Spacing.radius.full,
+    borderWidth: 1,
+    borderColor: Colors.border,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  submitButtonText: {
+  kirim: {
+    height: 48,
+    backgroundColor: Colors.primary,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kirimText: {
     color: Colors.white,
-    fontSize: 15,
-    fontFamily: fonts.bold,
+    fontSize: 14,
+    fontFamily: fonts.semibold,
+  },
+  gagal: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+  },
+  tombolUlang: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: Colors.primary,
+  },
+  teksUlang: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.semibold,
+    color: Colors.white,
   },
 });

@@ -6,9 +6,8 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
+import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import SectionHeader from '../common/SectionHeader';
@@ -50,7 +49,7 @@ const MOCK_NEWS: NewsItem[] = [
 
 export default function NewsCarousel() {
   return (
-    <View style={gs.section}>
+    <View style={styles.section}>
       <SectionHeader title="Berita Terbaru" onAction={() => {}} />
 
       <ScrollView
@@ -61,17 +60,11 @@ export default function NewsCarousel() {
         snapToInterval={CARD_WIDTH + Spacing.md}
       >
         {MOCK_NEWS.map((news) => (
-          <LinearGradient
-            key={news.id}
-            colors={news.colors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.card}
-          >
+          <View key={news.id} style={[styles.card, { backgroundColor: news.colors[0] }]}>
             <Text style={styles.cardIcon}>{news.icon}</Text>
             <Text style={styles.cardTitle}>{news.title}</Text>
             <Text style={styles.cardExcerpt}>{news.excerpt}</Text>
-          </LinearGradient>
+          </View>
         ))}
       </ScrollView>
     </View>
@@ -79,6 +72,9 @@ export default function NewsCarousel() {
 }
 
 const styles = StyleSheet.create({
+  section: {
+    marginBottom: Spacing.lg,
+  },
   scrollContent: {
     paddingHorizontal: Spacing.screenPadding,
     gap: Spacing.md,
@@ -89,7 +85,6 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     minHeight: 130,
     justifyContent: 'flex-end',
-    ...Shadows.raised,
   },
   cardIcon: {
     fontSize: 28,

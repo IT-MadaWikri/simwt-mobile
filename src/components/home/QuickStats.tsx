@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
@@ -50,14 +50,14 @@ const STATS: StatItem[] = [
 
 export default function QuickStats() {
   return (
-    <View style={gs.section}>
+    <View style={styles.section}>
       <SectionHeader title="Ringkasan" />
 
       <View style={[gs.row, gs.containerX, gs.gapSm]}>
         {STATS.map((stat) => (
           <View key={stat.label} style={[gs.card, styles.card]}>
             <View style={[styles.iconBg, { backgroundColor: stat.bgColor }]}>
-              <MaterialCommunityIcons name={stat.icon as any} size={20} color={stat.color} />
+              <Icon name={stat.icon as any} size={20} color={stat.color} />
             </View>
             <Text style={[gs.metric, styles.value]}>{stat.value}</Text>
             <Text style={[gs.caption, gs.textCenter]}>{stat.label}</Text>
@@ -69,6 +69,9 @@ export default function QuickStats() {
 }
 
 const styles = StyleSheet.create({
+  section: {
+    marginBottom: Spacing.lg,
+  },
   card: {
     flex: 1,
     alignItems: 'center',

@@ -30,7 +30,7 @@
  */
 import { Platform, StyleSheet, TextStyle } from 'react-native';
 import Colors, { brand, slate } from './Colors';
-import Spacing, { Shadows } from './Spacing';
+import Spacing from './Spacing';
 import Typography, { fonts } from './Typography';
 
 const { sizes, lineHeights, letterSpacing } = Typography;
@@ -52,19 +52,6 @@ export const inputReset = Platform.select({
   web: { outlineStyle: 'none' } as unknown as TextStyle,
   default: {} as TextStyle,
 });
-
-/**
- * Pasangan warna untuk `<LinearGradient>`.
- * `primary` meniru `bg-gradient-to-r from-brand-700 to-brand-500` di karir-mwt.
- */
-export const gradients = {
-  primary: [brand[700], brand[500]] as const,
-  primarySoft: [brand[500], brand[400]] as const,
-  /** Latar gelap ala layar muat karir-mwt (`.ls-overlay`). */
-  dark: [brand[800], brand[900]] as const,
-  /** Selubung agar teks putih tetap terbaca di atas gambar. */
-  scrim: ['transparent', 'rgba(4,61,35,0.85)'] as const,
-};
 
 export const gs = StyleSheet.create({
   // ══════════════════════════════════════════════════════════════════════
@@ -181,10 +168,11 @@ export const gs = StyleSheet.create({
     letterSpacing: letterSpacing.wide,
     marginBottom: Spacing.xs,
   },
+  /** Teks isi standar — 12px (lihat `ukuranIsi`). */
   body: {
     fontFamily: fonts.regular,
-    fontSize: sizes.md,
-    lineHeight: sizes.md * lineHeights.relaxed,
+    fontSize: sizes.sm,
+    lineHeight: sizes.sm * lineHeights.relaxed,
     color: Colors.textSecondary,
   },
   bodySm: {
@@ -234,23 +222,24 @@ export const gs = StyleSheet.create({
   cardSoft: {
     backgroundColor: Colors.card,
     borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
-    ...Shadows.card,
   },
   /** Kartu yang sudah berisi padding — pemakaian paling umum. */
   card: {
     backgroundColor: Colors.card,
     borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     padding: Spacing.cardPadding,
-    ...Shadows.card,
   },
   /** Kartu bernuansa brand, untuk menyorot satu hal penting. */
   cardBrand: {
     backgroundColor: brand[50],
     borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: brand[100],
     padding: Spacing.cardPadding,
@@ -258,8 +247,8 @@ export const gs = StyleSheet.create({
   cardRaised: {
     backgroundColor: Colors.card,
     borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     padding: Spacing.cardPadding,
-    ...Shadows.raised,
   },
 
   /** Baris daftar di dalam kartu: label di kiri, nilai di kanan. */
@@ -269,6 +258,7 @@ export const gs = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: Colors.card,
     borderRadius: Spacing.radius.lg,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     paddingVertical: Spacing.md,
@@ -305,17 +295,13 @@ export const gs = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
     borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xxl,
   },
-  /**
-   * Tombol utama versi rata (tanpa gradien).
-   * Untuk versi bergradien seperti karir-mwt, bungkus `<LinearGradient>`
-   * dengan `gradients.primary` lalu pakai `gs.btn` di dalamnya.
-   */
+  /** Tombol utama — warna rata, tanpa gradasi dan tanpa bayangan. */
   btnPrimary: {
     backgroundColor: brand[600],
-    ...Shadows.brand,
   },
   btnOutline: {
     backgroundColor: 'transparent',
@@ -352,8 +338,6 @@ export const gs = StyleSheet.create({
   btnDisabled: {
     backgroundColor: Colors.disabled,
     borderColor: Colors.disabled,
-    shadowOpacity: 0,
-    elevation: 0,
   },
 
   /** Teks di dalam tombol. Gabungkan dengan pengubah warna di bawah. */
@@ -373,6 +357,7 @@ export const gs = StyleSheet.create({
   field: {
     width: '100%',
     borderRadius: Spacing.radius.lg,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: Colors.border,
     backgroundColor: Colors.card,
@@ -397,6 +382,7 @@ export const gs = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     borderRadius: Spacing.radius.lg,
+    ...Spacing.curve,
     borderWidth: 1,
     borderColor: Colors.border,
     backgroundColor: Colors.card,
@@ -417,12 +403,12 @@ export const gs = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
     backgroundColor: Colors.card,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    ...Shadows.card,
   },
   errorText: {
     fontFamily: fonts.regular,
@@ -441,6 +427,7 @@ export const gs = StyleSheet.create({
     gap: Spacing.xs,
     alignSelf: 'flex-start',
     borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
   },
@@ -468,6 +455,7 @@ export const gs = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: Spacing.radius.lg,
+    ...Spacing.curve,
     backgroundColor: brand[50],
   },
   /** Ubin besar untuk grid layanan di beranda. */
@@ -477,6 +465,7 @@ export const gs = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     backgroundColor: brand[50],
   },
   /** Avatar bulat. */
@@ -484,6 +473,7 @@ export const gs = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
     backgroundColor: brand[50],
     alignItems: 'center',
     justifyContent: 'center',

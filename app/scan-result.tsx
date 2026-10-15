@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../src/components/common/Icon';
 import Colors from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import api from '../src/services/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts } from '../constants/Typography';
 import { dialog } from '../src/components/common/AppDialog';
-import LoadingSpinner from '../src/components/common/LoadingSpinner';
+import { SkeletonDetail } from '../src/components/common/Skeleton';
 
 // API base dari konfig yang diminta user
 const API_URL = 'https://api.mwtpart.co.id/api';
@@ -59,8 +59,8 @@ export default function ScanResultScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <LoadingSpinner message="Mencari Data Aset..." />
+      <View style={{ flex: 1, backgroundColor: Colors.background }}>
+        <SkeletonDetail />
       </View>
     );
   }
@@ -68,7 +68,7 @@ export default function ScanResultScreen() {
   if (error || !data) {
     return (
       <View style={styles.centerContainer}>
-        <MaterialCommunityIcons name="alert-circle-outline" size={60} color={Colors.danger} />
+        <Icon name="alert-circle-outline" size={60} color={Colors.danger} />
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Kembali</Text>
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
-    borderRadius: 8,
+    borderRadius: Spacing.radius.full,
   },
   backButtonText: {
     color: Colors.white,
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: Colors.white,
-    borderRadius: 4,
+    borderRadius: Spacing.radius.xl,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
     borderWidth: 1,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: '#0056B3', // Warna biru sesuai gambar user
     paddingVertical: 14,
-    borderRadius: 4,
+    borderRadius: Spacing.radius.full,
     alignItems: 'center',
   },
   primaryButtonText: {

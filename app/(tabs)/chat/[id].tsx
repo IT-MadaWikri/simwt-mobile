@@ -26,11 +26,11 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
+import Spacing from '../../../constants/Spacing';
 import Typography, { fonts } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
@@ -57,13 +57,13 @@ function jam(waktu: number): string {
 /** Ikon status di pojok gelembung keluar. */
 function IkonStatus({ status }: { status: PesanChat['status'] }) {
   if (status === 'menunggu') {
-    return <MaterialCommunityIcons name="clock-outline" size={13} color={Colors.textTertiary} />;
+    return <Icon name="clock-outline" size={13} color={Colors.textTertiary} />;
   }
   if (status === 'gagal') {
-    return <MaterialCommunityIcons name="alert-circle-outline" size={13} color={Colors.danger} />;
+    return <Icon name="alert-circle-outline" size={13} color={Colors.danger} />;
   }
   return (
-    <MaterialCommunityIcons
+    <Icon
       name={status === 'dibaca' ? 'check-all' : 'check'}
       size={14}
       color={status === 'dibaca' ? brand[500] : Colors.textTertiary}
@@ -224,7 +224,7 @@ export default function RuangChatScreen() {
         >
           {item.pesan.lampiran && (
             <View style={[gs.row, gs.gapSm, styles.lampiranBubble]}>
-              <MaterialCommunityIcons
+              <Icon
                 name={item.pesan.lampiran.tipe.includes('image') ? 'image' : 'file-document'}
                 size={20}
                 color={brand[700]}
@@ -261,12 +261,12 @@ export default function RuangChatScreen() {
             style={styles.tombolHeader}
             accessibilityLabel="Kembali"
           >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.white} />
+            <Icon name="arrow-left" size={24} color={Colors.white} />
           </TouchableOpacity>
 
           <View style={styles.avatarHeader}>
             {kontak.ai ? (
-              <MaterialCommunityIcons name="creation" size={20} color={brand[600]} />
+              <Icon name="creation" size={20} color={brand[600]} />
             ) : (
               <Text style={styles.avatarHeaderTeks}>
                 {kontak.nama
@@ -295,7 +295,7 @@ export default function RuangChatScreen() {
             style={styles.tombolHeader}
             accessibilityLabel="Bersihkan chat"
           >
-            <MaterialCommunityIcons name="delete-outline" size={22} color={Colors.white} />
+            <Icon name="delete-outline" size={22} color={Colors.white} />
           </TouchableOpacity>
         </View>
 
@@ -336,12 +336,12 @@ export default function RuangChatScreen() {
         {/* ── Bilah tulis ────────────────────────────────────────────── */}
         {lampiran && (
           <View style={[gs.row, gs.gapSm, styles.pratinjauLampiran]}>
-            <MaterialCommunityIcons name="paperclip" size={16} color={brand[700]} />
+            <Icon name="paperclip" size={16} color={brand[700]} />
             <Text style={[gs.bodySm, gs.flex1]} numberOfLines={1}>
               {lampiran.nama}
             </Text>
             <TouchableOpacity onPress={() => setLampiran(null)}>
-              <MaterialCommunityIcons name="close" size={18} color={Colors.textSecondary} />
+              <Icon name="close" size={18} color={Colors.textSecondary} />
             </TouchableOpacity>
           </View>
         )}
@@ -349,7 +349,7 @@ export default function RuangChatScreen() {
         <View style={[styles.bilahTulis, { paddingBottom: insets.bottom + Spacing.sm }]}>
           <View style={styles.kapsulInput}>
             <TouchableOpacity onPress={pilihLampiran} accessibilityLabel="Lampirkan berkas">
-              <MaterialCommunityIcons name="paperclip" size={20} color={Colors.textTertiary} />
+              <Icon name="paperclip" size={20} color={Colors.textTertiary} />
             </TouchableOpacity>
             <TextInput
               style={styles.input}
@@ -368,7 +368,7 @@ export default function RuangChatScreen() {
             activeOpacity={0.85}
             accessibilityLabel="Kirim pesan"
           >
-            <MaterialCommunityIcons name="send" size={18} color={Colors.white} />
+            <Icon name="send" size={18} color={Colors.white} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -399,7 +399,6 @@ const styles = {
     // ruang percakapan, bukan garis datar yang menempel ke status bar.
     borderBottomLeftRadius: Spacing.radius.xl,
     borderBottomRightRadius: Spacing.radius.xl,
-    ...Shadows.raised,
   },
   tombolHeader: {
     padding: Spacing.sm,
@@ -458,7 +457,6 @@ const styles = {
     borderRadius: Spacing.radius.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
-    ...Shadows.card,
   },
   chipTeks: {
     fontFamily: fonts.medium,
@@ -571,6 +569,5 @@ const styles = {
     backgroundColor: brand[600],
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    ...Shadows.brand,
   },
 };

@@ -7,14 +7,14 @@
  * percakapannya tersimpan lokal dan pesan keluar berstatus jam pasir.
  */
 import React, { useCallback, useState } from 'react';
+import AppBar from '../../../src/components/common/AppBar';
 import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
-import Typography, { fonts } from '../../../constants/Typography';
+import Spacing from '../../../constants/Spacing';
+import Typography, { fonts, judulAppBar } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { chatService } from '../../../src/services/chatService';
@@ -89,16 +89,11 @@ export default function DaftarChatScreen() {
 
     const avatar = kontak.ai ? (
       // Cincin gradien ala Meta AI: avatar dibungkus gradien brand tipis.
-      <LinearGradient
-        colors={[brand[400], brand[600], brand[800]]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.avatarRing}
-      >
+      <View style={[styles.avatarRing, { backgroundColor: brand[500] }]}>
         <View style={[styles.avatar, { backgroundColor: Colors.white }]}>
-          <MaterialCommunityIcons name="creation" size={24} color={brand[600]} />
+          <Icon name="creation" size={24} color={brand[600]} />
         </View>
-      </LinearGradient>
+      </View>
     ) : (
       <View style={[styles.avatar, { backgroundColor: brand[100] }]}>
         <Text style={styles.avatarInisial}>{inisial(kontak.nama)}</Text>
@@ -144,25 +139,13 @@ export default function DaftarChatScreen() {
   };
 
   return (
-    <View style={[gs.screenPlain, { paddingTop: insets.top }]}>
-      {/* Bilah judul: tombol kembali ke beranda + nama besar. Tab bar
-          disembunyikan di seluruh tumpukan chat, jadi tanpa tombol ini
-          pengguna tidak punya jalan pulang. */}
-      <View style={[gs.row, styles.kepala]}>
-        <TouchableOpacity
-          onPress={() => router.push('/(tabs)' as any)}
-          style={styles.tombolKembali}
-          accessibilityLabel="Kembali ke beranda"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={brand[700]} />
-        </TouchableOpacity>
-        <Text style={[styles.judul, gs.flex1]}>Chat</Text>
-      </View>
+    <View style={gs.screenPlain}>
+      <AppBar judul="Chat" />
 
       {/* Pencarian pil. */}
-      <View style={[gs.containerX, { marginBottom: Spacing.sm }]}>
+      <View style={[gs.containerX, { marginVertical: Spacing.sm }]}>
         <View style={[gs.searchBar, { paddingVertical: Spacing.xs }]}>
-          <MaterialCommunityIcons name="magnify" size={20} color={Colors.textTertiary} />
+          <Icon name="magnify" size={20} color={Colors.textTertiary} />
           <TextInput
             style={gs.fieldInner}
             placeholder="Cari kontak..."
@@ -193,7 +176,7 @@ export default function DaftarChatScreen() {
         onPress={() => router.push('/(tabs)/chat/baru' as any)}
         accessibilityLabel="Mulai chat baru"
       >
-        <MaterialCommunityIcons name="message-plus-outline" size={24} color={Colors.white} />
+        <Icon name="message-plus-outline" size={24} color={Colors.white} />
       </TouchableOpacity>
     </View>
   );
@@ -202,23 +185,6 @@ export default function DaftarChatScreen() {
 const AVATAR = 50;
 
 const styles = {
-  kepala: {
-    paddingHorizontal: Spacing.screenPadding,
-    // Ruang napas ekstra di bawah status bar — tanpa ini judul terasa
-    // menempel ke tepi atas layar.
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.md,
-    gap: Spacing.sm,
-  },
-  tombolKembali: {
-    padding: Spacing.xs,
-    marginLeft: -Spacing.xs,
-  },
-  judul: {
-    fontFamily: fonts.bold,
-    fontSize: Typography.sizes.xxl,
-    color: brand[700],
-  },
   baris: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -285,6 +251,5 @@ const styles = {
     backgroundColor: brand[600],
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    ...Shadows.brand,
   },
 };

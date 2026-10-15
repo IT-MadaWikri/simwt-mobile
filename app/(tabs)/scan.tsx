@@ -20,11 +20,11 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
-import Typography, { fonts } from '../../constants/Typography';
+import Typography, { fonts, judulAppBar } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
 import LoadingSpinner from '../../src/components/common/LoadingSpinner';
 
@@ -87,7 +87,7 @@ export default function ScanScreen() {
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <MaterialCommunityIcons name={icon as any} size={22} color={Colors.white} />
+      <Icon name={icon as any} size={22} color={Colors.white} />
     </TouchableOpacity>
   );
 
@@ -103,7 +103,7 @@ export default function ScanScreen() {
     return (
       <View style={[gs.screen, gs.centerFill]}>
         <View style={[gs.iconTileLg, { width: 72, height: 72 }]}>
-          <MaterialCommunityIcons name="camera-off-outline" size={34} color={brand[600]} />
+          <Icon name="camera-off-outline" size={34} color={brand[600]} />
         </View>
         <Text style={[gs.emptyTitle, { marginTop: Spacing.lg }]}>Izin Kamera Diperlukan</Text>
         <Text style={gs.emptyText}>
@@ -231,8 +231,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
   },
   judul: {
-    fontFamily: fonts.semibold,
-    fontSize: Typography.sizes.lg,
+    ...judulAppBar,
     color: Colors.white,
   },
   tombolBulat: {
@@ -284,10 +283,6 @@ const styles = StyleSheet.create({
     right: TEBAL_SUDUT,
     height: 2,
     backgroundColor: brand[400],
-    shadowColor: brand[400],
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
   },
 
   petunjuk: {

@@ -14,6 +14,8 @@ export interface User {
   /** ID plant pengguna — dikirim endpoint /user (kolom `plant` di tabel pengguna). */
   plant?: number | string;
   phone?: string;
+  /** NIK karyawan, mis. 3075.231201.CKR. */
+  nik?: string;
   created_at?: string;
   updated_at?: string;
 }

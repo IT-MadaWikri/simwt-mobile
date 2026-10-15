@@ -8,14 +8,14 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
+import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import { tiketService, TiketRingkas } from '../../../src/services/tiketService';
 import { jalankanSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
+import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
 /** Rupa lencana per status — PENDING kuning, PROSES brand, OK netral. */
 const STATUS: Record<string, { label: string; badge: any; text: any; icon: string }> = {
@@ -61,7 +61,7 @@ export default function TiketSayaScreen() {
   if (memuat) {
     return (
       <View style={gs.screen}>
-        <LoadingSpinner message="Memuat riwayat tiket..." />
+        <SkeletonDaftar />
       </View>
     );
   }
@@ -85,7 +85,7 @@ export default function TiketSayaScreen() {
         }
         ListEmptyComponent={
           <View style={[gs.card, gs.center, { marginTop: Spacing.xl }]}>
-            <MaterialCommunityIcons
+            <Icon
               name={galat ? 'alert-circle-outline' : 'ticket-confirmation-outline'}
               size={44}
               color={Colors.textTertiary}
@@ -118,7 +118,7 @@ export default function TiketSayaScreen() {
               <View style={gs.rowBetween}>
                 <Text style={[gs.caption, gs.textSemibold]}>#{item.no_ticket}</Text>
                 <View style={[gs.badge, status.badge]}>
-                  <MaterialCommunityIcons
+                  <Icon
                     name={status.icon as any}
                     size={12}
                     color={(status.text as any).color}
@@ -151,7 +151,7 @@ export default function TiketSayaScreen() {
         onPress={() => router.push('/services/tiket/buat' as any)}
         accessibilityLabel="Buat tiket baru"
       >
-        <MaterialCommunityIcons name="plus" size={26} color={Colors.white} />
+        <Icon name="plus" size={26} color={Colors.white} />
         <Text style={[gs.btnText, gs.btnTextOnBrand]}>Buat Tiket</Text>
       </TouchableOpacity>
     </View>
@@ -169,6 +169,5 @@ const styles = {
     borderRadius: Spacing.radius.full,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
-    ...Shadows.brand,
   },
 };

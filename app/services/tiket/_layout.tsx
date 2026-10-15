@@ -4,21 +4,16 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import Colors from '../../../constants/Colors';
-import { fonts } from '../../../constants/Typography';
-import TombolKembali from '../../../src/components/common/TombolKembali';
+import { fonts, judulAppBar } from '../../../constants/Typography';
+import { opsiAppBar } from '../../../src/components/common/AppBar';
 
 export default function TiketLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: Colors.white,
-        headerTitleStyle: { fontFamily: fonts.semibold },
-        headerShadowVisible: false,
-        // Layar PERTAMA tumpukan ini tidak dapat tombol kembali otomatis —
-        // ia akar tumpukannya sendiri, walau tumpukan induk masih bisa
-        // dimundurkan. Dipasang manual supaya tidak ada layar buntu.
-        headerLeft: () => <TombolKembali />,
+        // App bar standar. Layar PERTAMA tumpukan ini tidak dapat tombol
+        // kembali otomatis, jadi `opsiAppBar` memasang TombolKembali.
+        ...opsiAppBar,
         // Selaras dengan Stack akar — lihat penjelasan di app/_layout.tsx.
         animation: 'ios_from_right',
         animationDuration: 260,

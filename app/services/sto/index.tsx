@@ -8,16 +8,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, judulAppBar } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import { stoService, StoLembar, StoPeriode } from '../../../src/services/stoService';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
-import TombolKembali from '../../../src/components/common/TombolKembali';
+import AppBar from '../../../src/components/common/AppBar';
+import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
 /** Rupa lencana per status periode. */
 const STATUS: Record<string, { label: string; badge: any; text: any }> = {
@@ -84,17 +84,7 @@ export default function StoScreen() {
   };
 
   const layar = (
-    <Stack.Screen
-      options={{
-        headerShown: true,
-        headerTitle: 'Stok Opname',
-        headerLeft: () => <TombolKembali />,
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: Colors.white,
-        headerTitleStyle: { fontFamily: fonts.semibold },
-        headerShadowVisible: false,
-      }}
-    />
+    <AppBar judul={'Stok Opname'} />
   );
 
   if (memuat) {
@@ -102,7 +92,7 @@ export default function StoScreen() {
       <>
         {layar}
         <View style={gs.screen}>
-          <LoadingSpinner message="Memuat data Stok Opname..." />
+          <SkeletonDaftar />
         </View>
       </>
     );
@@ -127,7 +117,7 @@ export default function StoScreen() {
       >
         {galat ? (
           <View style={[gs.card, gs.center]}>
-            <MaterialCommunityIcons
+            <Icon
               name="alert-circle-outline"
               size={44}
               color={Colors.textTertiary}
@@ -143,7 +133,7 @@ export default function StoScreen() {
           </View>
         ) : periode.length === 0 ? (
           <View style={[gs.card, gs.center]}>
-            <MaterialCommunityIcons
+            <Icon
               name="clipboard-text-off-outline"
               size={44}
               color={Colors.textTertiary}
@@ -224,7 +214,7 @@ export default function StoScreen() {
                         <View style={gs.rowBetween}>
                           <View style={[gs.row, gs.gapMd, gs.flex1]}>
                             <View style={gs.iconTile}>
-                              <MaterialCommunityIcons
+                              <Icon
                                 name="file-table-outline"
                                 size={20}
                                 color={brand[600]}
@@ -268,7 +258,7 @@ export default function StoScreen() {
                               ? ` · ${item.belum_dihitung.toLocaleString('id-ID')} belum dihitung`
                               : ''}
                           </Text>
-                          <MaterialCommunityIcons
+                          <Icon
                             name="chevron-right"
                             size={20}
                             color={Colors.textTertiary}

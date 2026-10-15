@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { Employee, karyawanService } from '../../../src/services/karyawanService';
-import { fonts } from '../../../constants/Typography';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
+import { fonts, judulAppBar } from '../../../constants/Typography';
+import AppBar from '../../../src/components/common/AppBar';
 import { inputReset } from '../../../constants/GlobalStyles';
+import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
 export default function HumanCapitalScreen() {
   const router = useRouter();
@@ -79,12 +80,12 @@ export default function HumanCapitalScreen() {
         <View style={styles.badgesContainer}>
           {item.nik && (
             <View style={[styles.badge, { backgroundColor: brand[50] }]}>
-              <MaterialCommunityIcons name="badge-account-horizontal-outline" size={12} color={brand[700]} />
+              <Icon name="badge-account-horizontal-outline" size={12} color={brand[700]} />
               <Text style={[styles.badgeText, { color: brand[700] }]}>{item.nik}</Text>
             </View>
           )}
           <View style={[styles.badge, { backgroundColor: Colors.servicePurple }]}>
-            <MaterialCommunityIcons name="domain" size={12} color="#7e22ce" />
+            <Icon name="domain" size={12} color="#7e22ce" />
             <Text style={[styles.badgeText, { color: '#7e22ce' }]} numberOfLines={1}>
               {getDepartment(item)}
             </Text>
@@ -101,24 +102,11 @@ export default function HumanCapitalScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          headerTitle: 'Data Karyawan',
-          headerStyle: { backgroundColor: Colors.white },
-          headerTintColor: Colors.textPrimary,
-          headerShadowVisible: false,
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8, padding: 8 }}>
-              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-            </TouchableOpacity>
-          ),
-        }}
-      />
+      <AppBar judul={'Data Karyawan'} />
       <View style={styles.container}>
         <View style={styles.searchHeader}>
           <View style={styles.searchBar}>
-            <MaterialCommunityIcons name="magnify" size={24} color={Colors.textTertiary} />
+            <Icon name="magnify" size={24} color={Colors.textTertiary} />
             <TextInput
               style={styles.searchInput}
               placeholder="Cari nama, NIK, atau jabatan..."
@@ -128,16 +116,14 @@ export default function HumanCapitalScreen() {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <MaterialCommunityIcons name="close-circle" size={20} color={Colors.textTertiary} />
+                <Icon name="close-circle" size={20} color={Colors.textTertiary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
         {loading ? (
-          <View style={styles.centerContainer}>
-            <LoadingSpinner message="Memuat Direktori Karyawan..." />
-          </View>
+          <SkeletonDaftar avatar="bulat" />
         ) : (
           <FlatList
             data={filteredEmployees}
@@ -147,7 +133,7 @@ export default function HumanCapitalScreen() {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="account-search-outline" size={64} color={Colors.textTertiary} />
+                <Icon name="account-search-outline" size={64} color={Colors.textTertiary} />
                 <Text style={styles.emptyTitle}>Tidak Ditemukan</Text>
                 <Text style={styles.emptySubtitle}>Tidak ada karyawan yang cocok dengan pencarian Anda.</Text>
               </View>
@@ -195,11 +181,6 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.md,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
     alignItems: 'center',
   },
   avatar: {

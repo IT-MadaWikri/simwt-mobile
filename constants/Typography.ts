@@ -14,6 +14,10 @@
  *
  * Skala ukuran mengikuti kebutuhan mobile ala Gojek (padat, mudah dipindai),
  * bukan skala desktop karir-mwt.
+ *
+ * Teks UI ringkas — sapaan & subjudul header, input pencarian, label kecil —
+ * memakai `sizes.sm` (12px). Bedakan hierarki lewat varian family
+ * (`bold` vs `regular`), bukan lewat ukuran.
  */
 
 export const fonts = {
@@ -23,6 +27,15 @@ export const fonts = {
   bold: 'Poppins_700Bold',
   extrabold: 'Poppins_800ExtraBold',
 } as const;
+
+/**
+ * Ukuran teks isi konten (body, keterangan, input, chip, tombol) — STANDAR
+ * design system: 12px. Judul memakai ukuran lebih besar; caption 11px.
+ */
+export const ukuranIsi = 12;
+
+/** Gaya judul app bar — dipakai SEMUA header supaya ukurannya seragam. */
+export const judulAppBar = { fontFamily: fonts.bold, fontSize: 14 } as const;
 
 export const Typography = {
   fonts,

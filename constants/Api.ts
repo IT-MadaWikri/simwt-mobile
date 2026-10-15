@@ -1,74 +1,16 @@
 /**
  * API Configuration for SIMWT Mobile
  *
- * Semua nilai yang bisa berubah antar-lingkungan dibaca dari file `.env`
- * (lihat `.env.example` untuk template). Expo hanya mem-bundle variabel
- * berawalan `EXPO_PUBLIC_`, dan variabel itu WAJIB diakses lewat notasi titik
- * `process.env.EXPO_PUBLIC_X` supaya ikut di-inline saat bundling —
- * destructuring atau `process.env['X']` tidak akan tergantikan.
+ * Base URL dibaca dari `.env` (lihat `.env.example`). Mau pindah target
+ * (production / Laragon lokal) tinggal ganti nilai EXPO_PUBLIC_API_BASE_URL,
+ * lalu restart Metro dengan `npx expo start -c`.
  *
- * Ada dua target backend:
- *   - LOKAL      : Laragon (C:\laragon\www\api-simwt) lewat vhost port 8000
- *   - PRODUCTION : nilai EXPO_PUBLIC_API_BASE_URL
- *
- * Kenapa port 8000 dan bukan `api-simwt.test`?
- * Domain `.test` hanya ada di file hosts laptop (127.0.0.1), jadi HP fisik
- * maupun emulator tidak bisa me-resolve-nya. Vhost di
- * `C:\laragon\etc\apache2\sites-enabled\api-simwt-lan.conf` mendengarkan di
- * port 8000 tanpa pencocokan Host header, sehingga bisa diakses lewat IP LAN
- * laptop berapa pun (IP DHCP boleh berubah).
+ * Variabel WAJIB diakses lewat notasi titik `process.env.EXPO_PUBLIC_X`
+ * supaya ikut di-inline saat bundling.
  */
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-
-/** true = pakai Laravel lokal (Laragon), false = pakai server production. */
-export const USE_LOCAL_API = process.env.EXPO_PUBLIC_USE_LOCAL_API !== 'false';
-
-/** Port vhost LAN api-simwt di Laragon. Lihat api-simwt-lan.conf. */
-const LOCAL_API_PORT = process.env.EXPO_PUBLIC_LOCAL_API_PORT || '8000';
-
-/**
- * Dipakai kalau host dev server Expo tidak bisa dideteksi (mis. build
- * standalone/APK yang dipasang ke HP). Sesuaikan dengan IP Wi-Fi laptop.
- */
-const LOCAL_FALLBACK_HOST = process.env.EXPO_PUBLIC_LOCAL_API_HOST || '192.168.1.3';
-
-const PRODUCTION_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.madawikri.co.id/api';
-
-/**
- * Ambil hostname laptop dari dev server Expo (mis. "192.168.1.3:8081"),
- * supaya base URL ikut menyesuaikan otomatis saat IP laptop berubah.
- */
-function resolveLocalHost(): string {
-  const hostUri =
-    Constants.expoConfig?.hostUri ??
-    (Constants.expoGoConfig as { debuggerHost?: string } | undefined)?.debuggerHost;
-
-  const host = hostUri?.split(':')[0];
-
-  if (!host) {
-    return LOCAL_FALLBACK_HOST;
-  }
-
-  // Emulator Android tidak bisa menjangkau host lewat 127.0.0.1 —
-  // alamat khusus untuk mesin host adalah 10.0.2.2.
-  if ((host === 'localhost' || host === '127.0.0.1') && Platform.OS === 'android') {
-    return '10.0.2.2';
-  }
-
-  return host;
-}
-
-function resolveBaseUrl(): string {
-  if (!USE_LOCAL_API) {
-    return PRODUCTION_BASE_URL;
-  }
-  return `http://${resolveLocalHost()}:${LOCAL_API_PORT}/api`;
-}
 
 export const API_CONFIG = {
-  BASE_URL: resolveBaseUrl(),
+  BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.madawikri.co.id/api',
 
   /**
    * Header X-SIMMWT-KEY. Bukan rahasia — nilai EXPO_PUBLIC_* ikut ter-inline
@@ -164,6 +106,9 @@ export const API_CONFIG = {
     KAIZEN_DATA: '/kaizen/data',
     KAIZEN_LIST: '/kaizen/list',
     KAIZEN_BUAT: '/kaizen/buat',
+    KAIZEN_POIN: '/kaizen/saya/poin',
+    KAIZEN_TOP: '/kaizen/saya/top',
+    KAIZEN_REDEEM: '/kaizen/saya/redeem',
   },
 };
 

@@ -15,7 +15,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from './Icon';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 
@@ -40,7 +40,7 @@ export default function TombolKembali({
       accessibilityLabel="Kembali"
       hitSlop={8}
     >
-      <MaterialCommunityIcons name="arrow-left" size={24} color={warna} />
+      <Icon name="arrow-left" size={24} color={warna} />
     </TouchableOpacity>
   );
 }

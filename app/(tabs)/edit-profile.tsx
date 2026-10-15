@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Switch } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../src/components/common/Icon';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate } from '../../constants/Colors';
@@ -8,6 +8,7 @@ import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { fonts } from '../../constants/Typography';
 import { inputReset } from '../../constants/GlobalStyles';
+import AppBar from '../../src/components/common/AppBar';
 
 export default function EditProfileScreen() {
   const { user } = useAuth();
@@ -47,29 +48,20 @@ export default function EditProfileScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
     >
-      <Tabs.Screen 
-        options={{
-          headerRight: () => (
-            <TouchableOpacity style={{ marginRight: Spacing.screenPadding }}>
-              <Text style={{ color: brand[600], fontFamily: fonts.bold, fontSize: 16 }}>SIMPAN</Text>
-            </TouchableOpacity>
-          ),
-          headerLeft: () => (
-            <TouchableOpacity 
-              onPress={() => router.back()} 
-              style={{ marginLeft: Spacing.screenPadding }}
-            >
-              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-            </TouchableOpacity>
-          ),
-        }} 
+      <AppBar
+        judul="Edit Pengguna"
+        kanan={
+          <TouchableOpacity style={{ marginRight: Spacing.screenPadding }}>
+            <Text style={{ color: Colors.white, fontFamily: fonts.bold, fontSize: 14 }}>SIMPAN</Text>
+          </TouchableOpacity>
+        }
       />
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxxl }]} showsVerticalScrollIndicator={false}>
         
         {/* INFORMASI KEPEGAWAIAN */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="account-tie-outline" size={20} color={brand[600]} />
+            <Icon name="account-tie-outline" size={20} color={brand[600]} />
             <Text style={styles.sectionTitle}>INFORMASI KEPEGAWAIAN</Text>
           </View>
           <View style={styles.sectionBody}>
@@ -83,7 +75,7 @@ export default function EditProfileScreen() {
         {/* INFORMASI KONTAK */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="email-outline" size={20} color={brand[600]} />
+            <Icon name="email-outline" size={20} color={brand[600]} />
             <Text style={styles.sectionTitle}>INFORMASI KONTAK</Text>
           </View>
           <View style={styles.sectionBody}>
@@ -95,7 +87,7 @@ export default function EditProfileScreen() {
         {/* KEAMANAN */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="shield-lock-outline" size={20} color={brand[600]} />
+            <Icon name="shield-lock-outline" size={20} color={brand[600]} />
             <Text style={styles.sectionTitle}>KEAMANAN</Text>
           </View>
           <Text style={styles.helperText}>Kosongkan password jika tidak ingin mengubah password pengguna.</Text>
@@ -106,7 +98,7 @@ export default function EditProfileScreen() {
             {/* Fingerprint Toggle */}
             <View style={styles.switchContainer}>
               <View style={styles.switchLabelContainer}>
-                <MaterialCommunityIcons name="fingerprint" size={20} color={Colors.textPrimary} style={{ marginRight: 8 }} />
+                <Icon name="fingerprint" size={20} color={Colors.textPrimary} style={{ marginRight: 8 }} />
                 <Text style={styles.switchLabel}>Gunakan Fingerprint untuk Login</Text>
               </View>
               <Switch
@@ -122,7 +114,7 @@ export default function EditProfileScreen() {
         {/* DATABASE KARYAWAN INFO */}
         <View style={styles.infoCard}>
           <View style={styles.infoHeader}>
-            <MaterialCommunityIcons name="check-circle" size={18} color={brand[600]} />
+            <Icon name="check-circle" size={18} color={brand[600]} />
             <Text style={styles.infoTitle}>Akun tersambung dengan data karyawan</Text>
           </View>
           <View style={styles.infoList}>
@@ -148,14 +140,10 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     backgroundColor: Colors.white,
-    borderRadius: 16,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
   },
@@ -188,7 +176,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
-    borderRadius: 8,
+    borderRadius: Spacing.radius.lg,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
@@ -223,7 +211,8 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     backgroundColor: brand[50],
-    borderRadius: 16,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     padding: Spacing.lg,
     borderWidth: 1,
     borderColor: brand[100],
@@ -261,11 +250,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     borderTopWidth: 1,
     borderTopColor: Colors.borderSubtle,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 8,
   },
   btnCancel: {
     paddingVertical: 12,

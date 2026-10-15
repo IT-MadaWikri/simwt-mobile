@@ -1,6 +1,6 @@
 import api from './api';
 import { API_CONFIG } from '../../constants/Api';
-import { KaizenDashboardData, KaizenFilterData, KaizenDetail } from '../types/kaizen';
+import { KaizenDashboardData, KaizenFilterData, KaizenDetail, KaizenListPage, KaizenPoin, KaizenTop, KaizenOpsiBuat, KaryawanRingkas } from '../types/kaizen';
 
 class KaizenService {
   /**
@@ -43,18 +43,72 @@ class KaizenService {
     return response.data;
   }
   /**
-   * Fetch Kaizen List with filters
+   * Daftar Kaizen milik akun yang login (dibatasi di server), 20 per halaman.
+   * Mengembalikan objek paginasi Laravel: { data, current_page, last_page, total }.
    */
-  async getList(filters: { status?: string; urutkan?: string; bulan_tahun?: string; search?: string }): Promise<any> {
+  async getList(filters: { status?: string; urutkan?: string; search?: string; page?: number }): Promise<KaizenListPage> {
     const params = new URLSearchParams();
     if (filters.status) params.append('status', filters.status);
     if (filters.urutkan) params.append('urutkan', filters.urutkan);
-    if (filters.bulan_tahun) params.append('bulan_tahun', filters.bulan_tahun);
     if (filters.search) params.append('search', filters.search);
-    
-    const url = `/kaizen/list?${params.toString()}`;
-    const response = await api.get(url);
-    
+    params.append('page', String(filters.page ?? 1));
+
+    const response = await api.get(`${API_CONFIG.ENDPOINTS.KAIZEN_LIST}?${params.toString()}`);
+    return response.data.data;
+  }
+
+  /** Poin Kaizen akun yang login, katalog gift plant-nya, dan riwayat redeem. */
+  async getPoin(): Promise<KaizenPoin> {
+    const response = await api.get(API_CONFIG.ENDPOINTS.KAIZEN_POIN);
+    return response.data.data;
+  }
+
+  /** Top 5 pelaksana & departemen tahun ini (jumlah Kaizen disetujui, plant pengguna). */
+  async getTop(): Promise<KaizenTop> {
+    const response = await api.get(API_CONFIG.ENDPOINTS.KAIZEN_TOP);
+    return response.data.data;
+  }
+
+  /** Ajukan redeem; poin baru dipotong saat admin menyetujui. */
+  async redeem(idGift: number): Promise<void> {
+    await api.post(API_CONFIG.ENDPOINTS.KAIZEN_REDEEM, { id_gift: idGift });
+  }
+
+  /** Setujui Kaizen berstatus DITERIMA (butuh izin approve_kaizen). */
+  async setujui(id: number): Promise<void> {
+    await api.post(`/kaizen/${id}/approve`);
+  }
+
+  async tolak(id: number, alasan: string): Promise<void> {
+    await api.post(`/kaizen/${id}/reject`, { alasan });
+  }
+
+  /** Nilai komite: { [kriteria.nama]: angka }. */
+  async nilai(id: number, nilai: Record<string, number>): Promise<void> {
+    await api.post(`/kaizen/${id}/penilaian`, nilai);
+  }
+
+  async batalkanNilai(id: number): Promise<void> {
+    await api.post(`/kaizen/${id}/reset-nilai`);
+  }
+
+  /** Kategori manfaat, departemen yang boleh dipilih, dan plant akun. */
+  async getOpsiBuat(): Promise<KaizenOpsiBuat> {
+    const response = await api.get(`${API_CONFIG.ENDPOINTS.KAIZEN_BUAT}/opsi`);
+    return response.data.data;
+  }
+
+  /** Cari karyawan berdasarkan nama atau NIK (min 2 huruf, maks 20 hasil). */
+  async cariKaryawan(q: string): Promise<KaryawanRingkas[]> {
+    const response = await api.get(`${API_CONFIG.ENDPOINTS.KAIZEN_BUAT}/karyawan`, { params: { q } });
+    return response.data.data;
+  }
+
+  /** Kirim Kaizen beserta manfaat & foto (multipart); mengembalikan id & nomor. */
+  async buat(data: FormData): Promise<{ id: number; nomor: string }> {
+    const response = await api.post(API_CONFIG.ENDPOINTS.KAIZEN_BUAT, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data.data;
   }
 }

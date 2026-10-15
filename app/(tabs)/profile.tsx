@@ -13,7 +13,8 @@ import {
   Switch,
   Platform,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../src/components/common/Icon'
+import Avatar from '../../src/components/common/Avatar';
 import { useRouter } from 'expo-router';
 import { biometric } from '../../src/utils/biometric';
 import Colors, { brand, slate } from '../../constants/Colors';
@@ -187,10 +188,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.profileCardInner}>
             <View style={styles.avatarContainer}>
-              {/* Gambar avatar dummy atau inisial jika tidak ada gambar */}
-              <View style={styles.avatarPlaceholder}>
-                <MaterialCommunityIcons name="account" size={40} color={Colors.white} />
-              </View>
+              <Avatar nama={user?.nama_lengkap || user?.name || user?.username} ukuran={64} />
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.name}>{user?.nama_lengkap || user?.name || user?.username || 'Pengguna'}</Text>
@@ -198,7 +196,7 @@ export default function ProfileScreen() {
               <Text style={styles.phoneText}>{user?.phone || '+6281234567890'}</Text> 
             </View>
             <View style={styles.editIconBtn}>
-              <MaterialCommunityIcons name="pencil" size={20} color={Colors.textSecondary} />
+              <Icon name="pencil" size={20} color={Colors.textSecondary} />
             </View>
           </View>
         </TouchableOpacity>
@@ -218,7 +216,7 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.menuIconBg}>
-                  <MaterialCommunityIcons
+                  <Icon
                     name={item.icon as any}
                     size={22}
                     color={Colors.primary}
@@ -238,7 +236,7 @@ export default function ProfileScreen() {
                     thumbColor={Platform.OS === 'android' ? (item.toggleValue ? Colors.white : slate[50]) : ''}
                   />
                 ) : (
-                  <MaterialCommunityIcons name="chevron-right" size={22} color={Colors.textTertiary} />
+                  <Icon name="chevron-right" size={22} color={Colors.textTertiary} />
                 )}
               </TouchableOpacity>
             ))}
@@ -256,7 +254,7 @@ export default function ProfileScreen() {
             <BrandSpinner size={22} color={Colors.danger} />
           ) : (
             <>
-              <MaterialCommunityIcons name="logout" size={22} color={Colors.danger} />
+              <Icon name="logout" size={22} color={Colors.danger} />
               <Text style={styles.logoutText}>Keluar dari Aplikasi</Text>
             </>
           )}
@@ -295,13 +293,9 @@ const styles = StyleSheet.create({
   profileCard: {
     marginHorizontal: Spacing.lg,
     backgroundColor: Colors.white,
-    borderRadius: 24,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     padding: Spacing.lg,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 6,
     marginBottom: Spacing.xl,
   },
   profileCardInner: {
@@ -310,21 +304,6 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginRight: Spacing.md,
-  },
-  avatarPlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: Colors.white,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   profileInfo: {
     flex: 1,
@@ -352,13 +331,9 @@ const styles = StyleSheet.create({
   },
   menuSection: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     marginBottom: Spacing.lg,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   menuItem: {
     flexDirection: 'row',
@@ -399,15 +374,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.white,
     padding: Spacing.lg,
-    borderRadius: 20,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     marginTop: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.serviceRed,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   logoutText: {
     fontSize: 16,

@@ -17,12 +17,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
-import LoadingSpinner from '../../src/components/common/LoadingSpinner';
 import BrandSpinner from '../../src/components/common/BrandSpinner';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
@@ -31,6 +30,7 @@ import {
   RingkasanApproval,
 } from '../../src/services/approvalService';
 import { jalankanSetelahTransisi } from '../../src/utils/useSetelahTransisi';
+import { SkeletonDaftar } from '../../src/components/common/Skeleton';
 
 type Saring = 'semua' | 'kaizen' | 'tiket';
 
@@ -186,7 +186,7 @@ export default function ApprovalCenterScreen() {
   if (memuat) {
     return (
       <View style={gs.screen}>
-        <LoadingSpinner message="Memuat antrean persetujuan..." />
+        <SkeletonDaftar />
       </View>
     );
   }
@@ -197,7 +197,7 @@ export default function ApprovalCenterScreen() {
       <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
         <View style={[gs.cardBrand, gs.row, gs.gapMd]}>
           <View style={[gs.iconTile, { backgroundColor: Colors.white }]}>
-            <MaterialCommunityIcons name="clipboard-check-outline" size={22} color={brand[600]} />
+            <Icon name="clipboard-check-outline" size={22} color={brand[600]} />
           </View>
           <View style={gs.flex1}>
             <Text style={[gs.metric, { fontSize: 24, color: brand[800] }]}>
@@ -238,7 +238,7 @@ export default function ApprovalCenterScreen() {
         }
         ListEmptyComponent={
           <View style={[gs.card, gs.center, { marginTop: Spacing.lg }]}>
-            <MaterialCommunityIcons
+            <Icon
               name={galat ? 'alert-circle-outline' : 'check-circle-outline'}
               size={44}
               color={galat ? Colors.textTertiary : brand[400]}
@@ -257,7 +257,7 @@ export default function ApprovalCenterScreen() {
             <View style={[gs.card, { marginBottom: Spacing.md }]}>
               <View style={gs.rowBetween}>
                 <View style={[gs.badge, gs.badgeBrand]}>
-                  <MaterialCommunityIcons name={rupa.icon as any} size={12} color={brand[700]} />
+                  <Icon name={rupa.icon as any} size={12} color={brand[700]} />
                   <Text style={[gs.badgeText, gs.badgeTextBrand]}>{rupa.label}</Text>
                 </View>
                 <Text style={gs.caption}>{jarakWaktu(item.tanggal)}</Text>
@@ -302,7 +302,7 @@ export default function ApprovalCenterScreen() {
                       onPress={() => setujui(item)}
                       activeOpacity={0.85}
                     >
-                      <MaterialCommunityIcons name="check" size={16} color={Colors.white} />
+                      <Icon name="check" size={16} color={Colors.white} />
                       <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>Setujui</Text>
                     </TouchableOpacity>
                   </>
@@ -312,7 +312,7 @@ export default function ApprovalCenterScreen() {
                     onPress={() => proses(item)}
                     activeOpacity={0.85}
                   >
-                    <MaterialCommunityIcons name="progress-wrench" size={16} color={Colors.white} />
+                    <Icon name="progress-wrench" size={16} color={Colors.white} />
                     <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>
                       Mulai Proses
                     </Text>

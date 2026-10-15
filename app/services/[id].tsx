@@ -15,12 +15,13 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
-import { fonts } from '../../constants/Typography';
+import { fonts, judulAppBar } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
+import AppBar from '../../src/components/common/AppBar';
 import { SERVICES, ServiceItem } from '../../constants/Services';
 
 interface AksiLayanan {
@@ -41,7 +42,7 @@ export default function ServiceDetailScreen() {
   if (!service) {
     return (
       <View style={[gs.screen, gs.centerFill]}>
-        <MaterialCommunityIcons
+        <Icon
           name="alert-circle-outline"
           size={56}
           color={Colors.textTertiary}
@@ -58,15 +59,7 @@ export default function ServiceDetailScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerTitle: judul,
-          headerStyle: { backgroundColor: Colors.primary },
-          headerTintColor: Colors.white,
-          headerTitleStyle: { fontFamily: fonts.semibold },
-          headerShadowVisible: false,
-        }}
-      />
+      <AppBar judul={judul} />
 
       <ScrollView
         style={gs.screen}
@@ -81,7 +74,7 @@ export default function ServiceDetailScreen() {
               { backgroundColor: service.backgroundColor, width: 80, height: 80 },
             ]}
           >
-            <MaterialCommunityIcons
+            <Icon
               name={service.icon as any}
               size={40}
               color={service.iconColor}
@@ -95,7 +88,7 @@ export default function ServiceDetailScreen() {
 
         {!adaYangAktif && (
           <View style={[gs.cardBrand, gs.center, { marginTop: Spacing.lg }]}>
-            <MaterialCommunityIcons
+            <Icon
               name="rocket-launch-outline"
               size={40}
               color={Colors.primary}
@@ -124,7 +117,7 @@ export default function ServiceDetailScreen() {
               onPress={() => item.route && router.push(item.route as any)}
             >
               <View style={[gs.iconTile, { backgroundColor: service.backgroundColor }]}>
-                <MaterialCommunityIcons
+                <Icon
                   name={item.icon as any}
                   size={20}
                   color={service.iconColor}
@@ -137,7 +130,7 @@ export default function ServiceDetailScreen() {
               </View>
 
               {aktif ? (
-                <MaterialCommunityIcons
+                <Icon
                   name="chevron-right"
                   size={22}
                   color={Colors.textTertiary}
@@ -163,7 +156,7 @@ export default function ServiceDetailScreen() {
  */
 function aksiUntuk(service: ServiceItem): AksiLayanan[] {
   const perLayanan: Record<string, AksiLayanan[]> = {
-    'human-capital': [
+    'layanan-hrd': [
       {
         icon: 'account-group',
         label: 'Data Karyawan',
@@ -187,10 +180,10 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
       { icon: 'plus-circle-outline', label: 'Tambah Aset', subtitle: 'Registrasi aset baru' },
       { icon: 'magnify', label: 'Cari Aset', subtitle: 'Cari berdasarkan kode atau nama' },
     ],
-    'stok-opname': [
+    'control-stock': [
       {
         icon: 'clipboard-list-outline',
-        label: 'Periode & Lembar',
+        label: 'Stok Opname',
         subtitle: 'Lihat dokumen dan progres perhitungan',
         route: '/services/sto',
       },
@@ -214,18 +207,12 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
         route: '/services/tiket/buat',
       },
     ],
-    audit: [
-      { icon: 'plus-circle-outline', label: 'Mulai Audit', subtitle: 'Buat checklist audit baru' },
-      { icon: 'history', label: 'Riwayat Audit', subtitle: 'Lihat audit sebelumnya' },
+    'skill-assessment': [
+      { icon: 'star-circle-outline', label: 'Penilaian Skill', subtitle: 'Hasil & jadwal assessment' },
     ],
-    berita: [
-      {
-        icon: 'bell-outline',
-        label: 'Notifikasi',
-        subtitle: 'Pemberitahuan terbaru untuk Anda',
-        route: '/(tabs)/notification',
-      },
-      { icon: 'newspaper-variant-outline', label: 'Berita', subtitle: 'Pengumuman perusahaan' },
+    'layanan-it': [
+      { icon: 'plus-circle-outline', label: 'Buat Request', subtitle: 'Request akun, sistem, atau bantuan IT' },
+      { icon: 'history', label: 'Histori Request', subtitle: 'Status request yang Anda ajukan' },
     ],
   };
 

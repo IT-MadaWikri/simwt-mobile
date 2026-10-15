@@ -4,61 +4,50 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { Tabs, useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, StyleSheet, Platform, Animated, TouchableOpacity } from 'react-native';
+import Icon from '../../src/components/common/Icon';
+import { View, StyleSheet, Platform, Animated, TouchableOpacity, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
-import Spacing, { Shadows } from '../../constants/Spacing';
+import Spacing from '../../constants/Spacing';
 import Typography, { fonts } from '../../constants/Typography';
+import { gayaAppBar, opsiAppBar } from '../../src/components/common/AppBar';
 
-// Lightweight Gojek-style Tab Icon Animation
+// Ikon tab: tebal saat aktif. Animasinya ada di BouncePress (saat di-tap).
 function AnimatedTabIcon({ name, focused, color }: { name: string, focused: boolean, color: any }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  return <Icon name={name} size={26} color={color} strokeWidth={focused ? 2.5 : 1.75} />;
+}
 
-  useEffect(() => {
-    if (focused) {
-      Animated.sequence([
-        Animated.timing(scale, {
-          toValue: 0.85,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scale, {
-          toValue: 1.15,
-          friction: 4,
-          tension: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scale, {
-          toValue: 1,
-          friction: 4,
-          tension: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.timing(scale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [focused, scale]);
+// Efek bounce saat di-tap: mengecil waktu ditekan, memantul balik waktu dilepas.
+// Tanpa ripple Android.
+function BouncePress({ children, style, onPress, onLongPress, testID, ...rest }: any) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const ke = (toValue: number) =>
+    Animated.spring(scale, { toValue, friction: 3, tension: 300, useNativeDriver: true }).start();
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <MaterialCommunityIcons name={name as any} size={26} color={color} />
-    </Animated.View>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      onPressIn={() => ke(0.82)}
+      onPressOut={() => ke(1)}
+      testID={testID}
+      role={rest.role}
+      aria-label={rest['aria-label']}
+      aria-selected={rest['aria-selected']}
+      style={style}
+    >
+      <Animated.View style={[styles.bounce, { transform: [{ scale }] }]}>{children}</Animated.View>
+    </Pressable>
   );
 }
 
 // Tombol scan besar di tengah tab bar — pola khas Gojek yang dipertahankan.
 const CustomScanButton = ({ onPress }: any) => (
-  <TouchableOpacity style={styles.scanButton} onPress={onPress} activeOpacity={0.85}>
+  <BouncePress style={styles.scanButton} onPress={onPress}>
     <View style={styles.scanButtonInner}>
-      <MaterialCommunityIcons name="qrcode-scan" size={24} color={Colors.white} />
+      <Icon name="qrcode-scan" size={24} color={Colors.white} />
     </View>
-  </TouchableOpacity>
+  </BouncePress>
 );
 
 export default function TabLayout() {
@@ -86,14 +75,11 @@ export default function TabLayout() {
           height: Platform.OS === 'ios' ? 88 : 65 + insets.bottom,
           paddingBottom: Platform.OS === 'ios' ? 28 : insets.bottom + 8,
           paddingTop: 6,
-          ...Shadows.raised,
         },
+        tabBarButton: (props) => <BouncePress {...props} />,
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
-        headerShown: true,
-        headerStyle: styles.header,
-        headerTitleStyle: styles.headerTitle,
-        headerShadowVisible: false,
+        ...gayaAppBar,
         animation: 'fade',
       }}
     >
@@ -101,13 +87,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          headerTitle: 'SIMWT Mobile',
-          headerTitleStyle: {
-            fontFamily: fonts.extrabold,
-            fontSize: 20,
-            color: Colors.primary,
-            letterSpacing: 0.5,
-          },
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon name={focused ? 'home' : 'home-outline'} focused={focused} color={color} />
           ),
@@ -151,18 +131,6 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="notification"
-        options={{
-          title: 'Notifikasi',
-          headerTitle: 'Notifikasi',
-          tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon name={focused ? 'bell' : 'bell-outline'} focused={focused} color={color} />
-          ),
-          tabBarBadge: 2,
-          tabBarBadgeStyle: styles.badge,
-        }}
-      />
 
       {/* Chat menggantikan tab Mita — Mita sekarang kontak AI di dalamnya
           (ala Meta AI di WhatsApp). Tab bar disembunyikan karena ruang chat
@@ -183,6 +151,18 @@ export default function TabLayout() {
         }}
       />
 
+      {/* Pengaturan di paling kanan. */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Pengaturan',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon name={focused ? 'cog' : 'cog-outline'} focused={focused} color={color} />
+          ),
+        }}
+      />
+
       {/* Sembunyikan tab Kaizen dari menu bawah, dan sembunyikan bottom bar saat masuk Kaizen */}
       <Tabs.Screen
         name="kaizen"
@@ -197,20 +177,17 @@ export default function TabLayout() {
         options={{
           href: null,
           title: 'Edit Pengguna',
-          headerShown: true, // Akan menampilkan header default dengan back button
-          headerTitleStyle: {
-            fontFamily: fonts.semibold,
-            fontSize: 16,
-            color: Colors.textPrimary,
-          },
           tabBarStyle: { display: 'none' },
         }}
       />
+      {/* Notifikasi bukan tab lagi — dibuka dari ikon lonceng di beranda. */}
       <Tabs.Screen
-        name="profile"
+        name="notification"
         options={{
+          ...opsiAppBar,
           href: null,
-          headerShown: false,
+          title: 'Notifikasi',
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tabs>
@@ -218,22 +195,17 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  bounce: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   tabLabel: {
     fontFamily: fonts.medium,
     fontSize: Typography.sizes.xs,
   },
   tabItem: {
     paddingTop: 2,
-  },
-  header: {
-    backgroundColor: Colors.white,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  headerTitle: {
-    fontFamily: fonts.bold,
-    fontSize: Typography.sizes.xl,
-    color: Colors.textPrimary,
   },
   badge: {
     backgroundColor: Colors.danger,
@@ -244,7 +216,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
   },
   scanButton: {
-    top: -20,
+    top: -6,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -257,6 +229,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 4,
     borderColor: Colors.white,
-    ...Shadows.brand,
   },
 });

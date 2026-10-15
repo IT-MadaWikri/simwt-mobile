@@ -34,6 +34,18 @@ export const brand = {
   950: '#011a0e',
 } as const;
 
+/**
+ * Palet gradasi — empat warna berurutan dari terang ke gelap (mint → hijau →
+ * teal → navy). Dipakai HANYA untuk `<LinearGradient>` (header beranda,
+ * banner); elemen rata tetap memakai skala `brand`.
+ */
+export const palet = {
+  mint: '#DDF4E7',
+  hijau: '#67C090',
+  teal: '#26667F',
+  navy: '#124170',
+} as const;
+
 /** Skala netral Tailwind `slate`. */
 export const slate = {
   50: '#f8fafc',
@@ -85,6 +97,12 @@ export const Colors = {
   backgroundPlain: '#ffffff',
   card: '#ffffff',
 
+  // ── Warna teks (standar design system) ─────────────────────────────
+  //   textPrimary   — judul, label, dan nilai/angka utama.
+  //   textSecondary — body text: deskripsi, isi pesan, subjudul (abu-abu).
+  //   textTertiary  — caption/meta: waktu, keterangan kecil, placeholder.
+  // Jangan menulis hex/warna lain untuk teks biasa; pakai token ini
+  // (atau gs.title / gs.body / gs.bodySm / gs.caption di GlobalStyles).
   textPrimary: '#0f1b14',
   textSecondary: slate[600],
   textTertiary: slate[400],

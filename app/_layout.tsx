@@ -15,9 +15,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import Colors from '../constants/Colors';
-import { fonts } from '../constants/Typography';
+import { fonts, judulAppBar } from '../constants/Typography';
 import LoadingSpinner from '../src/components/common/LoadingSpinner';
 import { DialogHost } from '../src/components/common/AppDialog';
+import { opsiAppBar } from '../src/components/common/AppBar';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 
 // Keep splash screen visible while loading
@@ -91,13 +92,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen
           name="services/[id]"
-          options={{
-            headerShown: true,
-            headerStyle: { backgroundColor: Colors.primary },
-            headerTintColor: Colors.white,
-            headerTitleStyle: { fontFamily: fonts.semibold },
-            headerBackTitle: 'Kembali',
-          }}
+          options={opsiAppBar}
         />
         <Stack.Screen
           name="scan-result"
@@ -105,11 +100,8 @@ function RootLayoutNav() {
             presentation: 'modal',
             animation: 'slide_from_bottom',
             animationDuration: 280,
-            headerShown: true,
+            ...opsiAppBar,
             title: 'Detail Aset',
-            headerStyle: { backgroundColor: Colors.primary },
-            headerTintColor: Colors.white,
-            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen

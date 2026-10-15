@@ -12,15 +12,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, judulAppBar } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
 import { stoService, StoPaket, StoBaris } from '../../../src/services/stoService';
-import TombolKembali from '../../../src/components/common/TombolKembali';
+import AppBar from '../../../src/components/common/AppBar';
+import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
 type Saring = 'semua' | 'belum' | 'selisih';
 
@@ -68,7 +68,7 @@ export default function DetailLembarStoScreen() {
   if (memuat) {
     return (
       <View style={gs.screen}>
-        <LoadingSpinner message="Mengunduh isi lembar..." />
+        <SkeletonDaftar />
       </View>
     );
   }
@@ -76,7 +76,7 @@ export default function DetailLembarStoScreen() {
   if (!paket) {
     return (
       <View style={[gs.screen, gs.centerFill]}>
-        <MaterialCommunityIcons name="file-alert-outline" size={48} color={Colors.textTertiary} />
+        <Icon name="file-alert-outline" size={48} color={Colors.textTertiary} />
         <Text style={gs.emptyTitle}>Gagal memuat</Text>
         <Text style={gs.emptyText}>{galat ?? 'Lembar tidak ditemukan.'}</Text>
       </View>
@@ -96,7 +96,7 @@ export default function DetailLembarStoScreen() {
           </Text>
           {item.lokasi ? (
             <View style={[gs.badge, gs.badgeMuted]}>
-              <MaterialCommunityIcons name="map-marker-outline" size={11} color={Colors.textSecondary} />
+              <Icon name="map-marker-outline" size={11} color={Colors.textSecondary} />
               <Text style={[gs.badgeText, gs.badgeTextMuted]}>{item.lokasi}</Text>
             </View>
           ) : null}
@@ -126,13 +126,13 @@ export default function DetailLembarStoScreen() {
                   {selisih.toLocaleString('id-ID')}
                 </Text>
               ) : selisih === 0 ? (
-                <MaterialCommunityIcons name="check-circle-outline" size={16} color={brand[500]} />
+                <Icon name="check-circle-outline" size={16} color={brand[500]} />
               ) : null}
             </>
           ) : (
             // qty_sistem SENGAJA tidak diperlihatkan sebelum dihitung.
             <View style={[gs.badge, gs.badgeWarning]}>
-              <MaterialCommunityIcons name="clock-outline" size={11} color="#b45309" />
+              <Icon name="clock-outline" size={11} color="#b45309" />
               <Text style={[gs.badgeText, gs.badgeTextWarning]}>Belum dihitung</Text>
             </View>
           )}
@@ -154,22 +154,12 @@ export default function DetailLembarStoScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: `${paket.lembar.kode} · ${paket.periode.judul}`,
-          headerLeft: () => <TombolKembali />,
-          headerStyle: { backgroundColor: Colors.primary },
-          headerTintColor: Colors.white,
-          headerTitleStyle: { fontFamily: fonts.semibold, fontSize: 15 },
-          headerShadowVisible: false,
-        }}
-      />
+      <AppBar judul={`${paket.lembar.kode} · ${paket.periode.judul}`} />
 
       <View style={gs.screen}>
         <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
           <View style={[gs.searchBar, { paddingVertical: Spacing.xs }]}>
-            <MaterialCommunityIcons name="magnify" size={20} color={Colors.textTertiary} />
+            <Icon name="magnify" size={20} color={Colors.textTertiary} />
             <TextInput
               style={gs.fieldInner}
               placeholder="Cari kode part, nama, atau lokasi..."

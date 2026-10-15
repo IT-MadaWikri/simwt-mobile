@@ -36,16 +36,31 @@ export const notifikasiService = {
     const response = await api.get('/notifications/latest');
     const mentah: any[] = response.data?.notifications ?? [];
 
+    // `data` bebas bentuk: field bisa berisi objek/array/angka. Dipaksa jadi
+    // teks supaya <Text> tidak crash ("Objects are not valid as a React child").
+    const teks = (v: unknown): string | null =>
+      v == null ? null : typeof v === 'string' ? v : typeof v === 'object' ? null : String(v);
+
     return mentah.map((item) => ({
       id: String(item.id),
-      tipe: item.type ?? 'Info',
+      tipe: teks(item.type) ?? 'Info',
       // Judul/pesan bisa berada di beberapa nama field tergantung pengirimnya.
-      judul: item.data?.judul ?? item.data?.title ?? 'Pemberitahuan',
-      pesan: item.data?.pesan ?? item.data?.message ?? '',
-      tautan: item.data?.link ?? item.data?.tautan ?? null,
+      judul: teks(item.data?.judul) ?? teks(item.data?.title) ?? 'Pemberitahuan',
+      pesan: teks(item.data?.pesan) ?? teks(item.data?.message) ?? '',
+      tautan: teks(item.data?.link) ?? teks(item.data?.tautan),
       waktu: item.created_at ?? null,
       dibaca: !!item.read_at,
     }));
+  },
+
+  /** Jumlah notifikasi yang belum dibaca (untuk badge lonceng). */
+  async jumlahBelumDibaca(): Promise<number> {
+    const response = await api.get('/notifications/latest');
+    return Number(response.data?.unread_count) || 0;
+  },
+
+  async tandaiSemuaDibaca(): Promise<void> {
+    await api.post('/notifications/read-all');
   },
 };
 

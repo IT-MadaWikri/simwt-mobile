@@ -5,12 +5,13 @@
  * Gojek; yang berubah hanya font, radius, dan warna lencana agar mengikuti
  * karir-mwt.
  */
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import Icon from './Icon';
+import ClayIcon, { punyaClay } from './ClayIcon';
 import { useRouter } from 'expo-router';
 import Colors, { brand } from '../../../constants/Colors';
-import Spacing, { Shadows } from '../../../constants/Spacing';
+import Spacing from '../../../constants/Spacing';
 import Typography, { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { ServiceItem } from '../../../constants/Services';
@@ -18,10 +19,19 @@ import { ServiceItem } from '../../../constants/Services';
 interface ServiceIconProps {
   service: ServiceItem;
   size?: 'small' | 'medium' | 'large';
+  /** Menggantikan navigasi ke `service.route` (mis. untuk tombol "Lainnya"). */
+  onPress?: () => void;
 }
 
-export default function ServiceIcon({ service, size = 'medium' }: ServiceIconProps) {
+export default function ServiceIcon({ service, size = 'medium', onPress }: ServiceIconProps) {
   const router = useRouter();
+  const skala = useRef(new Animated.Value(1)).current;
+
+  // Bounce: mengecil saat disentuh, lalu memantul melewati 1 saat dilepas.
+  const tekan = () =>
+    Animated.spring(skala, { toValue: 0.85, speed: 40, bounciness: 0, useNativeDriver: true }).start();
+  const lepas = () =>
+    Animated.spring(skala, { toValue: 1, speed: 14, bounciness: 18, useNativeDriver: true }).start();
 
   const iconSize = size === 'small' ? 24 : size === 'large' ? 36 : 30;
   const containerSize = size === 'small' ? 44 : size === 'large' ? 64 : 54;
@@ -30,9 +40,7 @@ export default function ServiceIcon({ service, size = 'medium' }: ServiceIconPro
   // dulu tujuan dirakit dari `id` dengan satu pengecualian ber-hardcode untuk
   // Kaizen, sehingga layanan yang punya layar sendiri harus menambah cabang if
   // baru di sini. Sekarang cukup mengisi `route` di satu berkas.
-  const handlePress = () => {
-    router.push(service.route as any);
-  };
+  const handlePress = onPress ?? (() => router.push(service.route as any));
 
   const renderBadge = () => {
     if (service.id === 'database-aset') {
@@ -53,8 +61,14 @@ export default function ServiceIcon({ service, size = 'medium' }: ServiceIconPro
   };
 
   return (
-    <TouchableOpacity style={styles.wrapper} onPress={handlePress} activeOpacity={0.7}>
-      <View style={styles.iconWrapper}>
+    <TouchableOpacity
+      style={styles.wrapper}
+      onPress={handlePress}
+      onPressIn={tekan}
+      onPressOut={lepas}
+      activeOpacity={0.7}
+    >
+      <Animated.View style={[styles.iconWrapper, { transform: [{ scale: skala }] }]}>
         <View
           style={[
             styles.iconContainer,
@@ -65,14 +79,14 @@ export default function ServiceIcon({ service, size = 'medium' }: ServiceIconPro
             },
           ]}
         >
-          <MaterialCommunityIcons
-            name={service.icon as any}
-            size={iconSize}
-            color={service.iconColor}
-          />
+          {punyaClay(service.id) ? (
+            <ClayIcon id={service.id} size={containerSize - 8} bg={service.backgroundColor} />
+          ) : (
+            <Icon name={service.icon} size={iconSize} color={service.iconColor} />
+          )}
         </View>
         {renderBadge()}
-      </View>
+      </Animated.View>
 
       <Text style={[gs.caption, styles.label]} numberOfLines={2}>
         {service.name}
@@ -95,8 +109,8 @@ const styles = StyleSheet.create({
   iconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: Spacing.radius.xl,
-    ...Shadows.card,
+    borderRadius: Spacing.radius.lg,
+    ...Spacing.curve,
   },
   badge: {
     position: 'absolute',
