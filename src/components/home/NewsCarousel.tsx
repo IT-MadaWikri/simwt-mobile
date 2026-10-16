@@ -87,12 +87,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   cardIcon: {
-    fontSize: 28,
+    fontSize: 12,
     marginBottom: Spacing.sm,
   },
   cardTitle: {
     fontFamily: fonts.bold,
-    fontSize: 16,
+    fontSize: 12,
     color: Colors.white,
     marginBottom: 2,
   },

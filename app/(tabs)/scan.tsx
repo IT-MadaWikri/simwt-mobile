@@ -21,6 +21,7 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
+import Button from '../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
@@ -109,13 +110,7 @@ export default function ScanScreen() {
         <Text style={gs.emptyText}>
           Aplikasi butuh akses kamera untuk memindai QR pada label aset.
         </Text>
-        <TouchableOpacity
-          style={[gs.btn, gs.btnPrimary, { marginTop: Spacing.xl }]}
-          onPress={requestPermission}
-          activeOpacity={0.85}
-        >
-          <Text style={[gs.btnText, gs.btnTextOnBrand]}>Izinkan Kamera</Text>
-        </TouchableOpacity>
+        <Button label="Izinkan Kamera" onPress={requestPermission} style={{ marginTop: Spacing.xl }} />
       </View>
     );
   }

@@ -23,7 +23,7 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/authService';
 import { fonts } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
-import BrandSpinner from '../../src/components/common/BrandSpinner';
+import Button from '../../src/components/common/Button';
 
 interface MenuItem {
   icon: string;
@@ -244,21 +244,15 @@ export default function ProfileScreen() {
         ))}
 
         {/* Tombol Logout Terpisah (Gojek Style Logout Button) */}
-        <TouchableOpacity 
-          style={styles.logoutButton} 
-          activeOpacity={0.8}
+        <Button
+          variant="dangerOutline"
+          icon="logout"
+          label="Keluar dari Aplikasi"
           onPress={handleLogout}
-          disabled={loadingLogout}
-        >
-          {loadingLogout ? (
-            <BrandSpinner size={22} color={Colors.danger} />
-          ) : (
-            <>
-              <Icon name="logout" size={22} color={Colors.danger} />
-              <Text style={styles.logoutText}>Keluar dari Aplikasi</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          loading={loadingLogout}
+          block
+          style={{ marginTop: Spacing.md }}
+        />
       </View>
 
       {/* Footer */}
@@ -309,13 +303,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 18,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   emailText: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textSecondary,
     marginBottom: 2,
   },
@@ -358,33 +352,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuLabel: {
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   menuSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 2,
     fontFamily: fonts.medium,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.white,
-    padding: Spacing.lg,
-    borderRadius: Spacing.radius.xl,
-    ...Spacing.curve,
-    marginTop: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.serviceRed,
-  },
-  logoutText: {
-    fontSize: 16,
-    fontFamily: fonts.extrabold,
-    color: Colors.danger,
-    marginLeft: 8,
   },
   footer: {
     alignItems: 'center',

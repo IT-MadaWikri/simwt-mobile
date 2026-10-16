@@ -2,5 +2,5 @@
 import { Redirect } from 'expo-router';
 
 export default function KaizenDashboardLama() {
-  return <Redirect href="/kaizen" />;
+  return <Redirect href="/kaizen/saya" />;
 }

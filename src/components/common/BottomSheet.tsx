@@ -20,7 +20,7 @@
  * sehingga benar baik saat Android mengecilkan jendela maupun tidak.
  *
  * Penutupan oleh pemanggil (mis. setelah memilih item) cukup dengan
- * `onClose` langsung — tidak perlu menunggu animasi.
+ * `visible={false}` — sheet tetap dipasang sampai animasi turunnya selesai.
  */
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -98,11 +98,13 @@ export default function BottomSheet({
     return () => y.removeListener(id);
   }, [y]);
 
+  // Sengaja useNativeDriver: false. Dengan driver native, posisi sheet tidak ikut tersinkron ke
+  // pohon tampilan, sehingga area tekan tombol di dalamnya meleset dan tap pertama dibatalkan.
   const keTarget = (nilai: number) =>
-    Animated.spring(y, { toValue: nilai, bounciness: 4, useNativeDriver: true }).start();
+    Animated.spring(y, { toValue: nilai, bounciness: 4, useNativeDriver: false }).start();
 
   const tutup = () => {
-    Animated.timing(y, { toValue: penuhRef.current, duration: 200, useNativeDriver: true }).start(
+    Animated.timing(y, { toValue: penuhRef.current, duration: 200, useNativeDriver: false }).start(
       ({ finished }) => finished && onClose()
     );
   };
@@ -113,6 +115,21 @@ export default function BottomSheet({
   // cari bertambah, keyboard muncul): cukup pindah ke posisi baru, tanpa
   // mengulang animasi dari bawah.
   const sudahBuka = useRef(false);
+
+  // `visible` jadi false → turunkan dulu, baru lepas Modal (tanpa ini sheet hilang seketika).
+  const [terlihat, setTerlihat] = useState(visible);
+  useEffect(() => {
+    if (visible) {
+      setTerlihat(true);
+      return;
+    }
+    if (!terlihat) return;
+    Animated.timing(y, { toValue: penuhRef.current, duration: 200, useNativeDriver: false }).start(
+      ({ finished }) => finished && setTerlihat(false)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   useEffect(() => {
     if (!visible) {
       sudahBuka.current = false;
@@ -163,7 +180,7 @@ export default function BottomSheet({
   const panBadan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponderCapture: (_, g) => {
-        if (Math.abs(g.dy) < 6 || Math.abs(g.dy) < Math.abs(g.dx)) return false;
+        if (Math.abs(g.dy) < 12 || Math.abs(g.dy) < Math.abs(g.dx)) return false;
         if (g.dy > 0) return scrollY.current <= 0;
         return yNow.current > 1;
       },
@@ -178,7 +195,7 @@ export default function BottomSheet({
   });
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={tutup} statusBarTranslucent>
+    <Modal visible={terlihat} transparent animationType="none" onRequestClose={tutup} statusBarTranslucent>
       <View style={styles.overlay} onLayout={(e) => setWadah(e.nativeEvent.layout.height)}>
         <Animated.View style={[StyleSheet.absoluteFill, styles.latar, { opacity: latar }]}>
           <TouchableOpacity style={gs.flex1} activeOpacity={1} onPress={tutup} />
@@ -251,7 +268,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.bold,
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textPrimary,
   },
   subtitle: {

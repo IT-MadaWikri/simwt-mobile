@@ -102,7 +102,7 @@ export default function DetailLembarStoScreen() {
           ) : null}
         </View>
 
-        <Text style={[gs.title, { fontSize: 14, marginTop: 2 }]} numberOfLines={2}>
+        <Text style={[gs.title, { fontSize: 12, marginTop: 2 }]} numberOfLines={2}>
           {item.nama_part ?? '-'}
         </Text>
 

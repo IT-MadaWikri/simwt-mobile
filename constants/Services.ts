@@ -23,8 +23,7 @@ export const SERVICES: ServiceItem[] = [
     icon: 'lightbulb-on-outline',
     backgroundColor: Colors.serviceAmber,
     iconColor: '#b45309',
-    // Kaizen punya tumpukan layarnya sendiri di dalam tab, bukan halaman
-    // layanan generik — karena itu rutenya keluar dari pola `/services/*`.
+    // Layar pertama tumpukan Kaizen adalah halaman menu (Kaizen saya / Butuh approval).
     route: '/kaizen',
     description: 'Continuous improvement',
   },

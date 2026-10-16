@@ -18,7 +18,8 @@ export default function KaizenLayout() {
         gestureEnabled: true,
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Kaizen Saya' }} />
+      <Stack.Screen name="index" options={{ title: 'Kaizen' }} />
+      <Stack.Screen name="saya" options={{ title: 'Kaizen Saya' }} />
       <Stack.Screen 
         name="buat" 
         options={{ 
@@ -31,6 +32,7 @@ export default function KaizenLayout() {
           title: 'Daftar Kaizen',
         }} 
       />
+      <Stack.Screen name="draf" options={{ title: 'Draft Kaizen Anda' }} />
       <Stack.Screen name="redeem" options={{ title: 'Redeem Poin' }} />
       <Stack.Screen 
         name="[id]" 

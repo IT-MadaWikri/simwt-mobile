@@ -5,10 +5,11 @@
  * saat admin mengubah status request ke "Diterima".
  */
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
+import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -102,15 +103,15 @@ export default function RedeemPoin() {
               </View>
               <Text style={styles.namaGift} numberOfLines={2}>{g.nama_gift}</Text>
               <Text style={styles.harga}>{angka(g.harga_gift)} poin</Text>
-              <TouchableOpacity
-                style={[styles.tombol, !cukup && styles.tombolMati]}
-                disabled={!cukup || mengirim !== null}
+              <Button
+                label={cukup ? 'Redeem' : 'Poin kurang'}
+                variant={cukup ? 'primary' : 'muted'}
                 onPress={() => redeem(g)}
-              >
-                <Text style={[styles.teksTombol, !cukup && { color: Colors.textTertiary }]}>
-                  {mengirim === g.id ? 'Mengirim…' : cukup ? 'Redeem' : 'Poin kurang'}
-                </Text>
-              </TouchableOpacity>
+                loading={mengirim === g.id}
+                disabled={!cukup || mengirim !== null}
+                block
+                style={{ marginTop: 6 }}
+              />
             </View>
           );
         })}
@@ -158,12 +159,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  labelPoin: { fontSize: 11, fontFamily: fonts.regular, color: 'rgba(255,255,255,0.85)' },
-  nilaiPoin: { fontSize: 16, fontFamily: fonts.bold, color: Colors.white },
+  labelPoin: { fontSize: 12, fontFamily: fonts.regular, color: 'rgba(255,255,255,0.85)' },
+  nilaiPoin: { fontSize: 12, fontFamily: fonts.bold, color: Colors.white },
   judul: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -189,16 +190,6 @@ const styles = StyleSheet.create({
   },
   namaGift: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
   harga: { fontSize: ukuranIsi, fontFamily: fonts.medium, color: Colors.primary, marginTop: 2 },
-  tombol: {
-    marginTop: 6,
-    height: 30,
-    borderRadius: 999,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tombolMati: { backgroundColor: slate[100] },
-  teksTombol: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.white },
   riwayat: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -211,7 +202,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.sm,
   },
-  caption: { fontSize: 11, fontFamily: fonts.regular, color: Colors.textTertiary, marginTop: 2 },
+  caption: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, marginTop: 2 },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  teksBadge: { fontSize: 11, fontFamily: fonts.semibold },
+  teksBadge: { fontSize: 10, fontFamily: fonts.semibold },
 });

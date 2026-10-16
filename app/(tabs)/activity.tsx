@@ -14,14 +14,15 @@
  *  - item hilang dari daftar begitu diputuskan (optimistis), lalu daftar
  *    disegarkan dari server
  */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
+import Button from '../../src/components/common/Button';
 import BrandSpinner from '../../src/components/common/BrandSpinner';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
@@ -57,6 +58,11 @@ export default function ApprovalCenterScreen() {
   const [kaizen, setKaizen] = useState<ItemApproval[]>([]);
   const [tiket, setTiket] = useState<ItemApproval[]>([]);
   const [saring, setSaring] = useState<Saring>('semua');
+  // Dibuka dari menu Kaizen (`?jenis=kaizen`): langsung tersaring ke jenis itu.
+  const { jenis } = useLocalSearchParams<{ jenis?: string }>();
+  useEffect(() => {
+    if (jenis === 'kaizen' || jenis === 'tiket') setSaring(jenis);
+  }, [jenis]);
   const [memuat, setMemuat] = useState(true);
   const [menyegarkan, setMenyegarkan] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
@@ -200,7 +206,7 @@ export default function ApprovalCenterScreen() {
             <Icon name="clipboard-check-outline" size={22} color={brand[600]} />
           </View>
           <View style={gs.flex1}>
-            <Text style={[gs.metric, { fontSize: 24, color: brand[800] }]}>
+            <Text style={[gs.metric, { fontSize: 12, color: brand[800] }]}>
               {ringkasan.total}
             </Text>
             <Text style={[gs.bodySm, { color: brand[800] }]}>
@@ -290,33 +296,11 @@ export default function ApprovalCenterScreen() {
                   </View>
                 ) : item.jenis === 'kaizen' ? (
                   <>
-                    <TouchableOpacity
-                      style={[gs.btn, gs.btnMuted, gs.btnSm, gs.flex1]}
-                      onPress={() => tolak(item)}
-                      activeOpacity={0.85}
-                    >
-                      <Text style={[gs.btnText, gs.btnTextMuted, gs.btnTextSm]}>Tolak</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[gs.btn, gs.btnPrimary, gs.btnSm, gs.flex1]}
-                      onPress={() => setujui(item)}
-                      activeOpacity={0.85}
-                    >
-                      <Icon name="check" size={16} color={Colors.white} />
-                      <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>Setujui</Text>
-                    </TouchableOpacity>
+                    <Button variant="muted" label="Tolak" onPress={() => tolak(item)} style={gs.flex1} />
+                    <Button icon="check" label="Setujui" onPress={() => setujui(item)} style={gs.flex1} />
                   </>
                 ) : (
-                  <TouchableOpacity
-                    style={[gs.btn, gs.btnPrimary, gs.btnSm, gs.flex1]}
-                    onPress={() => proses(item)}
-                    activeOpacity={0.85}
-                  >
-                    <Icon name="progress-wrench" size={16} color={Colors.white} />
-                    <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>
-                      Mulai Proses
-                    </Text>
-                  </TouchableOpacity>
+                  <Button icon="progress-wrench" label="Mulai Proses" onPress={() => proses(item)} style={gs.flex1} />
                 )}
               </View>
             </View>

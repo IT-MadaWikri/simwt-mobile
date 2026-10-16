@@ -43,7 +43,8 @@
           "photosPermission": "Izinkan SIMWT mengakses foto untuk lampiran Kaizen.",
           "cameraPermission": "Izinkan SIMWT memakai kamera untuk foto Kaizen."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

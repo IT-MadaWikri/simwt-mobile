@@ -11,7 +11,6 @@ import AppBar from '../../../src/components/common/AppBar';
 import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import Typography, { fonts, judulAppBar } from '../../../constants/Typography';
@@ -48,7 +47,6 @@ function inisial(nama: string): string {
 
 export default function DaftarChatScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const [daftar, setDaftar] = useState<RingkasanChat[]>([]);
@@ -116,7 +114,7 @@ export default function DaftarChatScreen() {
               </Text>
               {kontak.ai && (
                 <View style={[gs.badge, gs.badgeBrand, styles.badgeAi]}>
-                  <Text style={[gs.badgeText, gs.badgeTextBrand, { fontSize: 9 }]}>AI</Text>
+                  <Text style={[gs.badgeText, gs.badgeTextBrand, { fontSize: 12 }]}>AI</Text>
                 </View>
               )}
             </View>
@@ -171,7 +169,7 @@ export default function DaftarChatScreen() {
 
       {/* Tombol chat baru mengambang — pola WhatsApp. */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: insets.bottom + Spacing.xl }]}
+        style={[styles.fab, { bottom: Spacing.xl }]}
         activeOpacity={0.85}
         onPress={() => router.push('/(tabs)/chat/baru' as any)}
         accessibilityLabel="Mulai chat baru"
@@ -239,7 +237,7 @@ const styles = {
   },
   unreadTeks: {
     fontFamily: fonts.semibold,
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.white,
   },
   fab: {

@@ -45,7 +45,7 @@ export default function Avatar({ nama, ukuran = 40, foto, style }: AvatarProps) 
       <Text
         style={[
           styles.huruf,
-          { fontSize: Math.round(ukuran * 0.38), lineHeight: ukuran, height: ukuran },
+          { fontSize: 12, lineHeight: ukuran, height: ukuran },
         ]}
       >
         {inisialNama(nama)}

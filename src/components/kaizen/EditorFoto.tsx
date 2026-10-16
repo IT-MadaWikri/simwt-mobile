@@ -9,7 +9,6 @@
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   Modal,
   PanResponder,
@@ -21,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import Icon from '../common/Icon';
+import Button from '../common/Button';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
@@ -202,13 +202,7 @@ export default function EditorFoto({ visible, fotos, awal = 0, onBatal, onSelesa
             <Icon name="close" size={22} color={Colors.white} />
           </TouchableOpacity>
           <Text style={styles.judul}>Atur Foto</Text>
-          <TouchableOpacity style={styles.tombolSelesai} onPress={selesai} disabled={menyimpan} activeOpacity={0.85}>
-            {menyimpan ? (
-              <ActivityIndicator size="small" color={Colors.white} />
-            ) : (
-              <Text style={styles.teksSelesai}>Selesai</Text>
-            )}
-          </TouchableOpacity>
+          <Button label="Selesai" onPress={selesai} loading={menyimpan} />
         </View>
 
         <View
@@ -302,22 +296,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   judul: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.bold,
-    color: Colors.white,
-  },
-  tombolSelesai: {
-    minWidth: 76,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    backgroundColor: Colors.primary,
-  },
-  teksSelesai: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
     color: Colors.white,
   },
   area: {
@@ -369,14 +349,14 @@ const styles = StyleSheet.create({
   labelThumb: {
     marginTop: 2,
     textAlign: 'center',
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.medium,
     color: putihPudar,
   },
   labelBagian: {
     marginTop: Spacing.sm,
     marginBottom: 6,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: putihPudar,
   },
@@ -434,7 +414,7 @@ const styles = StyleSheet.create({
   petunjuk: {
     marginTop: Spacing.md,
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: 'rgba(255,255,255,0.45)',
   },

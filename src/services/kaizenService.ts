@@ -46,11 +46,13 @@ class KaizenService {
    * Daftar Kaizen milik akun yang login (dibatasi di server), 20 per halaman.
    * Mengembalikan objek paginasi Laravel: { data, current_page, last_page, total }.
    */
-  async getList(filters: { status?: string; urutkan?: string; search?: string; page?: number }): Promise<KaizenListPage> {
+  async getList(filters: { status?: string; urutkan?: string; search?: string; tanggalDari?: string; tanggalSampai?: string; page?: number }): Promise<KaizenListPage> {
     const params = new URLSearchParams();
     if (filters.status) params.append('status', filters.status);
     if (filters.urutkan) params.append('urutkan', filters.urutkan);
     if (filters.search) params.append('search', filters.search);
+    if (filters.tanggalDari) params.append('tanggal_dari', filters.tanggalDari);
+    if (filters.tanggalSampai) params.append('tanggal_sampai', filters.tanggalSampai);
     params.append('page', String(filters.page ?? 1));
 
     const response = await api.get(`${API_CONFIG.ENDPOINTS.KAIZEN_LIST}?${params.toString()}`);

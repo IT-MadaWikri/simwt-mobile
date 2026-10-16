@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Icon from '../src/components/common/Icon';
+import Button from '../src/components/common/Button';
 import Colors from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import api from '../src/services/api';
@@ -70,9 +71,7 @@ export default function ScanResultScreen() {
       <View style={styles.centerContainer}>
         <Icon name="alert-circle-outline" size={60} color={Colors.danger} />
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Kembali</Text>
-        </TouchableOpacity>
+        <Button label="Kembali" onPress={() => router.back()} />
       </View>
     );
   }
@@ -196,12 +195,11 @@ export default function ScanResultScreen() {
       
       {/* Bottom Action */}
       <View style={[styles.bottomContainer, { paddingBottom: insets.bottom + Spacing.lg }]}>
-        <TouchableOpacity 
-          style={styles.primaryButton}
+        <Button
+          label="Laporkan masalah aset"
           onPress={() => dialog.alert('Lapor Masalah', 'Fitur ini akan membuka form pelaporan tiket.')}
-        >
-          <Text style={styles.primaryButtonText}>Laporkan masalah aset</Text>
-        </TouchableOpacity>
+          block
+        />
       </View>
     </View>
   );
@@ -221,26 +219,16 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: Spacing.md,
-    fontSize: 16,
+    fontSize: 12,
     color: Colors.textSecondary,
     fontFamily: fonts.medium,
   },
   errorText: {
     marginTop: Spacing.md,
-    fontSize: 16,
+    fontSize: 12,
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: Spacing.xl,
-  },
-  backButton: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: Spacing.radius.full,
-  },
-  backButtonText: {
-    color: Colors.white,
-    fontFamily: fonts.bold,
   },
   scrollContent: {
     padding: Spacing.md,
@@ -255,7 +243,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderSubtle,
   },
   mainTitle: {
-    fontSize: 18,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -268,7 +256,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xl,
   },
   placeholderText: {
-    fontSize: 16,
+    fontSize: 12,
     color: Colors.textTertiary,
   },
   gridContainer: {
@@ -282,19 +270,19 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   itemLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textSecondary,
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   itemValue: {
-    fontSize: 15,
+    fontSize: 12,
     color: Colors.textPrimary,
     fontFamily: fonts.regular,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -305,7 +293,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderSubtle,
   },
   tableHeaderText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textSecondary,
     textTransform: 'uppercase',
@@ -317,7 +305,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderSubtle,
   },
   tableCell: {
-    fontSize: 15,
+    fontSize: 12,
     color: Colors.textPrimary,
   },
   bottomContainer: {
@@ -329,16 +317,5 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderTopWidth: 1,
     borderTopColor: Colors.borderSubtle,
-  },
-  primaryButton: {
-    backgroundColor: '#0056B3', // Warna biru sesuai gambar user
-    paddingVertical: 14,
-    borderRadius: Spacing.radius.full,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: Colors.white,
-    fontFamily: fonts.semibold,
-    fontSize: 16,
   },
 });

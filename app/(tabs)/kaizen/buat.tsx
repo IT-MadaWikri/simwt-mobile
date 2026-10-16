@@ -19,13 +19,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useNavigation, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
 import Avatar from '../../../src/components/common/Avatar';
 import BottomSheet from '../../../src/components/common/BottomSheet';
-import BrandSpinner from '../../../src/components/common/BrandSpinner';
+import Button from '../../../src/components/common/Button';
 import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import SheetKaryawan from '../../../src/components/kaizen/SheetKaryawan';
@@ -38,6 +38,7 @@ import { useAuth } from '../../../src/contexts/AuthContext';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenOpsiBuat, KaryawanRingkas } from '../../../src/types/kaizen';
 import { LENCANA } from '../../../src/utils/kaizen';
+import { drafKaizen, buatIdDraf } from '../../../src/utils/drafKaizen';
 
 type Orang = { nama: string; nik: string };
 
@@ -189,6 +190,9 @@ export default function BuatKaizenScreen() {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
 
+  // PIC area setelah Kaizen diisi pengguna yang sedang membuat; bisa diganti lewat pencarian.
+  const saya: Orang | null = user?.nik ? { nama: user.nama_lengkap || user.name, nik: user.nik } : null;
+
   const [opsi, setOpsi] = useState<KaizenOpsiBuat | null>(null);
   const [gagalOpsi, setGagalOpsi] = useState(false);
   const [langkah, setLangkah] = useState<1 | 2>(1);
@@ -213,6 +217,43 @@ export default function BuatKaizenScreen() {
   const [editor, setEditor] = useState<{ fotos: FotoKaizen[]; awal: number } | null>(null);
   const [draf, setDraf] = useState<{ data: Manfaat; index: number | null; galat: Record<string, string> } | null>(null);
 
+  // Draf disimpan di perangkat (src/utils/drafKaizen). Dibuka dari daftar draf lewat
+  // param `draf`; tanpa param ini draf baru, dan menyimpan lagi menimpa draf yang sama.
+  const { draf: idDrafAwal } = useLocalSearchParams<{ draf?: string }>();
+  const idDraf = useRef(idDrafAwal || buatIdDraf());
+
+  const pulihkanDraf = async () => {
+    if (!idDrafAwal) return;
+    const d = await drafKaizen.ambil(user?.nik, idDrafAwal);
+    if (!d) return;
+    setForm((f) => ({ ...f, ...d.data.form }));
+    setFotos(d.data.fotos ?? []);
+    setManfaat(d.data.manfaat ?? []);
+    setLangkah(d.langkah === 2 ? 2 : 1);
+  };
+
+  const simpanDrafKaizen = async () => {
+    if (!kondisi.current.kotor) {
+      dialog.alert('Belum Ada Isian', 'Isi dulu sesuatu sebelum menyimpan draf.');
+      return;
+    }
+    try {
+      await drafKaizen.simpan(user?.nik, {
+        id: idDraf.current,
+        diubah: Date.now(),
+        langkah,
+        tema: form.tema.trim(),
+        data: { form, fotos, manfaat },
+      });
+    } catch {
+      dialog.alert('Gagal Menyimpan', 'Draf tidak bisa disimpan di perangkat ini.', 'danger');
+      return;
+    }
+    selesai.current = true;
+    await dialog.alert('Draf Tersimpan', 'Lanjutkan kapan saja dari menu "Draft Kaizen Anda".', 'success');
+    router.back();
+  };
+
   const muatOpsi = () => {
     setGagalOpsi(false);
     kaizenService
@@ -220,6 +261,7 @@ export default function BuatKaizenScreen() {
       .then((o) => {
         setOpsi(o);
         setForm((f) => ({ ...f, id_departemen: f.id_departemen ?? o.id_departemen }));
+        pulihkanDraf();
       })
       .catch(() => setGagalOpsi(true));
   };
@@ -338,9 +380,21 @@ export default function BuatKaizenScreen() {
     setDraf(null);
   };
 
+  // Manfaat dikelompokkan per kategori: kartu menampilkan jumlahnya, rinciannya di sheet.
+  const [sheetKategori, setSheetKategori] = useState<number | null | undefined>(undefined);
+  const kelompokManfaat = Array.from(
+    manfaat
+      .reduce((peta, m, i) => peta.set(m.kategori, [...(peta.get(m.kategori) ?? []), { m, i }]), new Map<number | null, { m: Manfaat; i: number }[]>())
+      .entries()
+  );
+  const butirSheet = sheetKategori === undefined ? [] : manfaat.map((m, i) => ({ m, i })).filter((x) => x.m.kategori === sheetKategori);
+
   const hapusManfaat = async (i: number) => {
     const ya = await dialog.confirm({ title: 'Hapus manfaat ini?', confirmText: 'Hapus', destructive: true });
-    if (ya) setManfaat((d) => d.filter((_, j) => j !== i));
+    if (!ya) return;
+    setManfaat((d) => d.filter((_, j) => j !== i));
+    // Kelompok yang habis: tutup sheet-nya.
+    if (butirSheet.length <= 1) setSheetKategori(undefined);
   };
 
   const kirim = async () => {
@@ -348,6 +402,13 @@ export default function BuatKaizenScreen() {
       dialog.alert('Belum Ada Manfaat', 'Tambahkan minimal satu manfaat.');
       return;
     }
+    const ya = await dialog.confirm({
+      title: 'Kirim Kaizen?',
+      message: 'Setelah dikirim, Kaizen akan masuk ke panitia untuk dinilai.',
+      confirmText: 'Kirim',
+      cancelText: 'Periksa lagi',
+    });
+    if (!ya) return;
     const data = new FormData();
     data.append('tema', form.tema.trim());
     data.append('nama_pelaksana', form.pelaksana!.nama);
@@ -379,6 +440,7 @@ export default function BuatKaizenScreen() {
       setMengirim(true);
       const hasil = await kaizenService.buat(data);
       selesai.current = true;
+      drafKaizen.hapus(user?.nik, idDraf.current);
       await dialog.alert('Kaizen Terkirim', `Nomor Kaizen kamu ${hasil.nomor}. Tunggu penilaian dari panitia ya.`, 'success');
       router.back();
     } catch (err: any) {
@@ -413,13 +475,11 @@ export default function BuatKaizenScreen() {
   // --- Tampilan -----------------------------------------------------------
   if (!opsi) {
     return (
-      <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
         {gagalOpsi ? (
           <View style={styles.gagal}>
             <Text style={gs.emptyTitle}>Gagal memuat formulir</Text>
-            <TouchableOpacity style={styles.tombolUlang} onPress={muatOpsi}>
-              <Text style={styles.teksUlang}>Coba lagi</Text>
-            </TouchableOpacity>
+            <Button label="Coba lagi" onPress={muatOpsi} />
           </View>
         ) : (
           <SkeletonForm />
@@ -543,7 +603,7 @@ export default function BuatKaizenScreen() {
         <Text style={styles.judulBagian}>Foto</Text>
         <Text style={[styles.hitung, { marginBottom: Spacing.sm }]}>{fotos.length}/2</Text>
       </View>
-      <View style={[styles.kartu, galat.foto ? styles.inputGalat : null]}>
+      <View style={styles.kartu}>
         <View style={styles.gridFoto}>
           {fotos.map((x, i) => (
             <TouchableOpacity
@@ -590,46 +650,42 @@ export default function BuatKaizenScreen() {
         <Text style={styles.judulBagian}>Manfaat</Text>
         <Text style={[styles.hitung, { marginBottom: Spacing.sm }]}>{manfaat.length} ditambahkan</Text>
       </View>
-      <View style={[styles.kartu, { paddingVertical: Spacing.xs }]}>
+      <View style={styles.kartu}>
         {manfaat.length === 0 ? (
           <Text style={styles.kosongManfaat}>
             Belum ada manfaat. Ceritakan dampak Kaizen ini, misalnya waktu, biaya, atau keselamatan yang membaik.
           </Text>
         ) : (
-          manfaat.map((m, i) => {
-            const l = ikonKategori(m.kategori);
+          kelompokManfaat.map(([kategori, butir]) => {
+            const l = ikonKategori(kategori);
             return (
               <TouchableOpacity
-                key={i}
-                style={[styles.barisManfaat, i > 0 && styles.garisAtas]}
+                key={kategori ?? 'x'}
+                style={styles.kartuManfaat}
                 activeOpacity={0.6}
-                onPress={() => setDraf({ data: m, index: i, galat: {} })}
+                onPress={() => setSheetKategori(kategori)}
               >
                 <View style={[styles.logoManfaat, { backgroundColor: l.warna[1] }]}>
                   <Icon name={l.ikon} size={16} color={Colors.white} />
                 </View>
-                <View style={gs.flex1}>
-                  <Text style={styles.judulManfaat} numberOfLines={1}>{kategoriNama(m.kategori)}</Text>
-                  <Text style={styles.subManfaat} numberOfLines={1}>{m.sebelum} → {m.sesudah}</Text>
-                  <Text style={styles.subManfaat} numberOfLines={1}>Hemat: {m.hemat}</Text>
+                <Text style={[styles.judulManfaat, gs.flex1]} numberOfLines={1}>{kategoriNama(kategori)}</Text>
+                <View style={styles.jumlahManfaat}>
+                  <Text style={styles.teksJumlahManfaat}>{butir.length}</Text>
                 </View>
-                <TouchableOpacity onPress={() => hapusManfaat(i)} hitSlop={10} accessibilityLabel="Hapus manfaat">
-                  <Icon name="delete-outline" size={18} color={Colors.textTertiary} />
-                </TouchableOpacity>
+                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
               </TouchableOpacity>
             );
           })
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.tombolTambah}
-        activeOpacity={0.8}
-        onPress={() => setDraf({ data: { ...MANFAAT_KOSONG }, index: null, galat: {} })}
-      >
-        <Icon name="plus" size={16} color={brand[700]} />
-        <Text style={styles.teksTambah}>Tambah manfaat</Text>
-      </TouchableOpacity>
+      <Button
+        variant="outline"
+        icon="plus"
+        label="Tambah manfaat"
+        onPress={() => setDraf({ data: { ...MANFAAT_KOSONG, pic: saya }, index: null, galat: {} })}
+        block
+      />
     </>
   );
 
@@ -639,7 +695,7 @@ export default function BuatKaizenScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[gs.screen, { backgroundColor: slate[100] }]}
+      style={[gs.screen, { backgroundColor: Colors.white }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
@@ -669,24 +725,18 @@ export default function BuatKaizenScreen() {
         {langkah === 1 ? langkah1 : langkah2}
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
         {langkah === 2 ? (
-          <TouchableOpacity style={styles.kembali} onPress={() => setLangkah(1)} disabled={mengirim}>
-            <Icon name="arrow-left" size={18} color={Colors.textPrimary} />
-          </TouchableOpacity>
+          <Button variant="secondary" icon="arrow-left" onPress={() => setLangkah(1)} disabled={mengirim} accessibilityLabel="Kembali" />
         ) : null}
-        <TouchableOpacity
-          style={[styles.kirim, gs.flex1, (mengirim || (langkah === 2 && !manfaat.length)) && { opacity: 0.6 }]}
-          activeOpacity={0.85}
+        <Button variant="secondary" icon="content-save-outline" label="Simpan draf" onPress={simpanDrafKaizen} disabled={mengirim} />
+        <Button
+          label={langkah === 1 ? 'Lanjut ke Manfaat' : 'Kirim Kaizen'}
+          iconRight={langkah === 1 ? 'arrow-right' : 'send'}
           onPress={langkah === 1 ? lanjut : kirim}
-          disabled={mengirim}
-        >
-          {mengirim ? (
-            <BrandSpinner size={22} color={Colors.white} />
-          ) : (
-            <Text style={styles.kirimText}>{langkah === 1 ? 'Lanjut ke Manfaat' : 'Kirim Kaizen'}</Text>
-          )}
-        </TouchableOpacity>
+          loading={mengirim}
+          style={gs.flex1}
+        />
       </View>
 
       <SheetKaryawan
@@ -730,6 +780,71 @@ export default function BuatKaizenScreen() {
           setGalat((g) => ({ ...g, foto: '' }));
         }}
       />
+
+      <BottomSheet
+        visible={sheetKategori !== undefined && draf === null && butirSheet.length > 0}
+        onClose={() => setSheetKategori(undefined)}
+        title={`Manfaat ${kategoriNama(sheetKategori ?? null)}`}
+        subtitle={`${butirSheet.length} manfaat ditambahkan`}
+      >
+        {butirSheet.map(({ m, i }, urut) => {
+          const l = ikonKategori(m.kategori);
+          return (
+            <React.Fragment key={i}>
+            {urut > 0 ? <View style={styles.garisButir} /> : null}
+            <View style={styles.butir}>
+              <View style={gs.rowBetween}>
+                <Text style={styles.nomorButir}>Manfaat {urut + 1}</Text>
+                <View style={styles.chipButir}>
+                  <Text style={styles.teksChipButir}>
+                    {m.pelaksanaan === 'Internal' ? 'Dalam perusahaan' : 'Luar perusahaan'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.hematButir}>
+                <Icon name={l.ikon} size={18} color={l.warna[2]} />
+                <View style={gs.flex1}>
+                  <Text style={styles.labelButir}>Penghematan</Text>
+                  <Text style={[styles.nilaiHemat, { color: l.warna[2] }]}>{m.hemat}</Text>
+                </View>
+              </View>
+
+              <View style={styles.panelButir}>
+                <Text style={styles.labelButir}>Sebelum</Text>
+                <Text style={styles.teksButir}>{m.sebelum}</Text>
+              </View>
+              <View style={styles.panelButir}>
+                <Text style={styles.labelButir}>Sesudah</Text>
+                <Text style={styles.teksButir}>{m.sesudah}</Text>
+              </View>
+
+              <View style={styles.metaButir}>
+                <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
+                <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
+              </View>
+              {m.pic ? (
+                <View style={styles.metaButir}>
+                  <Avatar nama={m.pic.nama} ukuran={20} />
+                  <Text style={styles.teksMeta} numberOfLines={1}>PIC · {m.pic.nama}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.aksiButir}>
+                <Button
+                  variant="outline"
+                  icon="pencil"
+                  label="Ubah"
+                  onPress={() => setDraf({ data: m, index: i, galat: {} })}
+                  style={gs.flex1}
+                />
+                <Button variant="dangerOutline" icon="delete-outline" onPress={() => hapusManfaat(i)} accessibilityLabel="Hapus manfaat" />
+              </View>
+            </View>
+            </React.Fragment>
+          );
+        })}
+      </BottomSheet>
 
       <BottomSheet
         visible={draf !== null && sheetOrang === null}
@@ -781,9 +896,7 @@ export default function BuatKaizenScreen() {
             </View>
             <Kolom label="Area / tempat" wajib maks={255} placeholder="Nama area atau tempat Kaizen" value={d.area} onChangeText={(v) => ubahDraf('area', v)} galat={draf.galat.area} />
             <BarisOrang label="PIC area setelah Kaizen" wajib orang={d.pic} galat={draf.galat.pic} onPilih={() => setSheetOrang('pic')} />
-            <TouchableOpacity style={styles.kirim} activeOpacity={0.85} onPress={simpanDraf}>
-              <Text style={styles.kirimText}>{draf.index === null ? 'Tambahkan' : 'Simpan perubahan'}</Text>
-            </TouchableOpacity>
+            <Button label={draf.index === null ? 'Tambahkan' : 'Simpan perubahan'} onPress={simpanDraf} block />
           </View>
         ) : null}
       </BottomSheet>
@@ -810,7 +923,7 @@ const styles = StyleSheet.create({
   },
   teksLangkah: {
     marginTop: 6,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textTertiary,
   },
@@ -825,18 +938,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   judulBagian: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: Spacing.sm,
-    marginLeft: Spacing.xs,
   },
+  // Bagian formulir langsung di atas latar putih layar, tanpa kartu.
   kartu: {
-    ...gs.card,
-    padding: Spacing.md,
-    paddingBottom: Spacing.xs,
     marginBottom: Spacing.lg,
   },
   field: {
@@ -856,7 +966,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
   },
   hitung: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
     marginBottom: 6,
@@ -883,7 +993,7 @@ const styles = StyleSheet.create({
   },
   galat: {
     marginTop: 4,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.danger,
   },
@@ -913,7 +1023,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   nikOrang: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -964,7 +1074,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   teksPlant: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1009,7 +1119,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTag: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.white,
   },
@@ -1040,7 +1150,7 @@ const styles = StyleSheet.create({
     backgroundColor: brand[50],
   },
   teksBarisSumber: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -1052,23 +1162,21 @@ const styles = StyleSheet.create({
   ket: {
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   ringkas: {
-    ...gs.card,
-    padding: Spacing.md,
     marginBottom: Spacing.lg,
   },
   ringkasLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   ringkasTema: {
     marginTop: 2,
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -1079,15 +1187,95 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
   },
-  barisManfaat: {
+  kartuManfaat: {
+    ...gs.card,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-    paddingVertical: Spacing.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
   },
-  garisAtas: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.border,
+  // Tanpa kartu: blok-blok dipisahkan garis tipis saja.
+  butir: {
+    marginHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
+  },
+  garisButir: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.border,
+    marginHorizontal: Spacing.lg,
+  },
+  nomorButir: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.bold,
+    color: Colors.textPrimary,
+  },
+  chipButir: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    backgroundColor: slate[100],
+  },
+  teksChipButir: {
+    fontSize: 10,
+    fontFamily: fonts.semibold,
+    color: Colors.textSecondary,
+  },
+  hematButir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  nilaiHemat: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+  },
+  panelButir: {},
+  labelButir: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+    color: Colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  teksButir: {
+    marginTop: 2,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.textPrimary,
+    lineHeight: 18,
+  },
+  metaButir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  teksMeta: {
+    flex: 1,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary,
+  },
+  aksiButir: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  jumlahManfaat: {
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    backgroundColor: brand[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  teksJumlahManfaat: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.bold,
+    color: brand[700],
   },
   logoManfaat: {
     width: 36,
@@ -1097,33 +1285,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   judulManfaat: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
-  },
-  subManfaat: {
-    marginTop: 1,
-    fontSize: 11,
-    fontFamily: fonts.regular,
-    color: Colors.textSecondary,
-  },
-  tombolTambah: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: brand[200],
-    backgroundColor: brand[50],
-  },
-  teksTambah: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
-    color: brand[700],
   },
   segmen: {
     flexDirection: 'row',
@@ -1155,48 +1319,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.sm,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
     borderTopColor: Colors.borderSubtle,
-  },
-  kembali: {
-    width: 48,
-    height: 48,
-    borderRadius: Spacing.radius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  kirim: {
-    height: 48,
-    backgroundColor: Colors.primary,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  kirimText: {
-    color: Colors.white,
-    fontSize: 14,
-    fontFamily: fonts.semibold,
   },
   gagal: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.md,
-  },
-  tombolUlang: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Spacing.radius.full,
-    backgroundColor: Colors.primary,
-  },
-  teksUlang: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
-    color: Colors.white,
   },
 });

@@ -35,21 +35,21 @@ export const fonts = {
 export const ukuranIsi = 12;
 
 /** Gaya judul app bar — dipakai SEMUA header supaya ukurannya seragam. */
-export const judulAppBar = { fontFamily: fonts.bold, fontSize: 14 } as const;
+export const judulAppBar = { fontFamily: fonts.bold, fontSize: 12 } as const;
 
 export const Typography = {
   fonts,
 
-  /** Ukuran font (px). */
+  /** Ukuran font (px). Semua 12 — hierarki dibedakan lewat varian family, bukan ukuran. */
   sizes: {
-    xs: 11,
+    xs: 12,
     sm: 12,
-    md: 14,
-    lg: 16,
-    xl: 18,
-    xxl: 22,
-    xxxl: 28,
-    display: 34,
+    md: 12,
+    lg: 12,
+    xl: 12,
+    xxl: 12,
+    xxxl: 12,
+    display: 12,
   },
 
   /**

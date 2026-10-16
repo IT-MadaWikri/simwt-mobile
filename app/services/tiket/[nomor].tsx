@@ -144,7 +144,7 @@ export default function DetailTiketScreen() {
               </View>
 
               <View style={[gs.flex1, { paddingBottom: Spacing.lg, marginLeft: Spacing.sm }]}>
-                <Text style={[gs.title, { fontSize: 14 }]}>{langkah.judul}</Text>
+                <Text style={[gs.title, { fontSize: 12 }]}>{langkah.judul}</Text>
                 {langkah.isi ? <Text style={gs.bodySm}>{langkah.isi}</Text> : null}
                 {langkah.waktu ? <Text style={gs.caption}>{waktu(langkah.waktu)}</Text> : null}
               </View>

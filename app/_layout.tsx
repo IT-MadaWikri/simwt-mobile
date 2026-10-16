@@ -2,6 +2,8 @@
  * Root Layout — Auth guard + navigation structure
  * Wraps the entire app with AuthProvider and handles routing
  */
+// Harus paling awal: mengunci teks dari skala font sistem (lihat berkasnya).
+import '../src/utils/kunciSkalaFont';
 import { useFonts } from 'expo-font';
 import {
   Poppins_400Regular,

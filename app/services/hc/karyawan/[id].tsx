@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import Icon from '../../../../src/components/common/Icon';
+import Button from '../../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { karyawanService, Employee } from '../../../../src/services/karyawanService';
 import Colors, { brand, slate } from '../../../../constants/Colors';
@@ -53,9 +54,7 @@ export default function EmployeeDetailScreen() {
       <View style={[styles.container, styles.centerContainer]}>
         <Icon name="account-off-outline" size={48} color={GOJEK_GREY} />
         <Text style={styles.errorText}>Data karyawan tidak ditemukan</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>Kembali</Text>
-        </TouchableOpacity>
+        <Button label="Kembali" onPress={() => router.back()} style={{ marginTop: Spacing.xl }} />
       </View>
     );
   }
@@ -296,24 +295,13 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: Spacing.md,
-    fontSize: 14,
+    fontSize: 12,
     color: GOJEK_GREY,
   },
   errorText: {
     marginTop: Spacing.md,
-    fontSize: 16,
+    fontSize: 12,
     color: GOJEK_GREY,
-    fontFamily: fonts.semibold,
-  },
-  backBtn: {
-    marginTop: Spacing.xl,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: 10,
-    backgroundColor: GOJEK_GREEN,
-    borderRadius: 24,
-  },
-  backBtnText: {
-    color: Colors.white,
     fontFamily: fonts.semibold,
   },
   headerContainer: {
@@ -333,7 +321,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: GOJEK_DARK,
   },
@@ -375,7 +363,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: Colors.white,
-    fontSize: 36,
+    fontSize: 12,
     fontFamily: fonts.bold,
   },
   profileInfo: {
@@ -383,7 +371,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileName: {
-    fontSize: 22,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: GOJEK_DARK,
     marginBottom: 10,
@@ -424,7 +412,7 @@ const styles = StyleSheet.create({
     backgroundColor: GOJEK_GREEN_LIGHT,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: fonts.bold,
   },
   dot: {
@@ -456,12 +444,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   summaryLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.textTertiary,
     fontFamily: fonts.bold,
   },
   summaryValue: {
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: brand[600],
   },
@@ -489,7 +477,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: GOJEK_DARK,
     marginLeft: 12,
@@ -515,13 +503,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   infoLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: GOJEK_DARK,
     marginTop: 2,

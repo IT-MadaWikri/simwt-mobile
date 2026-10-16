@@ -508,7 +508,7 @@ const styles = {
   },
   jam: {
     fontFamily: fonts.regular,
-    fontSize: 10,
+    fontSize: 12,
     color: Colors.textTertiary,
   },
   lampiranBubble: {

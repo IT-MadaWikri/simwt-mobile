@@ -4,8 +4,8 @@
  *   - jejak keputusan (diajukan → disetujui/ditolak oleh siapa, alasan tolak),
  *   - foto sebelum/sesudah (tap untuk memperbesar) dan kondisi,
  *   - manfaat lengkap per kategori PQCDSM,
- *   - bila DISETUJUI: nilai PQCDSM, nilai komite, form penilaian komite
- *     (izin `akses_penilaian_kaizen`) dan pembatalan nilai (`reset_penilaian_kaizen`),
+ *   - bila DISETUJUI: nilai PQCDSM dan nilai komite (hanya dibaca; penilaian dan
+ *     pembatalannya dilakukan lewat website),
  *   - bila DITERIMA dan berwenang: tombol Setujui / Tolak di bawah.
  * Hak akses dihitung server (`izin`), bukan ditebak dari nama peran.
  */
@@ -26,7 +26,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
 import Avatar from '../../../src/components/common/Avatar';
 import BottomSheet from '../../../src/components/common/BottomSheet';
-import BrandSpinner from '../../../src/components/common/BrandSpinner';
+import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -58,11 +58,12 @@ export default function KaizenDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [gagal, setGagal] = useState(false);
-  const [proses, setProses] = useState<null | 'setuju' | 'tolak' | 'nilai' | 'reset'>(null);
+  const [proses, setProses] = useState<null | 'setuju' | 'tolak'>(null);
   const [fotoBesar, setFotoBesar] = useState<string | null>(null);
   const [sheetTolak, setSheetTolak] = useState(false);
+  // Kategori manfaat yang rinciannya sedang dibuka di sheet ('' = Manfaat tanpa kategori).
+  const [sheetManfaat, setSheetManfaat] = useState<string | null>(null);
   const [alasan, setAlasan] = useState('');
-  const [nilai, setNilai] = useState<Record<string, string>>({});
 
   const muat = useCallback(() => {
     if (!id) return Promise.resolve();
@@ -97,16 +98,24 @@ export default function KaizenDetailScreen() {
         <Icon name="alert-circle-outline" size={44} color={Colors.textTertiary} />
         <Text style={gs.emptyTitle}>{gagal ? 'Gagal memuat Kaizen' : 'Kaizen tidak ditemukan'}</Text>
         {gagal ? (
-          <TouchableOpacity style={styles.tombolKecil} onPress={() => { setLoading(true); muat(); }}>
-            <Text style={styles.teksTombolKecil}>Coba lagi</Text>
-          </TouchableOpacity>
+          <Button label="Coba lagi" onPress={() => { setLoading(true); muat(); }} style={{ marginTop: Spacing.lg }} />
         ) : null}
       </View>
     );
   }
 
-  const { kaizen, manfaats = [], kategoriNilai = {}, totalKategoriNilai, nilaiPanitia, kriteriaPenilaian = [] } = data;
+  const { kaizen, manfaats = [], kategoriNilai = {}, totalKategoriNilai, nilaiPanitia } = data;
   const izin = data.izin ?? { approve: false, nilai: false, reset: false };
+  // Manfaat dikelompokkan per kategori; rinciannya muncul di sheet saat kartu ditap.
+  const kelompokManfaat = Array.from(
+    manfaats
+      .reduce((peta, m) => {
+        const kat = m.manfaat_nilai?.kategori ?? '';
+        return peta.set(kat, [...(peta.get(kat) ?? []), m]);
+      }, new Map<string, typeof manfaats>())
+      .entries()
+  );
+  const butirSheet = sheetManfaat === null ? [] : manfaats.filter((m) => (m.manfaat_nilai?.kategori ?? '') === sheetManfaat);
   const warna = warnaStatus(kaizen.status);
   const k = kaizen as any;
   const departemen = kaizen.departemen?.nama || k.departemen?.nama_departemen || kaizen.nama_departemen;
@@ -118,7 +127,6 @@ export default function KaizenDetailScreen() {
   const teksSebelum = kaizen.detail_sebelum || kaizen.kondisi_sebelum;
   const teksSesudah = kaizen.detail_sesudah || kaizen.kondisi_sesudah;
   const bisaPutus = izin.approve && kaizen.status === 'DITERIMA';
-  const bisaNilai = izin.nilai && kaizen.status === 'DISETUJUI' && !nilaiPanitia;
 
   const jalankan = async (jenis: NonNullable<typeof proses>, aksi: () => Promise<void>, sukses: string, gagalTeks: string) => {
     setProses(jenis);
@@ -156,38 +164,6 @@ export default function KaizenDetailScreen() {
     }
   };
 
-  const simpanNilai = async () => {
-    const isian: Record<string, number> = {};
-    for (const kr of kriteriaPenilaian) {
-      const v = Number(nilai[kr.nama] ?? 0);
-      if (!Number.isInteger(v) || v < 0 || v > kr.nilai_max) {
-        dialog.alert('Nilai Tidak Valid', `${kr.kriteria} harus 0 sampai ${kr.nilai_max}.`);
-        return;
-      }
-      isian[kr.nama] = v;
-    }
-    const total = Object.values(isian).reduce((a, b) => a + b, 0);
-    const ya = await dialog.confirm({
-      title: 'Simpan nilai komite?',
-      message: `Total nilai komite ${total} poin. Poin pelaksana akan langsung bertambah.`,
-      confirmText: 'Simpan',
-    });
-    if (ya) {
-      const ok = await jalankan('nilai', () => kaizenService.nilai(kaizen.id, isian), 'Nilai komite tersimpan.', 'Gagal menyimpan nilai.');
-      if (ok) setNilai({});
-    }
-  };
-
-  const batalkanNilai = async () => {
-    const ya = await dialog.confirm({
-      title: 'Batalkan penilaian?',
-      message: 'Nilai komite dihapus dan poin pelaksana dikurangi kembali.',
-      confirmText: 'Batalkan nilai',
-      destructive: true,
-    });
-    if (ya) jalankan('reset', () => kaizenService.batalkanNilai(kaizen.id), 'Penilaian dibatalkan.', 'Gagal membatalkan penilaian.');
-  };
-
   // Jejak keputusan, mirip kartu Detail di website.
   const jejak = [
     { ikon: 'send', warna: brand[600], judul: 'Diajukan', ket: tanggal(kaizen.created_at) },
@@ -216,7 +192,7 @@ export default function KaizenDetailScreen() {
   return (
     <View style={[gs.screen, { backgroundColor: slate[100] }]}>
       <ScrollView
-        contentContainerStyle={[styles.isi, { paddingBottom: (bisaPutus ? Spacing.lg : insets.bottom + Spacing.xxl) }]}
+        contentContainerStyle={styles.isi}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -318,38 +294,22 @@ export default function KaizenDetailScreen() {
         </View>
 
         {/* Manfaat */}
-        <View style={[styles.kartu, { paddingBottom: Spacing.xs }]}>
+        <View style={styles.kartu}>
           <Text style={styles.judulSeksi}>Manfaat ({manfaats.length})</Text>
           {manfaats.length === 0 ? <Text style={[styles.teks, styles.kosong]}>Belum ada manfaat.</Text> : null}
-          {manfaats.map((m, i) => {
-            const kat = m.manfaat_nilai?.kategori ?? '';
+          {kelompokManfaat.map(([kat, butir]) => {
             const l = LENCANA[kat];
             return (
-              <View key={m.id ?? i} style={[styles.manfaat, i > 0 && styles.garisAtas]}>
-                <View style={[gs.row, { gap: Spacing.sm, marginBottom: 6 }]}>
-                  <View style={[styles.logoManfaat, { backgroundColor: l?.warna[1] ?? slate[400] }]}>
-                    <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
-                  </View>
-                  <Text style={[styles.nama, gs.flex1]}>{kat || 'Manfaat'}</Text>
-                  {m.tipe_area ? (
-                    <Text style={styles.kecil}>{m.tipe_area === 'Eksternal' ? 'Luar perusahaan' : 'Dalam perusahaan'}</Text>
-                  ) : null}
+              <TouchableOpacity key={kat || 'x'} style={styles.kartuManfaat} activeOpacity={0.6} onPress={() => setSheetManfaat(kat)}>
+                <View style={[styles.logoManfaat, { backgroundColor: l?.warna[1] ?? slate[400] }]}>
+                  <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
                 </View>
-                {[
-                  ['Sebelum', m.sebelum],
-                  ['Sesudah', m.sesudah],
-                  ['Penghematan', m.hemat || '—'],
-                  ['Area', m.area],
-                  ['PIC', m.pic],
-                ]
-                  .filter(([, v]) => v)
-                  .map(([label, v]) => (
-                    <View key={label} style={styles.barisManfaat}>
-                      <Text style={styles.labelManfaat}>{label}</Text>
-                      <Text style={[styles.teks, gs.flex1]}>{v}</Text>
-                    </View>
-                  ))}
-              </View>
+                <Text style={[styles.nama, gs.flex1]} numberOfLines={1}>{kat || 'Manfaat'}</Text>
+                <View style={styles.jumlahManfaat}>
+                  <Text style={styles.teksJumlahManfaat}>{butir.length}</Text>
+                </View>
+                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -392,67 +352,79 @@ export default function KaizenDetailScreen() {
                     <Text style={styles.teks}>Nilai akhir (komite + PQCDSM)</Text>
                     <Text style={[styles.nama, { color: brand[700] }]}>+{nilaiPanitia.nilai_final} poin</Text>
                   </View>
-                  {izin.reset ? (
-                    <TouchableOpacity style={styles.tombolGaris} onPress={batalkanNilai} disabled={!!proses}>
-                      {proses === 'reset' ? (
-                        <BrandSpinner size={18} color={Colors.danger} />
-                      ) : (
-                        <Text style={[styles.teksTombolGaris, { color: Colors.danger }]}>Batalkan penilaian</Text>
-                      )}
-                    </TouchableOpacity>
-                  ) : null}
-                </>
-              ) : bisaNilai ? (
-                <>
-                  {kriteriaPenilaian.map((kr) => {
-                    const v = Number(nilai[kr.nama] ?? 0) || 0;
-                    const set = (n: number) => setNilai((d) => ({ ...d, [kr.nama]: String(Math.max(0, Math.min(kr.nilai_max, n))) }));
-                    return (
-                      <View key={kr.nama} style={styles.kriteria}>
-                        <View style={gs.flex1}>
-                          <Text style={styles.labelKondisi}>{kr.kriteria}</Text>
-                          <Text style={styles.kecil}>Maks {kr.nilai_max} poin</Text>
-                        </View>
-                        <View style={styles.stepper}>
-                          <TouchableOpacity style={styles.tombolStep} onPress={() => set(v - 1)} hitSlop={6}>
-                            <Text style={styles.teksStep}>−</Text>
-                          </TouchableOpacity>
-                          <TextInput
-                            style={styles.inputNilai}
-                            keyboardType="number-pad"
-                            value={nilai[kr.nama] ?? '0'}
-                            onChangeText={(t) => setNilai((d) => ({ ...d, [kr.nama]: t.replace(/[^0-9]/g, '') }))}
-                            onBlur={() => set(v)}
-                          />
-                          <TouchableOpacity style={styles.tombolStep} onPress={() => set(v + 1)} hitSlop={6}>
-                            <Text style={styles.teksStep}>+</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    );
-                  })}
-                  <TouchableOpacity style={[styles.tombolUtama, { marginTop: Spacing.sm }]} onPress={simpanNilai} disabled={!!proses}>
-                    {proses === 'nilai' ? <BrandSpinner size={20} color={Colors.white} /> : <Text style={styles.teksTombolUtama}>Berikan Nilai Komite</Text>}
-                  </TouchableOpacity>
                 </>
               ) : (
-                <Text style={[styles.teks, styles.kosong]}>Belum dinilai oleh komite.</Text>
+                <Text style={[styles.teks, styles.kosong]}>Belum dinilai oleh komite. Penilaian dilakukan lewat website SIMWT.</Text>
               )}
             </View>
           </>
         ) : null}
+        {/* Menutup celah abu-abu di bawah seksi terakhir (marginBottom-nya dibatalkan). */}
+        <View style={{ marginTop: -Spacing.sm, height: bisaPutus ? 0 : insets.bottom, backgroundColor: Colors.white }} />
       </ScrollView>
 
       {bisaPutus ? (
         <View style={[styles.bawah, { paddingBottom: insets.bottom + Spacing.md }]}>
-          <TouchableOpacity style={[styles.tombolGaris, gs.flex1, { marginTop: 0 }]} onPress={() => setSheetTolak(true)} disabled={!!proses}>
-            <Text style={[styles.teksTombolGaris, { color: Colors.danger }]}>Tolak</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.tombolUtama, gs.flex1]} onPress={setujui} disabled={!!proses}>
-            {proses === 'setuju' ? <BrandSpinner size={20} color={Colors.white} /> : <Text style={styles.teksTombolUtama}>Setujui</Text>}
-          </TouchableOpacity>
+          <Button variant="dangerOutline" label="Tolak" onPress={() => setSheetTolak(true)} disabled={!!proses} style={gs.flex1} />
+          <Button label="Setujui" onPress={setujui} loading={proses === 'setuju'} disabled={!!proses} style={gs.flex1} />
         </View>
       ) : null}
+
+      <BottomSheet
+        visible={sheetManfaat !== null}
+        onClose={() => setSheetManfaat(null)}
+        title={`Manfaat ${sheetManfaat || ''}`.trim()}
+        subtitle={`${butirSheet.length} manfaat`}
+      >
+        {butirSheet.map((m, urut) => {
+          const l = LENCANA[m.manfaat_nilai?.kategori ?? ''];
+          return (
+            <React.Fragment key={m.id ?? urut}>
+              {urut > 0 ? <View style={styles.garisButir} /> : null}
+              <View style={styles.butir}>
+                <View style={gs.rowBetween}>
+                  <Text style={styles.nomorButir}>Manfaat {urut + 1}</Text>
+                  {m.tipe_area ? (
+                    <View style={styles.chipButir}>
+                      <Text style={styles.teksChipButir}>{m.tipe_area === 'Eksternal' ? 'Luar perusahaan' : 'Dalam perusahaan'}</Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <View style={styles.hematButir}>
+                  <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={18} color={l?.warna[2] ?? Colors.textSecondary} />
+                  <View style={gs.flex1}>
+                    <Text style={styles.labelButir}>Penghematan</Text>
+                    <Text style={[styles.nilaiHemat, { color: l?.warna[2] ?? Colors.textPrimary }]}>{m.hemat || '—'}</Text>
+                  </View>
+                </View>
+
+                <View>
+                  <Text style={styles.labelButir}>Sebelum</Text>
+                  <Text style={styles.teksButir}>{m.sebelum || '-'}</Text>
+                </View>
+                <View>
+                  <Text style={styles.labelButir}>Sesudah</Text>
+                  <Text style={styles.teksButir}>{m.sesudah || '-'}</Text>
+                </View>
+
+                {m.area ? (
+                  <View style={styles.metaButir}>
+                    <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
+                    <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
+                  </View>
+                ) : null}
+                {m.pic ? (
+                  <View style={styles.metaButir}>
+                    <Avatar nama={m.pic} ukuran={20} />
+                    <Text style={styles.teksMeta} numberOfLines={1}>PIC · {m.pic}</Text>
+                  </View>
+                ) : null}
+              </View>
+            </React.Fragment>
+          );
+        })}
+      </BottomSheet>
 
       <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen" penuh>
         <View style={{ paddingHorizontal: Spacing.lg }}>
@@ -470,9 +442,15 @@ export default function KaizenDetailScreen() {
             autoFocus
           />
           <Text style={[styles.kecil, { textAlign: 'right', marginTop: 4 }]}>{alasan.length}/255</Text>
-          <TouchableOpacity style={[styles.tombolUtama, { backgroundColor: Colors.danger, marginTop: Spacing.md }]} onPress={tolak} disabled={!!proses}>
-            {proses === 'tolak' ? <BrandSpinner size={20} color={Colors.white} /> : <Text style={styles.teksTombolUtama}>Tolak Kaizen</Text>}
-          </TouchableOpacity>
+          <Button
+            variant="danger"
+            label="Tolak Kaizen"
+            onPress={tolak}
+            loading={proses === 'tolak'}
+            disabled={!!proses}
+            block
+            style={{ marginTop: Spacing.md }}
+          />
         </View>
       </BottomSheet>
 
@@ -510,18 +488,18 @@ const styles = StyleSheet.create({
     ...Spacing.curve,
   },
   teksPil: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: fonts.semibold,
   },
   tema: {
     marginTop: Spacing.sm,
     marginBottom: 4,
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   kecil: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -531,7 +509,7 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.md,
   },
   nama: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -547,7 +525,7 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
   },
   judulSeksi: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -581,7 +559,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef2f2',
   },
   judulAlasan: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.dangerDark,
     marginBottom: 2,
@@ -615,7 +593,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTagFoto: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.white,
   },
@@ -629,13 +607,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
-  manfaat: {
-    paddingVertical: Spacing.md,
-  },
-  garisAtas: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.border,
-  },
   logoManfaat: {
     width: 26,
     height: 26,
@@ -643,17 +614,88 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  barisManfaat: {
+  kartuManfaat: {
+    ...gs.card,
     flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: 3,
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
   },
-  labelManfaat: {
-    width: 84,
-    fontSize: 11,
-    fontFamily: fonts.medium,
+  jumlahManfaat: {
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    backgroundColor: brand[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  teksJumlahManfaat: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.bold,
+    color: brand[700],
+  },
+  butir: {
+    marginHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
+  },
+  garisButir: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.border,
+    marginHorizontal: Spacing.lg,
+  },
+  nomorButir: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.bold,
+    color: Colors.textPrimary,
+  },
+  chipButir: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    backgroundColor: slate[100],
+  },
+  teksChipButir: {
+    fontSize: 10,
+    fontFamily: fonts.semibold,
+    color: Colors.textSecondary,
+  },
+  hematButir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  nilaiHemat: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+  },
+  labelButir: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
     color: Colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  teksButir: {
+    marginTop: 2,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.textPrimary,
     lineHeight: 18,
+  },
+  metaButir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  teksMeta: {
+    flex: 1,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary,
   },
   gridNilai: {
     flexDirection: 'row',
@@ -673,44 +715,9 @@ const styles = StyleSheet.create({
   },
   angka: {
     marginTop: 2,
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
-  },
-  kriteria: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-  },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    backgroundColor: slate[50],
-  },
-  tombolStep: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  teksStep: {
-    fontSize: 16,
-    fontFamily: fonts.semibold,
-    color: Colors.textPrimary,
-  },
-  inputNilai: {
-    width: 36,
-    paddingVertical: 0,
-    textAlign: 'center',
-    fontSize: 13,
-    fontFamily: fonts.semibold,
-    color: Colors.textPrimary,
-    ...inputReset,
   },
   input: {
     borderWidth: 1,
@@ -724,47 +731,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     backgroundColor: slate[50],
     ...inputReset,
-  },
-  tombolUtama: {
-    height: 46,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  teksTombolUtama: {
-    fontSize: 14,
-    fontFamily: fonts.semibold,
-    color: Colors.white,
-  },
-  tombolGaris: {
-    height: 42,
-    marginTop: Spacing.md,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.white,
-  },
-  teksTombolGaris: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
-    color: Colors.textPrimary,
-  },
-  tombolKecil: {
-    marginTop: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Spacing.radius.full,
-    backgroundColor: Colors.primary,
-  },
-  teksTombolKecil: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
-    color: Colors.white,
   },
   bawah: {
     flexDirection: 'row',

@@ -22,11 +22,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
+import Button from '../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
-import BrandSpinner from '../../../src/components/common/BrandSpinner';
 import { dialog } from '../../../src/components/common/AppDialog';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { tiketService, OpsiRef } from '../../../src/services/tiketService';
@@ -197,21 +197,7 @@ export default function BuatTiketScreen() {
           />
         </View>
 
-        <TouchableOpacity
-          style={[gs.btn, gs.btnPrimary, gs.btnBlock, mengirim && gs.btnDisabled]}
-          onPress={kirim}
-          disabled={mengirim}
-          activeOpacity={0.85}
-        >
-          {mengirim ? (
-            <BrandSpinner size={22} color={Colors.white} />
-          ) : (
-            <>
-              <Icon name="send" size={18} color={Colors.white} />
-              <Text style={[gs.btnText, gs.btnTextOnBrand]}>Kirim Tiket</Text>
-            </>
-          )}
-        </TouchableOpacity>
+        <Button icon="send" label="Kirim Tiket" onPress={kirim} loading={mengirim} block />
       </ScrollView>
 
       {/* Bottom sheet pilihan jenis/departemen. */}

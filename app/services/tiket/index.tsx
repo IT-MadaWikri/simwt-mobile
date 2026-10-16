@@ -9,6 +9,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
+import Button from '../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -95,15 +96,14 @@ export default function TiketSayaScreen() {
               {galat ?? 'Tiket yang Anda ajukan akan tampil di sini.'}
             </Text>
             {galat && (
-              <TouchableOpacity
-                style={[gs.btn, gs.btnPrimary, gs.btnSm, { marginTop: Spacing.lg }]}
+              <Button
+                label="Coba Lagi"
                 onPress={() => {
                   setMemuat(true);
                   muat();
                 }}
-              >
-                <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>Coba Lagi</Text>
-              </TouchableOpacity>
+                style={{ marginTop: Spacing.lg }}
+              />
             )}
           </View>
         }
@@ -145,15 +145,13 @@ export default function TiketSayaScreen() {
       />
 
       {/* Tombol buat mengambang ala aplikasi native. */}
-      <TouchableOpacity
-        style={[styles.fab, { bottom: insets.bottom + Spacing.xl }]}
-        activeOpacity={0.85}
+      <Button
+        icon="plus"
+        label="Buat Tiket"
         onPress={() => router.push('/services/tiket/buat' as any)}
+        style={[styles.fab, { bottom: insets.bottom + Spacing.xl }]}
         accessibilityLabel="Buat tiket baru"
-      >
-        <Icon name="plus" size={26} color={Colors.white} />
-        <Text style={[gs.btnText, gs.btnTextOnBrand]}>Buat Tiket</Text>
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -162,12 +160,5 @@ const styles = {
   fab: {
     position: 'absolute' as const,
     right: Spacing.xl,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: Spacing.sm,
-    backgroundColor: brand[600],
-    borderRadius: Spacing.radius.full,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
   },
 };

@@ -86,6 +86,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   value: {
-    fontSize: 20,
+    fontSize: 12,
   },
 });

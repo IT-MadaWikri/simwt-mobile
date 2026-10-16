@@ -62,30 +62,10 @@ export default function ServiceDetailScreen() {
       <AppBar judul={judul} />
 
       <ScrollView
-        style={gs.screen}
+        style={[gs.screen, { backgroundColor: Colors.white }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
       >
-        {/* Kepala layanan */}
-        <View style={[gs.card, gs.center, { paddingVertical: Spacing.xxl }]}>
-          <View
-            style={[
-              gs.iconTileLg,
-              { backgroundColor: service.backgroundColor, width: 80, height: 80 },
-            ]}
-          >
-            <Icon
-              name={service.icon as any}
-              size={40}
-              color={service.iconColor}
-            />
-          </View>
-          <Text style={[gs.h3, gs.textCenter, { marginTop: Spacing.lg }]}>{judul}</Text>
-          <Text style={[gs.body, gs.textCenter, { marginTop: Spacing.xs }]}>
-            {service.description}
-          </Text>
-        </View>
-
         {!adaYangAktif && (
           <View style={[gs.cardBrand, gs.center, { marginTop: Spacing.lg }]}>
             <Icon
@@ -101,7 +81,7 @@ export default function ServiceDetailScreen() {
           </View>
         )}
 
-        <Text style={[gs.sectionTitle, { marginTop: Spacing.xl }]}>Aksi Cepat</Text>
+        <Text style={gs.sectionTitle}>Menu {judul}</Text>
 
         {aksi.map((item) => {
           const aktif = !!item.route;

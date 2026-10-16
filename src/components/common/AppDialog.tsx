@@ -28,8 +28,9 @@
  * pemanggilan `dialog.*` tidak akan menampilkan apa pun.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, Animated, TextInput } from 'react-native';
+import { View, Text, Modal, Animated, TextInput } from 'react-native';
 import Icon from './Icon';
+import Button from './Button';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
@@ -199,30 +200,18 @@ export function DialogHost() {
 
           <View style={[gs.row, gs.gapSm, styles.actions]}>
             {req.cancelText ? (
-              <TouchableOpacity
-                style={[gs.btn, gs.btnMuted, gs.flex1]}
-                onPress={() => close(false)}
-                activeOpacity={0.85}
-              >
-                <Text style={[gs.btnText, gs.btnTextMuted]}>{req.cancelText}</Text>
-              </TouchableOpacity>
+              <Button variant="muted" label={req.cancelText} onPress={() => close(false)} style={gs.flex1} />
             ) : null}
 
-            <TouchableOpacity
-              style={[
-                gs.btn,
-                req.tone === 'danger' ? gs.btnDanger : gs.btnPrimary,
-                gs.flex1,
-                // Isian wajib yang masih kosong: tombol dimatikan, bukan
-                // dibiarkan ditekan lalu ditolak server dengan 422.
-                belumSah && gs.btnDisabled,
-              ]}
+            {/* Isian wajib yang masih kosong: tombol dimatikan, bukan
+                dibiarkan ditekan lalu ditolak server dengan 422. */}
+            <Button
+              variant={req.tone === 'danger' ? 'danger' : 'primary'}
+              label={req.confirmText}
               onPress={() => close(true)}
               disabled={belumSah}
-              activeOpacity={0.85}
-            >
-              <Text style={[gs.btnText, gs.btnTextOnBrand]}>{req.confirmText}</Text>
-            </TouchableOpacity>
+              style={gs.flex1}
+            />
           </View>
         </Animated.View>
       </Animated.View>

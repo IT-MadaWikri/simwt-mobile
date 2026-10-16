@@ -3,7 +3,7 @@
  * 5 tabs: Home, Aktivitas, Scan (Camera), Notifikasi, Profil
  */
 import React, { useEffect, useRef } from 'react';
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
 import { View, StyleSheet, Platform, Animated, TouchableOpacity, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,19 +17,21 @@ function AnimatedTabIcon({ name, focused, color }: { name: string, focused: bool
   return <Icon name={name} size={26} color={color} strokeWidth={focused ? 2.5 : 1.75} />;
 }
 
-// Efek bounce saat di-tap: mengecil waktu ditekan, memantul balik waktu dilepas.
+// Efek bounce saat di-tap: sama persis dengan grid layanan (ServiceIcon).
 // Tanpa ripple Android.
 function BouncePress({ children, style, onPress, onLongPress, testID, ...rest }: any) {
   const scale = useRef(new Animated.Value(1)).current;
-  const ke = (toValue: number) =>
-    Animated.spring(scale, { toValue, friction: 3, tension: 300, useNativeDriver: true }).start();
+  const tekan = () =>
+    Animated.spring(scale, { toValue: 0.85, speed: 40, bounciness: 0, useNativeDriver: true }).start();
+  const lepas = () =>
+    Animated.spring(scale, { toValue: 1, speed: 14, bounciness: 18, useNativeDriver: true }).start();
 
   return (
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      onPressIn={() => ke(0.82)}
-      onPressOut={() => ke(1)}
+      onPressIn={tekan}
+      onPressOut={lepas}
       testID={testID}
       role={rest.role}
       aria-label={rest['aria-label']}
@@ -53,6 +55,10 @@ const CustomScanButton = ({ onPress }: any) => (
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  // Tab bar tetap tampil di daftar chat; hanya disembunyikan di ruang chat dan
+  // layar "baru" (segmen ke-3 ada), karena keduanya punya bilah tulis sendiri.
+  const segments = useSegments() as string[];
+  const dalamRuangChat = segments[1] === 'chat' && segments.length > 2;
 
   // Handle open camera manually for now
   const handleScanPress = () => {
@@ -140,7 +146,9 @@ export default function TabLayout() {
         options={{
           title: 'Chat',
           headerShown: false,
-          tabBarStyle: { display: 'none' },
+          // Jangan beri `tabBarStyle: undefined` — itu menimpa gaya dari screenOptions
+          // (tinggi/padding) sehingga tab bar chat beda ukuran dari tab lain.
+          ...(dalamRuangChat && { tabBarStyle: { display: 'none' as const } }),
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon
               name={focused ? 'chat' : 'chat-outline'}
@@ -210,7 +218,7 @@ const styles = StyleSheet.create({
   badge: {
     backgroundColor: Colors.danger,
     fontFamily: fonts.bold,
-    fontSize: 10,
+    fontSize: 12,
     minWidth: 18,
     height: 18,
     borderRadius: Spacing.radius.full,

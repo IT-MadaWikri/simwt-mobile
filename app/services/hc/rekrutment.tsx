@@ -16,9 +16,10 @@
  *    sehingga senada dengan layar Stok Opname & beranda.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { Stack } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
+import Button from '../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -91,16 +92,14 @@ export default function RekrutmentScreen() {
           />
           <Text style={gs.emptyTitle}>Gagal memuat</Text>
           <Text style={gs.emptyText}>{galat ?? 'Terjadi kesalahan.'}</Text>
-          <TouchableOpacity
-            style={[gs.btn, gs.btnPrimary, { marginTop: Spacing.xl }]}
+          <Button
+            label="Coba Lagi"
             onPress={() => {
               setMemuat(true);
               muat();
             }}
-            activeOpacity={0.85}
-          >
-            <Text style={[gs.btnText, gs.btnTextOnBrand]}>Coba Lagi</Text>
-          </TouchableOpacity>
+            style={{ marginTop: Spacing.xl }}
+          />
         </View>
       </>
     );

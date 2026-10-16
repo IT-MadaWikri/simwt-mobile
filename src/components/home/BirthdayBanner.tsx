@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontFamily: fonts.bold,
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.white,
   },
   bannerSubtitle: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   nama: {
     fontFamily: fonts.semibold,
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textPrimary,
   },
   meta: {

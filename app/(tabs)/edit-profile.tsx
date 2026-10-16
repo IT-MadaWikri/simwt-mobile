@@ -52,7 +52,7 @@ export default function EditProfileScreen() {
         judul="Edit Pengguna"
         kanan={
           <TouchableOpacity style={{ marginRight: Spacing.screenPadding }}>
-            <Text style={{ color: Colors.white, fontFamily: fonts.bold, fontSize: 14 }}>SIMPAN</Text>
+            <Text style={{ color: Colors.white, fontFamily: fonts.bold, fontSize: 12 }}>SIMPAN</Text>
           </TouchableOpacity>
         }
       />
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: Colors.textPrimary,
     marginLeft: 8,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.lg,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textPrimary,
     backgroundColor: slate[50],
     ...inputReset,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textPrimary,
     fontFamily: fonts.semibold,
   },
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   infoTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: brand[600],
     marginLeft: 8,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   infoListItem: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textSecondary,
     marginBottom: 4,
     marginLeft: 26,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.md,
   },
   btnCancelText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textSecondary,
   },
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   btnSaveText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.extrabold,
     color: Colors.white,
     marginLeft: 6,

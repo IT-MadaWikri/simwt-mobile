@@ -15,7 +15,7 @@
  *   <View style={[gs.badge, gs.badgeBrand]}>
  *
  * Array style di RN berperan seperti daftar class di HTML: yang belakang
- * menimpa yang depan. Jadi `[gs.btn, gs.btnOutline]` = `class="btn btn-outline"`.
+ * menimpa yang depan.
  *
  * ── Aturan main ──────────────────────────────────────────────────────────
  * 1. Style yang dipakai lebih dari satu layar HARUS pindah ke sini, jangan
@@ -285,72 +285,6 @@ export const gs = StyleSheet.create({
   },
 
   // ══════════════════════════════════════════════════════════════════════
-  // TOMBOL — padanan `.btn`, `.btn-primary`, `.btn-outline`, `.btn-ghost`
-  // ══════════════════════════════════════════════════════════════════════
-
-  /** Bentuk dasar tombol: pil, isi mendatar, ikon & teks sejajar. */
-  btn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
-  },
-  /** Tombol utama — warna rata, tanpa gradasi dan tanpa bayangan. */
-  btnPrimary: {
-    backgroundColor: brand[600],
-  },
-  btnOutline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: brand[600],
-  },
-  /** Untuk di atas latar gelap / foto. */
-  btnGhost: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
-  },
-  /** Tombol netral, aksi sekunder. */
-  btnMuted: {
-    backgroundColor: slate[100],
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  btnDanger: {
-    backgroundColor: Colors.danger,
-  },
-  btnSm: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.xs,
-  },
-  btnLg: {
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xxxl,
-  },
-  btnBlock: {
-    alignSelf: 'stretch',
-  },
-  btnDisabled: {
-    backgroundColor: Colors.disabled,
-    borderColor: Colors.disabled,
-  },
-
-  /** Teks di dalam tombol. Gabungkan dengan pengubah warna di bawah. */
-  btnText: {
-    fontFamily: fonts.semibold,
-    fontSize: sizes.md,
-  },
-  btnTextOnBrand: { color: Colors.textOnBrand },
-  btnTextOutline: { color: brand[700] },
-  btnTextMuted: { color: Colors.textSecondary },
-  btnTextSm: { fontSize: sizes.sm },
-
-  // ══════════════════════════════════════════════════════════════════════
   // FORMULIR — padanan `.field`
   // ══════════════════════════════════════════════════════════════════════
 
@@ -435,9 +369,10 @@ export const gs = StyleSheet.create({
   badgeMuted: { backgroundColor: slate[100] },
   badgeDanger: { backgroundColor: '#fef2f2' },
   badgeWarning: { backgroundColor: '#fffbeb' },
+  // Teks lencana/badge sengaja lebih kecil (10) dari teks isi (12) supaya muat di dalam pil.
   badgeText: {
     fontFamily: fonts.semibold,
-    fontSize: sizes.xs,
+    fontSize: 10,
   },
   badgeTextBrand: { color: brand[700] },
   badgeTextMuted: { color: Colors.textSecondary },

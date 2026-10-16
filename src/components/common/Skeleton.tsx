@@ -2,7 +2,8 @@
  * Skeleton — placeholder berdenyut untuk muat awal, pengganti spinner.
  *
  * `Skeleton` adalah balok dasarnya; preset di bawah meniru bentuk layar:
- *  - `SkeletonDaftar`  → daftar kartu (Kaizen, tiket, notifikasi, karyawan, …)
+ *  - `SkeletonDaftar`  → daftar kartu (tiket, notifikasi, karyawan, …)
+ *  - `SkeletonBaris`   → daftar baris rata dengan pemisah (Kaizen Saya)
  *  - `SkeletonDetail`  → halaman detail (kartu ringkasan + beberapa seksi)
  *  - `SkeletonDasbor`  → ringkasan berisi petak angka + daftar
  *  - `SkeletonForm`    → formulir (label + field)
@@ -61,6 +62,30 @@ export function SkeletonDaftar({ jumlah = 6, avatar = 'kotak', style }: { jumlah
   return (
     <View style={[styles.wadah, style]}>
       {Array.from({ length: jumlah }, (_, i) => <KartuDaftar key={i} avatar={avatar} />)}
+    </View>
+  );
+}
+
+/** Baris daftar bergaya Kaizen Saya: logo bulat, dua baris teks, status + tanggal di kanan. */
+export function SkeletonBaris({ jumlah = 6, style }: { jumlah?: number; style?: StyleProp<ViewStyle> }) {
+  return (
+    <View style={[{ backgroundColor: Colors.white }, style]}>
+      {Array.from({ length: jumlah }, (_, i) => (
+        <View key={i}>
+          {i > 0 ? <View style={styles.pemisahBaris} /> : null}
+          <View style={styles.barisDaftar}>
+            <Skeleton w={42} h={42} r={21} />
+            <View style={styles.isi}>
+              <Skeleton w="70%" h={12} />
+              <Skeleton w="45%" h={10} />
+            </View>
+            <View style={styles.kananBaris}>
+              <Skeleton w={48} h={10} />
+              <Skeleton w={64} h={10} />
+            </View>
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -139,6 +164,9 @@ export function SkeletonForm({ field = 5 }: { field?: number }) {
 
 const styles = StyleSheet.create({
   wadah: { padding: Spacing.lg, gap: Spacing.md },
+  barisDaftar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg },
+  kananBaris: { alignItems: 'flex-end', gap: 6 },
+  pemisahBaris: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginLeft: Spacing.lg + 42 + Spacing.md },
   kartu: {
     backgroundColor: Colors.white,
     borderRadius: Spacing.radius.xl,

@@ -41,14 +41,14 @@ import { StatusBar } from 'expo-status-bar';
 import Icon from '../src/components/common/Icon';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand, slate } from '../constants/Colors';
+import Colors, { slate } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import Typography, { fonts } from '../constants/Typography';
 import { gs, inputReset } from '../constants/GlobalStyles';
 import { useAuth } from '../src/contexts/AuthContext';
 import { biometric } from '../src/utils/biometric';
 import { dialog } from '../src/components/common/AppDialog';
-import BrandSpinner from '../src/components/common/BrandSpinner';
+import Button from '../src/components/common/Button';
 
 const LOGO = require('../assets/images/logo-loader.png');
 
@@ -289,24 +289,7 @@ export default function LoginScreen() {
             <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>Lupa Password?</Text>
           </TouchableOpacity>
 
-          {/* Tombol utama bergradien — padanan .btn-primary karir-mwt. */}
-          <TouchableOpacity
-            onPress={handleLogin}
-            disabled={mengirim}
-            activeOpacity={0.85}
-            style={[styles.tombolUtama, mengirim && { opacity: 0.7 }]}
-          >
-            <View style={[gs.btn, styles.isiTombol, { backgroundColor: Colors.primary }]}>
-              {mengirim ? (
-                <BrandSpinner size={22} color={Colors.white} />
-              ) : (
-                <>
-                  <Text style={[gs.btnText, gs.btnTextOnBrand]}>Masuk</Text>
-                  <Icon name="arrow-right" size={18} color={Colors.white} />
-                </>
-              )}
-            </View>
-          </TouchableOpacity>
+          <Button label="Masuk" iconRight="arrow-right" onPress={handleLogin} loading={mengirim} block />
 
           {biometrikSiap && (
             <>
@@ -316,14 +299,13 @@ export default function LoginScreen() {
                 <View style={styles.garis} />
               </View>
 
-              <TouchableOpacity
-                style={[gs.btn, gs.btnOutline, gs.btnBlock]}
+              <Button
+                variant="outline"
+                icon="fingerprint"
+                label={`Masuk dengan ${namaBiometrik}`}
                 onPress={masukBiometrik}
-                activeOpacity={0.8}
-              >
-                <Icon name="fingerprint" size={20} color={brand[700]} />
-                <Text style={[gs.btnText, gs.btnTextOutline]}>Masuk dengan {namaBiometrik}</Text>
-              </TouchableOpacity>
+                block
+              />
             </>
           )}
         </Animated.View>
@@ -377,10 +359,10 @@ const styles = StyleSheet.create({
   },
   merek: {
     fontFamily: fonts.extrabold,
-    fontSize: 32,
+    fontSize: 12,
     color: Colors.white,
     letterSpacing: 2,
-    lineHeight: 38,
+    lineHeight: 18,
   },
   merekSub: {
     fontFamily: fonts.semibold,
@@ -438,13 +420,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     marginBottom: Spacing.lg,
     padding: Spacing.xs,
-  },
-  tombolUtama: {
-    borderRadius: Spacing.radius.full,
-    overflow: 'hidden',
-  },
-  isiTombol: {
-    paddingVertical: Spacing.md + 2,
   },
   garis: {
     flex: 1,

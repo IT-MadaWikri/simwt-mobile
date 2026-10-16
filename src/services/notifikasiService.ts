@@ -15,6 +15,8 @@ export interface Notifikasi {
   pesan: string;
   /** Tautan tujuan (URL web) — bisa null. */
   tautan: string | null;
+  /** Id Kaizen terkait (notifikasi Kaizen baru); notifikasi lama tidak punya. */
+  idKaizen: number | null;
   waktu: string | null;
   dibaca: boolean;
 }
@@ -48,6 +50,7 @@ export const notifikasiService = {
       judul: teks(item.data?.judul) ?? teks(item.data?.title) ?? 'Pemberitahuan',
       pesan: teks(item.data?.pesan) ?? teks(item.data?.message) ?? '',
       tautan: teks(item.data?.link) ?? teks(item.data?.tautan),
+      idKaizen: Number(item.data?.id_kaizen) || null,
       waktu: item.created_at ?? null,
       dibaca: !!item.read_at,
     }));

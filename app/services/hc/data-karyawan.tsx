@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: 15,
+    fontSize: 12,
     color: Colors.textPrimary,
     ...inputReset,
   },
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   avatarInitial: {
     color: Colors.white,
-    fontSize: 24,
+    fontSize: 12,
     fontFamily: fonts.bold,
   },
   cardContent: {
@@ -206,13 +206,13 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
   },
   nameText: {
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   roleText: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textSecondary,
     marginBottom: 6,
   },
@@ -253,20 +253,20 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: Spacing.md,
     color: Colors.textSecondary,
-    fontSize: 14,
+    fontSize: 12,
   },
   emptyContainer: {
     alignItems: 'center',
     paddingTop: Spacing.xxxl,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 12,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginTop: Spacing.md,
   },
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,

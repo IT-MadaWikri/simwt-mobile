@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
+import Button from '../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -124,12 +125,7 @@ export default function StoScreen() {
             />
             <Text style={gs.emptyTitle}>Gagal memuat</Text>
             <Text style={gs.emptyText}>{galat}</Text>
-            <TouchableOpacity
-              style={[gs.btn, gs.btnPrimary, gs.btnSm, { marginTop: Spacing.lg }]}
-              onPress={muat}
-            >
-              <Text style={[gs.btnText, gs.btnTextOnBrand, gs.btnTextSm]}>Coba Lagi</Text>
-            </TouchableOpacity>
+            <Button label="Coba Lagi" onPress={muat} style={{ marginTop: Spacing.lg }} />
           </View>
         ) : periode.length === 0 ? (
           <View style={[gs.card, gs.center]}>
@@ -227,7 +223,7 @@ export default function StoScreen() {
                               </Text>
                             </View>
                           </View>
-                          <Text style={[gs.metric, { fontSize: 18 }]}>{persen}%</Text>
+                          <Text style={[gs.metric, { fontSize: 12 }]}>{persen}%</Text>
                         </View>
 
                         {/* Bilah progres — sepadan dengan yang ada di web,
