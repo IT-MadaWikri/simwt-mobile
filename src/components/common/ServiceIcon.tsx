@@ -43,6 +43,13 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   const handlePress = onPress ?? (() => router.push(service.route as any));
 
   const renderBadge = () => {
+    if (service.segera) {
+      return (
+        <View style={[styles.badge, { backgroundColor: Colors.textTertiary }]}>
+          <Text style={styles.badgeText}>Soon</Text>
+        </View>
+      );
+    }
     if (service.lencana) {
       return (
         <View style={[styles.badge, styles.lencanaAngka]}>
@@ -69,7 +76,8 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
 
   return (
     <TouchableOpacity
-      style={styles.wrapper}
+      style={[styles.wrapper, service.segera && styles.nonaktif]}
+      disabled={service.segera}
       onPress={handlePress}
       onPressIn={tekan}
       onPressOut={lepas}
@@ -108,6 +116,10 @@ const styles = StyleSheet.create({
     width: '25%', // grid 4 kolom, pas di lebar layar mana pun
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.xs,
+  },
+  // Layanan "segera hadir": diredupkan dan tidak bisa diketuk.
+  nonaktif: {
+    opacity: 0.55,
   },
   iconWrapper: {
     position: 'relative',

@@ -70,7 +70,7 @@ export default function DrafKaizenScreen() {
                 <Icon name="file-document" size={18} color={brand[700]} />
               </View>
               <View style={gs.flex1}>
-                <Text style={styles.tema} numberOfLines={2}>{item.tema || 'Tanpa judul'}</Text>
+                <Text style={styles.tema} numberOfLines={1}>{item.tema || 'Tanpa judul'}</Text>
                 <Text style={styles.meta} numberOfLines={1}>
                   {meta.join(' · ')} · disimpan {relatif(new Date(item.diubah).toISOString())}
                 </Text>

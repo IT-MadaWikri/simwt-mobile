@@ -70,12 +70,12 @@ export default function MenuKaizenScreen() {
 
   const menu: ServiceItem[] = [
     { id: 'kaizen-saya', name: 'Kaizen\nSaya', icon: 'lightbulb-on-outline', route: '/kaizen/saya', description: 'Daftar dan pengajuan Kaizen kamu', ...WARNA },
+    { id: 'kaizen-buat', name: 'Buat\nKaizen', icon: 'plus', route: '/kaizen/buat', description: 'Ajukan ide perbaikan Kaizen baru', ...WARNA },
     ...(bisaApprove
       ? [{ id: 'kaizen-approval', name: 'Butuh\nApproval', icon: 'clipboard-check-outline', route: '/(tabs)/activity?jenis=kaizen', description: 'Kaizen yang menunggu keputusanmu', lencana: menunggu, ...WARNA }]
       : []),
     { id: 'kaizen-draf', name: 'Draft\nSaya', icon: 'file-document', route: '/kaizen/draf', description: 'Draf Kaizen yang belum dikirim', lencana: jumlahDraf, ...WARNA },
-    { id: 'kaizen-poin', name: 'Poin\nSaya', icon: 'star-circle-outline', route: '/kaizen/redeem', description: 'Poin Kaizen, redeem gift, dan riwayatnya', ...WARNA },
-    { id: 'kaizen-redeem', name: 'Redeem\nHadiah', icon: 'gift', route: '/kaizen/redeem', description: 'Tukar poin dengan hadiah', ...WARNA },
+    { id: 'kaizen-redeem', name: 'Redeem\nHadiah', icon: 'gift', route: '/kaizen/redeem', description: 'Tukar poin dengan hadiah', segera: true, ...WARNA },
   ];
 
   return (

@@ -16,6 +16,8 @@ export interface ServiceItem {
   description: string;
   /** Lencana angka merah di pojok ikon (mis. jumlah yang menunggu); 0/kosong = tidak tampil. */
   lencana?: number;
+  /** Belum tersedia: tampil dengan badge "Soon" dan tidak bisa diketuk. */
+  segera?: boolean;
 }
 
 export const SERVICES: ServiceItem[] = [
