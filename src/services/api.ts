@@ -5,6 +5,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../../constants/Api';
 import { storage } from '../utils/storage';
+import { laporkanMasalahJaringan } from '../utils/masalahJaringan';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -59,6 +60,8 @@ api.interceptors.response.use(
         : `Tidak dapat terhubung ke server (${API_CONFIG.BASE_URL}). ` +
           'Pastikan Anda berada di jaringan yang benar.';
       error.isNetworkError = true;
+      // Beri tahu UI (alert global); permintaan yang sengaja dibatalkan bukan masalah jaringan.
+      if (!axios.isCancel(error)) laporkanMasalahJaringan(timeout ? 'timeout' : 'offline');
     }
 
     return Promise.reject(error);
