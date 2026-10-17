@@ -8,6 +8,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate } from '../../constants/Colors';
@@ -88,16 +89,86 @@ export default function NotifikasiScreen() {
     }
   };
 
+  const tandaiSatu = async (item: Notifikasi) => {
+    try {
+      await notifikasiService.tandaiDibaca(item.id);
+      setDaftar((lama) => lama.map((n) => (n.id === item.id ? { ...n, dibaca: true } : n)));
+    } catch (err: any) {
+      dialog.alert('Gagal', err?.message ?? 'Tidak bisa menandai notifikasi.', 'danger');
+    }
+  };
+
+  const hapusSatu = async (item: Notifikasi) => {
+    try {
+      await notifikasiService.hapus(item.id);
+      setDaftar((lama) => lama.filter((n) => n.id !== item.id));
+    } catch (err: any) {
+      dialog.alert('Gagal', err?.message ?? 'Tidak bisa menghapus notifikasi.', 'danger');
+    }
+  };
+
+  /** Kotak aksi yang muncul saat baris digeser ke kiri: Dibaca (hanya bila belum dibaca) dan Hapus. */
+  const aksiGeser = (item: Notifikasi, tutup: () => void) => (
+    <View style={styles.aksiGeser}>
+      {!item.dibaca ? (
+        <TouchableOpacity
+          style={[styles.kotakAksi, { backgroundColor: brand[600] }]}
+          onPress={() => {
+            tutup();
+            tandaiSatu(item);
+          }}
+        >
+          <Icon name="check" size={18} color={Colors.white} />
+          <Text style={styles.teksAksi}>Dibaca</Text>
+        </TouchableOpacity>
+      ) : null}
+      <TouchableOpacity
+        style={[styles.kotakAksi, { backgroundColor: Colors.danger }]}
+        onPress={() => {
+          tutup();
+          hapusSatu(item);
+        }}
+      >
+        <Icon name="delete-outline" size={18} color={Colors.white} />
+        <Text style={styles.teksAksi}>Hapus</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const hapusSemua = async () => {
+    const setuju = await dialog.confirm({
+      title: 'Hapus Semua Notifikasi',
+      message: 'Semua notifikasi akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?',
+      confirmText: 'Hapus Semua',
+      cancelText: 'Batal',
+      destructive: true,
+    });
+    if (!setuju) return;
+    try {
+      await notifikasiService.hapusSemua();
+      setDaftar([]);
+    } catch (err: any) {
+      dialog.alert('Gagal', err?.message ?? 'Tidak bisa menghapus notifikasi.', 'danger');
+    }
+  };
+
   const appBar = (
     <AppBar
       judul="Notifikasi"
       kanan={
-        adaBelumDibaca ? (
-          <TouchableOpacity onPress={tandaiSemua} style={{ paddingHorizontal: Spacing.lg }}>
-            <Text style={{ color: Colors.white, fontSize: 12, fontFamily: fonts.semibold }}>
-              Tandai semua dibaca
-            </Text>
-          </TouchableOpacity>
+        daftar.length > 0 ? (
+          <View style={[gs.row, { gap: Spacing.lg, paddingHorizontal: Spacing.lg }]}>
+            {adaBelumDibaca ? (
+              <TouchableOpacity onPress={tandaiSemua}>
+                <Text style={{ color: Colors.white, fontSize: 12, fontFamily: fonts.semibold }}>
+                  Tandai semua dibaca
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity onPress={hapusSemua} hitSlop={10} accessibilityLabel="Hapus semua notifikasi">
+              <Icon name="delete-outline" size={18} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
         ) : undefined
       }
     />
@@ -202,6 +273,10 @@ export default function NotifikasiScreen() {
           const warna = WARNA[rupa.warna];
 
           return (
+            <Swipeable
+              overshootRight={false}
+              renderRightActions={(_progres, _geser, metode) => aksiGeser(item, metode.close)}
+            >
             <TouchableOpacity
               style={styles.baris}
               activeOpacity={item.tautan || adaTujuan(item) ? 0.6 : 1}
@@ -231,6 +306,7 @@ export default function NotifikasiScreen() {
                 </View>
               </View>
             </TouchableOpacity>
+            </Swipeable>
           );
         }}
       />
@@ -264,6 +340,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
+  },
+  aksiGeser: {
+    flexDirection: 'row',
+  },
+  kotakAksi: {
+    width: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  teksAksi: {
+    color: Colors.white,
+    fontSize: 12,
+    fontFamily: fonts.semibold,
   },
   kanan: {
     alignItems: 'flex-end',
