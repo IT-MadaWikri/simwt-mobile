@@ -12,6 +12,7 @@ import {
   Poppins_700Bold,
   Poppins_800ExtraBold,
 } from '@expo-google-fonts/poppins';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -68,7 +69,8 @@ function RootLayoutNav() {
   }
 
   return (
-    <>
+    // Akar gestur: dibutuhkan react-native-gesture-handler (mis. baris notifikasi yang bisa digeser).
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
       <Stack
         screenOptions={{
@@ -113,7 +115,7 @@ function RootLayoutNav() {
       {/* Dipasang sekali di sini supaya `dialog.alert()` / `dialog.confirm()`
           bisa dipanggil dari layar mana pun. Lihat AppDialog.tsx. */}
       <DialogHost />
-    </>
+    </GestureHandlerRootView>
   );
 }
 

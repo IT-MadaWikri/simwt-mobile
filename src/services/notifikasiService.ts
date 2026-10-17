@@ -65,6 +65,19 @@ export const notifikasiService = {
   async tandaiSemuaDibaca(): Promise<void> {
     await api.post('/notifications/read-all');
   },
+
+  async tandaiDibaca(id: string): Promise<void> {
+    await api.post(`/notifications/${id}/read`);
+  },
+
+  async hapus(id: string): Promise<void> {
+    await api.delete(`/notifications/${id}`);
+  },
+
+  /** Hapus SEMUA notifikasi akun ini di server (bukan hanya yang tampil di daftar). */
+  async hapusSemua(): Promise<void> {
+    await api.delete('/notifications');
+  },
 };
 
 export default notifikasiService;
