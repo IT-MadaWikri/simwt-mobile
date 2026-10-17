@@ -6,7 +6,7 @@
  * "Buat Kaizen". Isinya hanya Kaizen milik akun yang login (dibatasi server,
  * `GET /kaizen/list`). Urutan dipilih dari ikon di app bar.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -17,24 +17,26 @@ import {
   RefreshControl,
   Animated,
   Easing,
+  ScrollView,
+  useWindowDimensions,
 } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from '../../../src/components/common/Icon';
 import Button from '../../../src/components/common/Button';
+import RekapBulan from '../../../src/components/kaizen/RekapBulan';
 import FieldTanggal from '../../../src/components/common/FieldTanggal';
-import { drafKaizen } from '../../../src/utils/drafKaizen';
 import AppBar from '../../../src/components/common/AppBar';
 import BottomSheet from '../../../src/components/common/BottomSheet';
 import Avatar from '../../../src/components/common/Avatar';
-import { useAuth } from '../../../src/contexts/AuthContext';
+import { useKaizenSaya } from '../../../src/hooks/useKaizenSaya';
+import { NilaiFilter } from '../../../src/hooks/useDaftarKaizen';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
-import { kaizenService } from '../../../src/services/kaizenService';
-import { Kaizen, KaizenPoin, KaizenTop } from '../../../src/types/kaizen';
+import { Kaizen, KaizenPeringkat } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, relatif, warnaStatus } from '../../../src/utils/kaizen';
 import { SkeletonBaris } from '../../../src/components/common/Skeleton';
 
@@ -115,67 +117,58 @@ const MEDALI = [
   { fg: '#b5703a', bg: '#fbeee3' },
 ];
 
-const BULAN_PANJANG = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-interface NilaiFilter {
-  status: string;
-  urutkan: string;
-  dari: string;
-  sampai: string;
+/** Satu kartu Top 5 (karyawan atau departemen). Tinggi mengikuti kartu tertinggi di barisnya. */
+function KartuTop({ judul, data, lebar }: { judul: string; data: KaizenPeringkat[]; lebar: number }) {
+  return (
+    <View style={[styles.kartuTop, { width: lebar }]}>
+      <View style={[gs.row, { gap: 6 }]}>
+        <Icon name="trophy" size={16} color={MEDALI[0].fg} />
+        <Text style={styles.judulTop} numberOfLines={1}>{judul}</Text>
+      </View>
+      {data.length === 0 ? (
+        <Text style={styles.kosongTop}>Belum ada Kaizen disetujui tahun ini.</Text>
+      ) : (
+        data.map((r, i) => {
+          const m = MEDALI[i];
+          return (
+            <View key={i} style={[gs.row, styles.barisTop, i > 0 && styles.garisTop]}>
+              <View style={[styles.peringkat, { backgroundColor: m?.bg ?? slate[100] }]}>
+                {m ? <Icon name="medal" size={14} color={m.fg} /> : <Text style={styles.nomorPeringkat}>{i + 1}</Text>}
+              </View>
+              <Text style={styles.namaTop} numberOfLines={1}>{r.nama}</Text>
+              <Text style={[styles.jumlahTop, m && { color: m.fg }]}>{r.jumlah} kaizen</Text>
+            </View>
+          );
+        })
+      )}
+    </View>
+  );
 }
-
-const URUTAN: Opsi[] = [
-  { label: 'Terbaru', value: 'TERBARU' },
-  { label: 'Terlama', value: 'TERLAMA' },
-  { label: 'Tema A-Z', value: 'A-Z' },
-  { label: 'Tema Z-A', value: 'Z-A' },
-];
 
 export default function KaizenSaya() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width: lebarLayar } = useWindowDimensions();
+  // Kartu Top 5 sedikit lebih sempit dari layar supaya kartu berikutnya mengintip (tanda bisa digeser).
+  const lebarKartuTop = Math.round(lebarLayar * 0.86);
 
-  const [kaizens, setKaizens] = useState<Kaizen[]>([]);
-  const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  // Skeleton hanya untuk muat pertama: kolom cari kini ada di dalam daftar, jadi daftar tidak boleh dilepas saat mengetik.
-  const [awal, setAwal] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    user, kaizens, error, awal, refreshing, loadingMore, memuatDaftar,
+    search, setSearch, status, urutkan, gantiUrutan, tanggalDari, tanggalSampai, adaFilter,
+    filterTerbuka, bukaFilter, tutupFilter, memuatFilter, terapkanFilter,
+    segarkan, cobaLagi, muatBerikutnya,
+    profil, top, jumlahDraf, pengingat,
+  } = useKaizenSaya();
 
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [urutkan, setUrutkan] = useState('TERBARU');
-  const [tanggalDari, setTanggalDari] = useState('');
-  const [tanggalSampai, setTanggalSampai] = useState('');
-  const [sheetUrutan, setSheetUrutan] = useState(false);
-  // Sheet Filter menutup setelah daftar selesai dimuat; tombol yang ditekan menampilkan spinner selama itu.
-  const [memuatFilter, setMemuatFilter] = useState<null | 'terapkan' | 'reset'>(null);
-  const menungguMuat = useRef(false);
-  const bukaFilter = () => setSheetUrutan(true);
-  const terapkanFilter = (n: NilaiFilter, mode: 'terapkan' | 'reset') => {
-    if (n.status === status && n.urutkan === urutkan && n.dari === tanggalDari && n.sampai === tanggalSampai) {
-      setSheetUrutan(false);
-      return;
-    }
-    menungguMuat.current = true;
-    setMemuatFilter(mode);
-    setStatus(n.status);
-    setUrutkan(n.urutkan);
-    setTanggalDari(n.dari);
-    setTanggalSampai(n.sampai);
-  };
+  // UI murni: sheet menu & tab Top 5.
   const [sheetMenu, setSheetMenu] = useState(false);
+  // Pengingat bisa ditutup; muncul lagi saat aplikasi dibuka ulang.
+  const [pengingatDitutup, setPengingatDitutup] = useState(false);
   const daftarRef = useRef<FlatList<Kaizen>>(null);
 
   // Menu lain di bar bawah. Sheet ditutup dulu sebelum aksi supaya dua sheet tidak bertumpuk.
-  const { user } = useAuth();
-  const [jumlahDraf, setJumlahDraf] = useState(0);
   const MENU = [
-    { ikon: 'gift', label: 'Redeem Poin', warna: ['#fb923c', '#f97316'] as const, aksi: () => router.push('/kaizen/redeem') },
+    { ikon: 'gift', label: 'Redeem Hadiah', warna: ['#fb923c', '#f97316'] as const, aksi: () => router.push('/kaizen/redeem') },
     {
       ikon: 'file-document',
       label: 'Draft Kaizen Anda',
@@ -184,106 +177,6 @@ export default function KaizenSaya() {
       aksi: () => router.push('/kaizen/draf'),
     },
   ];
-  const [profil, setProfil] = useState<KaizenPoin | null>(null);
-  const [top, setTop] = useState<KaizenTop | null>(null);
-  const [tabTop, setTabTop] = useState<'pelaksana' | 'departemen'>('pelaksana');
-
-  // Gagal memuat poin tidak menghalangi daftar; kartunya cukup menampilkan "-".
-  const muatPoin = useCallback(() => {
-    kaizenService.getPoin().then(setProfil).catch(() => {});
-    kaizenService.getTop().then(setTop).catch(() => {});
-  }, []);
-
-  // Respons lama (filter sudah berganti) dibuang supaya daftar tidak tertimpa.
-  const permintaanTerakhir = useRef(0);
-
-  const muat = useCallback(
-    async (halaman: number) => {
-      const id = ++permintaanTerakhir.current;
-      try {
-        const hasil = await kaizenService.getList({ search: search.trim(), status, urutkan, tanggalDari, tanggalSampai, page: halaman });
-        if (id !== permintaanTerakhir.current) return;
-        setKaizens((lama) => (halaman === 1 ? hasil.data : [...lama, ...hasil.data]));
-        setPage(hasil.current_page);
-        setLastPage(hasil.last_page);
-        setTotal(hasil.total);
-        setError(null);
-      } catch (e: any) {
-        if (id !== permintaanTerakhir.current) return;
-        setError(e?.message || 'Gagal memuat Kaizen.');
-      } finally {
-        if (id === permintaanTerakhir.current) {
-          setAwal(false);
-          setLoading(false);
-          if (menungguMuat.current) {
-            menungguMuat.current = false;
-            setMemuatFilter(null);
-            setSheetUrutan(false);
-          }
-          setRefreshing(false);
-          setLoadingMore(false);
-        }
-      }
-    },
-    [search, status, urutkan, tanggalDari, tanggalSampai]
-  );
-
-  // Debounce hanya untuk ketikan pencarian; ganti status/tanggal/urutan langsung dimuat.
-  // Skeleton baru muncul saat pemuatan benar-benar mulai, jadi mengetik tidak membuat daftar berkedip.
-  const searchSebelumnya = useRef(search);
-  useEffect(() => {
-    const cariBerubah = searchSebelumnya.current !== search;
-    searchSebelumnya.current = search;
-    const t = setTimeout(() => {
-      setLoading(true);
-      muat(1);
-    }, cariBerubah ? 350 : 0);
-    return () => clearTimeout(t);
-  }, [muat]);
-
-  // Kembali dari "Buat Kaizen" → daftar ikut segar tanpa spinner penuh.
-  // Lewat ref: bila `muat` masuk dependensi, setiap filter berganti efek fokus ini ikut jalan
-  // dan memuat daftar dua kali (sekali di sini, sekali di efek debounce di atas).
-  const muatRef = useRef(muat);
-  muatRef.current = muat;
-  const pertamaFokus = useRef(true);
-  useFocusEffect(
-    useCallback(() => {
-      muatPoin();
-      drafKaizen.daftar(user?.nik).then((d) => setJumlahDraf(d.length));
-      if (pertamaFokus.current) {
-        pertamaFokus.current = false;
-        return;
-      }
-      muatRef.current(1);
-    }, [muatPoin, user?.nik])
-  );
-
-  // Skeleton menggantikan baris saat filter/pencarian dimuat; tarik-untuk-segarkan tetap memakai spinner bawaan.
-  const memuatDaftar = loading && !refreshing;
-
-  const segarkan = () => {
-    setRefreshing(true);
-    muatPoin();
-    muat(1);
-  };
-
-  const muatBerikutnya = () => {
-    if (loading || loadingMore || refreshing || page >= lastPage) return;
-    setLoadingMore(true);
-    muat(page + 1);
-  };
-
-  // Periode berjalan dari rekap Hutang Kaizen: 'berjalan' = belum setor; 'ada' terakhir sebelum 'belum-mulai' = sudah setor.
-  const pengingat = useMemo(() => {
-    const k = profil?.hutang?.keadaan;
-    if (!k) return null;
-    let i = k.indexOf('berjalan');
-    if (i >= 0) return { bulan: BULAN_PANJANG[i], sudah: false };
-    i = k.findIndex((x) => x === 'belum-mulai');
-    i = i < 0 ? 11 : i - 1;
-    return i >= 0 && k[i] === 'ada' ? { bulan: BULAN_PANJANG[i], sudah: true } : null;
-  }, [profil]);
 
   const renderKaizen = ({ item }: { item: Kaizen }) => {
     const warna = warnaStatus(item.status);
@@ -318,15 +211,15 @@ export default function KaizenSaya() {
       <View style={styles.kosongIkon}>
         <Icon name={error ? 'alert-circle-outline' : 'lightbulb-on-outline'} size={36} color={error ? Colors.danger : brand[600]} />
       </View>
-      <Text style={gs.emptyTitle}>{error ? 'Gagal memuat' : search || status || tanggalDari || tanggalSampai ? 'Tidak ditemukan' : 'Belum ada Kaizen'}</Text>
+      <Text style={gs.emptyTitle}>{error ? 'Gagal memuat' : adaFilter ? 'Tidak ditemukan' : 'Belum ada Kaizen'}</Text>
       <Text style={[gs.emptyText, gs.textCenter]}>
         {error ||
-          (search || status || tanggalDari || tanggalSampai
+          (adaFilter
             ? 'Coba kata kunci, status, atau tanggal lain.'
             : 'Punya ide perbaikan? Ajukan Kaizen pertamamu sekarang.')}
       </Text>
       {error ? (
-        <Button label="Coba lagi" onPress={() => { setLoading(true); muat(1); }} style={{ marginTop: Spacing.lg }} />
+        <Button label="Coba lagi" onPress={cobaLagi} style={{ marginTop: Spacing.lg }} />
       ) : null}
     </View>
   );
@@ -378,21 +271,7 @@ export default function KaizenSaya() {
                 {profil?.hutang ? (
                   <View style={styles.hutang}>
                     <Text style={styles.judulHutang}>Kaizen Anda {profil.hutang.tahun}</Text>
-                    <View style={styles.kotakHutang}>
-                      {profil.hutang.keadaan.map((k, i) => (
-                        <View key={i} style={{ flex: 1, alignItems: 'center', gap: 2 }}>
-                          <View
-                            style={[
-                              styles.selHutang,
-                              k === 'ada' && { backgroundColor: Colors.primary, borderColor: Colors.primary },
-                              k === 'kosong' && { backgroundColor: Colors.danger, borderColor: Colors.danger },
-                              k === 'berjalan' && { borderColor: Colors.primary, borderWidth: 1.5 },
-                            ]}
-                          />
-                          <Text style={styles.bulanHutang}>{BULAN[i][0]}</Text>
-                        </View>
-                      ))}
-                    </View>
+                    <RekapBulan keadaan={profil.hutang.keadaan} />
                     <View style={[styles.pilHutang, { backgroundColor: profil.hutang.terlewat ? '#fef2f2' : brand[50] }]}>
                       <Text style={[styles.teksPilHutang, { color: profil.hutang.terlewat ? Colors.dangerDark : brand[700] }]}>
                         {profil.hutang.terlewat
@@ -420,7 +299,7 @@ export default function KaizenSaya() {
                   );
                 })()}
               </View>
-              {pengingat ? (
+              {pengingat && !pengingatDitutup ? (
                 <View style={[styles.pengingat, pengingat.sudah ? styles.pengingatSudah : styles.pengingatBelum]}>
                   <Icon
                     name={pengingat.sudah ? 'check-circle' : 'calendar-clock-outline'}
@@ -435,42 +314,24 @@ export default function KaizenSaya() {
                   {pengingat.sudah ? null : (
                     <Button label="Buat" onPress={() => router.push('/kaizen/buat')} style={{ backgroundColor: '#d97706' }} />
                   )}
+                  <TouchableOpacity onPress={() => setPengingatDitutup(true)} hitSlop={10} accessibilityLabel="Tutup pengingat">
+                    <Icon name="close" size={16} color={pengingat.sudah ? brand[700] : '#b45309'} />
+                  </TouchableOpacity>
                 </View>
               ) : null}
               {top ? (
-                <View style={styles.kartuTop}>
-                  <View style={gs.rowBetween}>
-                    <View style={[gs.row, { gap: 6 }]}>
-                      <Icon name="trophy" size={16} color={MEDALI[0].fg} />
-                      <Text style={styles.judulTop}>Top 5 tahun {top.tahun}</Text>
-                    </View>
-                    <View style={styles.segmen}>
-                      {(['pelaksana', 'departemen'] as const).map((t) => (
-                        <TouchableOpacity key={t} style={[styles.segmenItem, tabTop === t && styles.segmenAktif]} onPress={() => setTabTop(t)}>
-                          <Text style={[styles.segmenText, tabTop === t && { color: Colors.textPrimary }]}>
-                            {t === 'pelaksana' ? 'Karyawan' : 'Departemen'}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                  {top[tabTop].length === 0 ? (
-                    <Text style={styles.kosongTop}>Belum ada Kaizen disetujui tahun ini.</Text>
-                  ) : (
-                    top[tabTop].map((r, i) => {
-                      const m = MEDALI[i];
-                      return (
-                        <View key={`${tabTop}-${i}`} style={[gs.row, styles.barisTop, i > 0 && styles.garisTop]}>
-                          <View style={[styles.peringkat, { backgroundColor: m?.bg ?? slate[100] }]}>
-                            {m ? <Icon name="medal" size={14} color={m.fg} /> : <Text style={styles.nomorPeringkat}>{i + 1}</Text>}
-                          </View>
-                          <Text style={styles.namaTop} numberOfLines={1}>{r.nama}</Text>
-                          <Text style={[styles.jumlahTop, m && { color: m.fg }]}>{r.jumlah} kaizen</Text>
-                        </View>
-                      );
-                    })
-                  )}
-                </View>
+                // Dua kartu sejajar, digeser mendatar; snap per kartu. Bleed ke tepi layar (induk berpadding lg).
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  snapToInterval={lebarKartuTop + Spacing.sm}
+                  decelerationRate="fast"
+                  style={styles.barisTopGeser}
+                  contentContainerStyle={styles.isiTopGeser}
+                >
+                  <KartuTop judul={`Top 5 Karyawan ${top.tahun}`} data={top.pelaksana} lebar={lebarKartuTop} />
+                  <KartuTop judul={`Top 5 Departemen ${top.tahun}`} data={top.departemen} lebar={lebarKartuTop} />
+                </ScrollView>
               ) : null}
               {!error ? (
                 <View style={styles.headerDaftar}>
@@ -497,6 +358,14 @@ export default function KaizenSaya() {
                     </View>
                     <TouchableOpacity style={styles.tombolFilter} onPress={bukaFilter} accessibilityLabel="Filter">
                       <Icon name="filter-outline" size={16} color={Colors.textPrimary} />
+                    </TouchableOpacity>
+                    {/* Urutan menurut tanggal dibuat; tap untuk berganti terbaru ⇄ terlama. */}
+                    <TouchableOpacity
+                      style={styles.tombolFilter}
+                      onPress={gantiUrutan}
+                      accessibilityLabel={urutkan === 'TERBARU' ? 'Urutan: terbaru dulu' : 'Urutan: terlama dulu'}
+                    >
+                      <Icon name={urutkan === 'TERBARU' ? 'sort-descending' : 'sort-ascending'} size={16} color={Colors.textPrimary} />
                     </TouchableOpacity>
                   </View>
                   </View>
@@ -544,9 +413,9 @@ export default function KaizenSaya() {
       </BottomSheet>
 
       <SheetFilter
-        visible={sheetUrutan}
-        onClose={() => setSheetUrutan(false)}
-        aktif={{ status, urutkan, dari: tanggalDari, sampai: tanggalSampai }}
+        visible={filterTerbuka}
+        onClose={tutupFilter}
+        aktif={{ status, dari: tanggalDari, sampai: tanggalSampai }}
         memuat={memuatFilter}
         onTerapkan={terapkanFilter}
       />
@@ -554,7 +423,7 @@ export default function KaizenSaya() {
   );
 }
 
-const FILTER_AWAL: NilaiFilter = { status: '', urutkan: 'TERBARU', dari: '', sampai: '' };
+const FILTER_AWAL: NilaiFilter = { status: '', dari: '', sampai: '' };
 
 /**
  * Sheet Filter. Pilihannya disimpan di state sendiri (draf) supaya mengetuk chip
@@ -605,17 +474,7 @@ function SheetFilter({
           <FieldTanggal label="Dari" value={draf.dari} max={draf.sampai || undefined} onChange={(v) => ubah('dari', v)} />
           <FieldTanggal label="Sampai" value={draf.sampai} min={draf.dari || undefined} onChange={(v) => ubah('sampai', v)} />
         </View>
-        <Text style={styles.judulSeksi}>Urutkan</Text>
       </View>
-      {URUTAN.map((o) => {
-        const on = o.value === draf.urutkan;
-        return (
-          <TouchableOpacity key={o.value} style={styles.opsi} onPress={() => ubah('urutkan', o.value)}>
-            <Text style={[styles.opsiText, on && styles.opsiTextAktif]}>{o.label}</Text>
-            {on && <Icon name="check" size={20} color={Colors.primary} />}
-          </TouchableOpacity>
-        );
-      })}
       <View style={[gs.row, { gap: Spacing.sm, paddingHorizontal: Spacing.lg, paddingTop: Spacing.md }]}>
         <Button
           variant="outline"
@@ -783,33 +642,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     padding: Spacing.md,
+  },
+  barisTopGeser: {
+    marginHorizontal: -Spacing.lg,
     marginBottom: Spacing.md,
+    flexGrow: 0,
+  },
+  isiTopGeser: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
   },
   judulTop: {
     fontSize: 12,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
-  },
-  segmen: {
-    flexDirection: 'row',
-    backgroundColor: slate[100],
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    padding: 2,
-  },
-  segmenItem: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-  },
-  segmenAktif: {
-    backgroundColor: Colors.white,
-  },
-  segmenText: {
-    fontSize: 12,
-    fontFamily: fonts.medium,
-    color: Colors.textTertiary,
   },
   kosongTop: {
     marginTop: Spacing.sm,
@@ -1044,25 +890,7 @@ const styles = StyleSheet.create({
   },
   teksPilHutang: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
-  },
-  kotakHutang: {
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: Spacing.sm,
-  },
-  selHutang: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-  },
-  bulanHutang: {
-    fontSize: 12,
-    fontFamily: fonts.medium,
-    color: Colors.textTertiary,
+    fontFamily: fonts.regular,
   },
   lencana: {
     flexDirection: 'row',
@@ -1174,23 +1002,5 @@ const styles = StyleSheet.create({
     fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
-  },
-  opsi: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
-  },
-  opsiText: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.medium,
-    color: Colors.textPrimary,
-  },
-  opsiTextAktif: {
-    color: Colors.primary,
-    fontFamily: fonts.semibold,
   },
 });

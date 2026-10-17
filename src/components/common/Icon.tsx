@@ -7,7 +7,7 @@
  */
 import React from 'react';
 import {
-  Accessibility, ArrowLeft, ArrowRight, BadgeCheck, Barcode, Bell, BellOff, Bot,
+  Accessibility, ArrowDownWideNarrow, ArrowLeft, ArrowRight, ArrowUpNarrowWide, BadgeCheck, Barcode, Bell, BellOff, Bot,
   Briefcase, BriefcaseBusiness, Building, BuildingComplex, Cake, Calendar,
   CalendarCheck, CalendarClock, Camera, CameraOff, ChartColumn, ChartLine, Check,
   CheckCheck, ChevronDown, ChevronRight, CircleAlert, CircleCheck, CirclePlus,
@@ -18,7 +18,7 @@ import {
   Languages, LayoutDashboard, LayoutGridCircles, Lightbulb, List, Lock, LogIn, LogOut, Mail,
   MailWarning, MapPin, Medal, Trophy, Truck, Heart, PiggyBank, MessageCircle, MessageSquarePlus, Network,
   Newspaper, Paperclip, PartyPopper, Pencil, Percent, Plus, Rocket, RotateCcw, RotateCcwClock,
-  ScanBarcode, ScanQrCode, Save, Search, Send, Settings, Shapes, ShieldCheck, Sparkles, Star,
+  ScanBarcode, ScanQrCode, Save, Search, Send, Settings, Shapes, Share2, ShieldCheck, Sparkles, Star,
   Ticket, TicketCheck, Trash, User, UserCog, UserRound, UserSearch, Users, UserX,
   Video, Wrench, X,
   type LucideIcon,
@@ -93,6 +93,9 @@ const ICONS: Record<string, LucideIcon> = {
   'file-document': FileText,
   'file-table-outline': FileSpreadsheet,
   'filter-outline': Funnel,
+  'sort-ascending': ArrowUpNarrowWide,
+  'share-variant': Share2,
+  'sort-descending': ArrowDownWideNarrow,
   'fingerprint': FingerprintPattern,
   'flashlight': Flashlight,
   'flashlight-off': FlashlightOff,

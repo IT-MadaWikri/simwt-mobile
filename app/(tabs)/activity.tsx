@@ -30,6 +30,7 @@ import {
   ItemApproval,
   RingkasanApproval,
 } from '../../src/services/approvalService';
+import { useAuth } from '../../src/contexts/AuthContext';
 import { jalankanSetelahTransisi } from '../../src/utils/useSetelahTransisi';
 import { SkeletonDaftar } from '../../src/components/common/Skeleton';
 
@@ -54,6 +55,10 @@ type JenisKunci = 'kaizen' | 'tiket';
 
 export default function ApprovalCenterScreen() {
   const insets = useSafeAreaInsets();
+  // Antrean Kaizen hanya untuk yang punya permission approve_kaizen (aturan yang sama dengan server);
+  // tanpa itu angka, chip, dan itemnya tidak ditampilkan sama sekali.
+  const { user } = useAuth();
+  const bisaKaizen = !!user?.permission_names?.includes('approve_kaizen');
   const [ringkasan, setRingkasan] = useState<RingkasanApproval>({ total: 0, kaizen: 0, tiket: 0 });
   const [kaizen, setKaizen] = useState<ItemApproval[]>([]);
   const [tiket, setTiket] = useState<ItemApproval[]>([]);
@@ -61,8 +66,8 @@ export default function ApprovalCenterScreen() {
   // Dibuka dari menu Kaizen (`?jenis=kaizen`): langsung tersaring ke jenis itu.
   const { jenis } = useLocalSearchParams<{ jenis?: string }>();
   useEffect(() => {
-    if (jenis === 'kaizen' || jenis === 'tiket') setSaring(jenis);
-  }, [jenis]);
+    if (jenis === 'tiket' || (jenis === 'kaizen' && bisaKaizen)) setSaring(jenis);
+  }, [jenis, bisaKaizen]);
   const [memuat, setMemuat] = useState(true);
   const [menyegarkan, setMenyegarkan] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
@@ -73,8 +78,8 @@ export default function ApprovalCenterScreen() {
     try {
       setGalat(null);
       const hasil = await approvalService.antrean();
-      setRingkasan(hasil.ringkasan);
-      setKaizen(hasil.kaizen);
+      setRingkasan(bisaKaizen ? hasil.ringkasan : { total: hasil.ringkasan.tiket, kaizen: 0, tiket: hasil.ringkasan.tiket });
+      setKaizen(bisaKaizen ? hasil.kaizen : []);
       setTiket(hasil.tiket);
     } catch (err: any) {
       setGalat(err?.message ?? 'Gagal memuat antrean persetujuan.');
@@ -82,7 +87,7 @@ export default function ApprovalCenterScreen() {
       setMemuat(false);
       setMenyegarkan(false);
     }
-  }, []);
+  }, [bisaKaizen]);
 
   useFocusEffect(useCallback(() => jalankanSetelahTransisi(() => muat()), [muat]));
 
@@ -199,27 +204,11 @@ export default function ApprovalCenterScreen() {
 
   return (
     <View style={gs.screen}>
-      {/* Ringkasan + penyaring */}
+      {/* Penyaring */}
       <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
-        <View style={[gs.cardBrand, gs.row, gs.gapMd]}>
-          <View style={[gs.iconTile, { backgroundColor: Colors.white }]}>
-            <Icon name="clipboard-check-outline" size={22} color={brand[600]} />
-          </View>
-          <View style={gs.flex1}>
-            <Text style={[gs.metric, { fontSize: 12, color: brand[800] }]}>
-              {ringkasan.total}
-            </Text>
-            <Text style={[gs.bodySm, { color: brand[800] }]}>
-              {ringkasan.total === 0
-                ? 'Tidak ada yang menunggu persetujuan'
-                : 'menunggu keputusan Anda'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={[gs.row, gs.gapSm, { marginTop: Spacing.md, marginBottom: Spacing.sm }]}>
+        <View style={[gs.row, gs.gapSm, { marginBottom: Spacing.sm }]}>
           <Chip nilai="semua" label="Semua" jumlah={ringkasan.total} />
-          <Chip nilai="kaizen" label="Kaizen" jumlah={ringkasan.kaizen} />
+          {bisaKaizen ? <Chip nilai="kaizen" label="Kaizen" jumlah={ringkasan.kaizen} /> : null}
           <Chip nilai="tiket" label="Tiket" jumlah={ringkasan.tiket} />
         </View>
       </View>

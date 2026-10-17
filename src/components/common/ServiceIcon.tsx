@@ -43,6 +43,13 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   const handlePress = onPress ?? (() => router.push(service.route as any));
 
   const renderBadge = () => {
+    if (service.lencana) {
+      return (
+        <View style={[styles.badge, styles.lencanaAngka]}>
+          <Text style={styles.badgeText}>{service.lencana > 99 ? '99+' : service.lencana}</Text>
+        </View>
+      );
+    }
     if (service.id === 'database-aset') {
       return (
         <View style={styles.badge}>
@@ -121,6 +128,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xs + 2,
     paddingVertical: 2,
     borderRadius: Spacing.radius.sm,
+  },
+  // Lencana angka ditaruh di pojok kanan atas, bukan kiri seperti "Baru"/"Hot".
+  lencanaAngka: {
+    left: undefined,
+    right: -8,
+    minWidth: 18,
+    alignItems: 'center',
+    backgroundColor: Colors.danger,
+    borderRadius: 9,
   },
   badgeText: {
     fontFamily: fonts.bold,

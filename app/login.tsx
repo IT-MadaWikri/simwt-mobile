@@ -31,7 +31,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Image,
   Animated,
@@ -190,7 +189,9 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.layar}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // Android edge-to-edge: `adjustResize` tidak lagi mengecilkan jendela, jadi
+      // keyboard menutupi ScrollView dan konten bawah tak bisa digulir.
+      behavior="padding"
     >
       <StatusBar style="light" />
 

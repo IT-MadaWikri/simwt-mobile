@@ -11,6 +11,7 @@ import Colors from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import Typography, { fonts } from '../../constants/Typography';
 import { gayaAppBar, opsiAppBar } from '../../src/components/common/AppBar';
+import TombolKembali from '../../src/components/common/TombolKembali';
 
 // Ikon tab: tebal saat aktif. Animasinya ada di BouncePress (saat di-tap).
 function AnimatedTabIcon({ name, focused, color }: { name: string, focused: boolean, color: any }) {
@@ -70,6 +71,8 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      // Kembali ke tab yang terakhir dibuka (mis. Menu Kaizen), bukan selalu ke beranda.
+      backBehavior="history"
       screenOptions={{
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textTertiary,
@@ -86,7 +89,8 @@ export default function TabLayout() {
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
         ...gayaAppBar,
-        animation: 'fade',
+        // Pindah tab menggeser mendatar, sama gayanya dengan transisi halaman lain.
+        animation: 'shift',
       }}
     >
       <Tabs.Screen
@@ -107,6 +111,8 @@ export default function TabLayout() {
           // pengguna (Kaizen, Tiket) dikumpulkan di satu layar.
           title: 'Approval',
           headerTitle: 'Approval Center',
+          // Dibuka dari menu Kaizen juga, jadi perlu jalan kembali.
+          headerLeft: () => <TombolKembali />,
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon
               name={focused ? 'clipboard-check' : 'clipboard-check-outline'}
