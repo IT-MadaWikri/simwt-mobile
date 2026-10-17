@@ -20,7 +20,6 @@ import {
   TouchableOpacity,
   Modal,
   RefreshControl,
-  useWindowDimensions,
   Share,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -39,6 +38,7 @@ import { KaizenDetail } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, teksBagikanKaizen, urlFoto, warnaStatus } from '../../../src/utils/kaizen';
 import AppBar from '../../../src/components/common/AppBar';
 import BrandSpinner from '../../../src/components/common/BrandSpinner';
+import SliderManfaat from '../../../src/components/kaizen/SliderManfaat';
 import { bagikanBuktiKaizen } from '../../../src/services/buktiKaizenService';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 
@@ -59,7 +59,6 @@ const pesanGalat = (e: any, cadangan: string) => {
 export default function KaizenDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const { width: lebarLayar } = useWindowDimensions();
   const [data, setData] = useState<KaizenDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -69,8 +68,6 @@ export default function KaizenDetailScreen() {
   const [sheetTolak, setSheetTolak] = useState(false);
   // Kategori manfaat yang rinciannya sedang dibuka di sheet ('' = Manfaat tanpa kategori).
   const [sheetManfaat, setSheetManfaat] = useState<string | null>(null);
-  // Kartu manfaat yang sedang terlihat di slider (untuk indikator titik).
-  const [butirAktif, setButirAktif] = useState(0);
   // Menu Bagikan (pesan / bukti PDF); `membuatPdf` = PDF sedang dibuat.
   const [sheetBagikan, setSheetBagikan] = useState(false);
   const [membuatPdf, setMembuatPdf] = useState(false);
@@ -116,6 +113,9 @@ export default function KaizenDetailScreen() {
   }
 
   const { kaizen, manfaats = [], kategoriNilai = {}, totalKategoriNilai, nilaiPanitia } = data;
+  // Poin yang didapat = nilai PQCDSM + nilai komite + nilai pelaksanaan (rumus yang sama dengan Bukti Kaizen di website/PDF).
+  const nilaiPelaksanaan = nilaiPanitia?.nilai_pelaksanaan ?? 0;
+  const totalPoin = (totalKategoriNilai || 0) + (nilaiPanitia?.nilai_panitia ?? 0) + nilaiPelaksanaan;
   const izin = data.izin ?? { approve: false, nilai: false, reset: false };
   // Manfaat dikelompokkan per kategori; rinciannya muncul di sheet saat kartu ditap.
   const kelompokManfaat = Array.from(
@@ -127,8 +127,6 @@ export default function KaizenDetailScreen() {
       .entries()
   );
   const butirSheet = sheetManfaat === null ? [] : manfaats.filter((m) => (m.manfaat_nilai?.kategori ?? '') === sheetManfaat);
-  // Satu manfaat: selebar sheet. Lebih dari satu: kartu sedikit lebih sempit supaya yang berikutnya mengintip (bisa digeser).
-  const lebarButir = butirSheet.length > 1 ? Math.round(lebarLayar * 0.86) : lebarLayar - Spacing.lg * 2;
   const warna = warnaStatus(kaizen.status);
   const k = kaizen as any;
   const departemen = kaizen.departemen?.nama || k.departemen?.nama_departemen || kaizen.nama_departemen;
@@ -217,7 +215,7 @@ export default function KaizenDetailScreen() {
                 ikon: 'medal',
                 warna: '#d97706',
                 judul: `Dinilai komite${kaizen.dinilai_oleh || nilaiPanitia.dinilai_oleh ? ` oleh ${kaizen.dinilai_oleh || nilaiPanitia.dinilai_oleh}` : ''}`,
-                ket: `+${nilaiPanitia.nilai_final} poin`,
+                ket: `+${totalPoin} poin`,
               }
             : { ikon: 'clock-outline', warna: Colors.textTertiary, judul: 'Menunggu penilaian komite', ket: null },
         ]
@@ -390,13 +388,20 @@ export default function KaizenDetailScreen() {
               <Text style={styles.judulSeksi}>Penilaian komite</Text>
               {nilaiPanitia ? (
                 <>
+                  {[
+                    { label: 'Nilai PQCDSM', nilai: totalKategoriNilai || 0 },
+                    { label: 'Nilai komite', nilai: nilaiPanitia.nilai_panitia },
+                    ...(nilaiPelaksanaan ? [{ label: 'Nilai pelaksanaan', nilai: nilaiPelaksanaan }] : []),
+                  ].map((b, i) => (
+                    <View key={b.label} style={[gs.rowBetween, i > 0 && { marginTop: 6 }]}>
+                      <Text style={styles.teks}>{b.label}</Text>
+                      <Text style={styles.nama}>+{b.nilai} poin</Text>
+                    </View>
+                  ))}
+                  <View style={[styles.garis, { marginVertical: Spacing.sm }]} />
                   <View style={gs.rowBetween}>
-                    <Text style={styles.teks}>Nilai komite</Text>
-                    <Text style={styles.nama}>+{nilaiPanitia.nilai_panitia} poin</Text>
-                  </View>
-                  <View style={[gs.rowBetween, { marginTop: 6 }]}>
-                    <Text style={styles.teks}>Nilai akhir (komite + PQCDSM)</Text>
-                    <Text style={[styles.nama, { color: brand[700] }]}>+{nilaiPanitia.nilai_final} poin</Text>
+                    <Text style={styles.nama}>Poin didapat</Text>
+                    <Text style={[styles.nama, { color: brand[700] }]}>+{totalPoin} poin</Text>
                   </View>
                 </>
               ) : (
@@ -410,7 +415,7 @@ export default function KaizenDetailScreen() {
       </ScrollView>
 
       {bisaPutus ? (
-        <View style={[styles.bawah, { paddingBottom: insets.bottom + Spacing.md }]}>
+        <View style={[styles.bawah, { paddingBottom: insets.bottom + Spacing.sm }]}>
           <Button variant="dangerOutline" label="Tolak" onPress={() => setSheetTolak(true)} disabled={!!proses} style={gs.flex1} />
           <Button label="Setujui" onPress={setujui} loading={proses === 'setuju'} disabled={!!proses} style={gs.flex1} />
         </View>
@@ -443,81 +448,22 @@ export default function KaizenDetailScreen() {
         title={`Manfaat ${sheetManfaat || ''}`.trim()}
         subtitle={`${butirSheet.length} manfaat`}
       >
-        <ScrollView
+        <SliderManfaat
           key={sheetManfaat}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          scrollEventThrottle={16}
-          onScroll={(e) => setButirAktif(Math.round(e.nativeEvent.contentOffset.x / (lebarButir + Spacing.sm)))}
-          snapToInterval={lebarButir + Spacing.sm}
-          decelerationRate="fast"
-          contentContainerStyle={styles.isiButir}
-        >
-          {butirSheet.map((m, urut) => {
+          items={butirSheet.map((m) => {
             const l = LENCANA[m.manfaat_nilai?.kategori ?? ''];
-            return (
-              <View key={m.id ?? urut} style={[styles.butir, { width: lebarButir }]}>
-                <View style={gs.rowBetween}>
-                  <View style={[gs.row, { gap: 6 }]}>
-                    <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={16} color={l?.warna[2] ?? Colors.textSecondary} />
-                    <Text style={styles.nomorButir}>Manfaat {urut + 1}</Text>
-                  </View>
-                  {m.tipe_area ? (
-                    <View style={styles.chipButir}>
-                      <Text style={styles.teksChipButir}>{m.tipe_area === 'Eksternal' ? 'Luar perusahaan' : 'Dalam perusahaan'}</Text>
-                    </View>
-                  ) : null}
-                </View>
-
-                <View style={styles.barisButir}>
-                  <View style={styles.kolomLabel}>
-                    <Icon name="piggy-bank" size={14} color={Colors.textTertiary} />
-                    <Text style={styles.labelButir} numberOfLines={1}>Penghematan</Text>
-                  </View>
-                  <Text style={[styles.nilaiHemat, { color: l?.warna[2] ?? Colors.textPrimary }]}>{m.hemat || '—'}</Text>
-                </View>
-                <View style={styles.barisButir}>
-                  <View style={styles.kolomLabel}>
-                    <Icon name="history" size={14} color={Colors.textTertiary} />
-                    <Text style={styles.labelButir} numberOfLines={1}>Sebelum</Text>
-                  </View>
-                  <Text style={styles.teksButir}>{m.sebelum || '-'}</Text>
-                </View>
-                <View style={styles.barisButir}>
-                  <View style={styles.kolomLabel}>
-                    <Icon name="creation" size={14} color={Colors.textTertiary} />
-                    <Text style={styles.labelButir} numberOfLines={1}>Sesudah</Text>
-                  </View>
-                  <Text style={styles.teksButir}>{m.sesudah || '-'}</Text>
-                </View>
-
-                {m.area || m.pic ? (
-                  <View style={[gs.row, { gap: Spacing.md }]}>
-                    {m.area ? (
-                      <View style={styles.metaButir}>
-                        <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
-                        <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
-                      </View>
-                    ) : null}
-                    {m.pic ? (
-                      <View style={styles.metaButir}>
-                        <Avatar nama={m.pic} ukuran={18} />
-                        <Text style={styles.teksMeta} numberOfLines={1}>{m.pic}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                ) : null}
-              </View>
-            );
+            return {
+              ikon: l?.ikon ?? 'lightbulb-on-outline',
+              warna: l?.warna[2] ?? Colors.textSecondary,
+              tipe: m.tipe_area,
+              hemat: m.hemat,
+              sebelum: m.sebelum,
+              sesudah: m.sesudah,
+              area: m.area,
+              pic: m.pic,
+            };
           })}
-        </ScrollView>
-        {butirSheet.length > 1 ? (
-          <View style={styles.titikWadah}>
-            {butirSheet.map((_, i) => (
-              <View key={i} style={[styles.titikSlider, i === butirAktif && styles.titikSliderAktif]} />
-            ))}
-          </View>
-        ) : null}
+        />
       </BottomSheet>
 
       <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen" penuh>
@@ -757,97 +703,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
-  titikWadah: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-    paddingTop: Spacing.xs,
-    paddingBottom: Spacing.sm,
-  },
-  titikSlider: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: slate[300],
-  },
-  titikSliderAktif: {
-    width: 16,
-    backgroundColor: Colors.primary,
-  },
-  // Daftar kartu digeser mendatar; lebar tiap kartu diberikan saat dirender.
-  isiButir: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.sm,
-  },
-  butir: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    gap: 4,
-    borderRadius: Spacing.radius.md,
-    ...Spacing.curve,
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
-    backgroundColor: slate[50],
-  },
-  nomorButir: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.bold,
-    color: Colors.textPrimary,
-  },
-  chipButir: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    backgroundColor: slate[100],
-  },
-  teksChipButir: {
-    fontSize: 10,
-    fontFamily: fonts.semibold,
-    color: Colors.textSecondary,
-  },
-  barisButir: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.sm,
-  },
-  nilaiHemat: {
-    flex: 1,
-    fontSize: 12,
-    fontFamily: fonts.bold,
-  },
-  // Lebar tetap + tanpa wrap supaya isi semua baris rata di kolom yang sama.
-  kolomLabel: {
-    width: 100,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  labelButir: {
-    flexShrink: 1,
-    fontSize: 12,
-    fontFamily: fonts.medium,
-    color: Colors.textTertiary,
-  },
-  teksButir: {
-    flex: 1,
-    fontSize: ukuranIsi,
-    fontFamily: fonts.regular,
-    color: Colors.textPrimary,
-  },
-  metaButir: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  teksMeta: {
-    flex: 1,
-    fontSize: ukuranIsi,
-    fontFamily: fonts.regular,
-    color: Colors.textSecondary,
-  },
   gridNilai: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -887,7 +742,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.sm,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
     borderTopColor: Colors.borderSubtle,

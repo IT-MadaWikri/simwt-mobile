@@ -8,22 +8,23 @@
  *
  * Pola mobile yang dipakai:
  *  - chip penyaring di atas (Semua / Kaizen / Tiket) dengan angka antrean
- *  - kartu ringkas: nomor, judul, pengaju, waktu relatif
- *  - aksi langsung di kartu — Setujui / Tolak untuk Kaizen, Proses untuk
- *    Tiket — supaya tidak perlu masuk ke halaman lain hanya untuk satu klik
- *  - item hilang dari daftar begitu diputuskan (optimistis), lalu daftar
- *    disegarkan dari server
+ *  - daftar datar ala notifikasi (bukan kartu): ikon, judul, nomor · pengaju, waktu relatif
+ *  - mengetuk baris membuka DETAIL (Kaizen / Tiket) supaya diperiksa dulu; Setujui / Tolak
+ *    Kaizen ada di detail Kaizen (bar menempel di bawah layar), bukan di daftar ini
+ *  - tiket: geser baris ke kiri untuk "Proses" (tiket belum punya aksi di halaman detailnya)
+ *  - daftar disegarkan setiap layar ini kembali fokus, jadi keputusan yang diambil di
+ *    detail langsung tercermin di sini
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand } from '../../constants/Colors';
+import Colors, { brand, slate } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
-import Button from '../../src/components/common/Button';
-import BrandSpinner from '../../src/components/common/BrandSpinner';
+import { fonts } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
   approvalService,
@@ -47,13 +48,14 @@ function jarakWaktu(iso: string | null): string {
   return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const RUPA: Record<JenisKunci, { icon: string; label: string }> = {
-  kaizen: { icon: 'lightbulb-on-outline', label: 'Kaizen' },
-  tiket: { icon: 'ticket-outline', label: 'Tiket' },
-};
 type JenisKunci = 'kaizen' | 'tiket';
+const RUPA: Record<JenisKunci, { icon: string; tile: string; warna: string }> = {
+  kaizen: { icon: 'lightbulb-on-outline', tile: brand[50], warna: brand[600] },
+  tiket: { icon: 'ticket-outline', tile: Colors.serviceAmber, warna: '#b45309' },
+};
 
 export default function ApprovalCenterScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   // Antrean Kaizen hanya untuk yang punya permission approve_kaizen (aturan yang sama dengan server);
   // tanpa itu angka, chip, dan itemnya tidak ditampilkan sama sekali.
@@ -71,8 +73,6 @@ export default function ApprovalCenterScreen() {
   const [memuat, setMemuat] = useState(true);
   const [menyegarkan, setMenyegarkan] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
-  /** Id item yang sedang diproses — tombolnya diganti spinner. */
-  const [sibuk, setSibuk] = useState<string | null>(null);
 
   const muat = useCallback(async () => {
     try {
@@ -100,67 +100,14 @@ export default function ApprovalCenterScreen() {
     );
   }, [saring, kaizen, tiket]);
 
-  /** Buang item dari daftar tanpa menunggu server — terasa responsif. */
-  const buang = (item: ItemApproval) => {
-    if (item.jenis === 'kaizen') setKaizen((isi) => isi.filter((x) => x.id !== item.id));
-    else setTiket((isi) => isi.filter((x) => x.id !== item.id));
+  /** Buang tiket dari daftar tanpa menunggu server — terasa responsif. */
+  const buangTiket = (item: ItemApproval) => {
+    setTiket((isi) => isi.filter((x) => x.id !== item.id));
     setRingkasan((r) => ({
       total: Math.max(0, r.total - 1),
-      kaizen: item.jenis === 'kaizen' ? Math.max(0, r.kaizen - 1) : r.kaizen,
-      tiket: item.jenis === 'tiket' ? Math.max(0, r.tiket - 1) : r.tiket,
+      kaizen: r.kaizen,
+      tiket: Math.max(0, r.tiket - 1),
     }));
-  };
-
-  const setujui = async (item: ItemApproval) => {
-    const setuju = await dialog.confirm({
-      title: 'Setujui Kaizen',
-      message: `Setujui "${item.judul}" dari ${item.pengaju ?? 'pengaju'}?`,
-      confirmText: 'Setujui',
-    });
-    if (!setuju) return;
-
-    setSibuk(`${item.jenis}-${item.id}`);
-    try {
-      await approvalService.setujuiKaizen(item.id);
-      buang(item);
-    } catch (err: any) {
-      dialog.alert('Gagal Menyetujui', err?.message ?? 'Terjadi kesalahan.', 'danger');
-    } finally {
-      setSibuk(null);
-    }
-  };
-
-  const tolak = async (item: ItemApproval) => {
-    // Alasan diketik pengaju keputusan, bukan teks baku — alasannya ikut
-    // terkirim ke email pemberitahuan dan tercatat permanen di kolom
-    // `alasan`, jadi kalimat generik tidak menolong siapa pun.
-    // Tombol "Tolak" di dialog mati sampai kolomnya terisi (`wajib`),
-    // sehingga tidak mungkin lolos lalu ditolak server dengan 422.
-    const alasan = await dialog.prompt({
-      title: 'Tolak Kaizen',
-      message: `Sebutkan alasan penolakan "${item.judul}". Alasan ini dikirimkan ke pengaju.`,
-      confirmText: 'Tolak',
-      destructive: true,
-      isian: {
-        placeholder: 'Contoh: Ide sudah pernah diterapkan di line 2.',
-        multiline: true,
-        // Batas 255 mengikuti VALIDASI server (`alasan` => max:255), bukan
-        // tipe kolomnya — kolomnya sendiri `text`, jadi validasi yang lebih
-        // ketat. Tanpa batas ini, teks panjang baru ditolak setelah terkirim.
-        maxLength: 255,
-      },
-    });
-    if (!alasan) return;
-
-    setSibuk(`${item.jenis}-${item.id}`);
-    try {
-      await approvalService.tolakKaizen(item.id, alasan);
-      buang(item);
-    } catch (err: any) {
-      dialog.alert('Gagal Menolak', err?.message ?? 'Terjadi kesalahan.', 'danger');
-    } finally {
-      setSibuk(null);
-    }
   };
 
   const proses = async (item: ItemApproval) => {
@@ -171,15 +118,18 @@ export default function ApprovalCenterScreen() {
     });
     if (!setuju) return;
 
-    setSibuk(`${item.jenis}-${item.id}`);
     try {
       await approvalService.prosesTiket(item.id);
-      buang(item);
+      buangTiket(item);
     } catch (err: any) {
       dialog.alert('Gagal Memproses', err?.message ?? 'Terjadi kesalahan.', 'danger');
-    } finally {
-      setSibuk(null);
     }
+  };
+
+  /** Ketuk baris → detail. Setujui/Tolak Kaizen dilakukan di detail Kaizen. */
+  const buka = (item: ItemApproval) => {
+    if (item.jenis === 'kaizen') router.push(`/kaizen/${item.id}` as any);
+    else if (item.nomor) router.push(`/services/tiket/${item.nomor}` as any);
   };
 
   const Chip = ({ nilai, label, jumlah }: { nilai: Saring; label: string; jumlah: number }) => (
@@ -203,7 +153,7 @@ export default function ApprovalCenterScreen() {
   }
 
   return (
-    <View style={gs.screen}>
+    <View style={[gs.screen, { backgroundColor: slate[100] }]}>
       {/* Penyaring */}
       <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
         <View style={[gs.row, gs.gapSm, { marginBottom: Spacing.sm }]}>
@@ -216,7 +166,8 @@ export default function ApprovalCenterScreen() {
       <FlatList
         data={daftar}
         keyExtractor={(item) => `${item.jenis}-${item.id}`}
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
+        showsVerticalScrollIndicator={false}
         initialNumToRender={10}
         windowSize={7}
         removeClippedSubviews
@@ -231,71 +182,153 @@ export default function ApprovalCenterScreen() {
             tintColor={Colors.primary}
           />
         }
+        ItemSeparatorComponent={() => (
+          <View style={styles.wadahPemisah}>
+            <View style={styles.pemisah} />
+          </View>
+        )}
         ListEmptyComponent={
-          <View style={[gs.card, gs.center, { marginTop: Spacing.lg }]}>
-            <Icon
-              name={galat ? 'alert-circle-outline' : 'check-circle-outline'}
-              size={44}
-              color={galat ? Colors.textTertiary : brand[400]}
-            />
+          <View style={styles.kosong}>
+            <View style={styles.kosongIkon}>
+              <Icon
+                name={galat ? 'alert-circle-outline' : 'check-circle-outline'}
+                size={36}
+                color={galat ? Colors.danger : brand[600]}
+              />
+            </View>
             <Text style={gs.emptyTitle}>{galat ? 'Gagal memuat' : 'Semua beres'}</Text>
-            <Text style={gs.emptyText}>
+            <Text style={[gs.emptyText, gs.textCenter]}>
               {galat ?? 'Tidak ada pengajuan yang menunggu keputusan Anda.'}
             </Text>
           </View>
         }
         renderItem={({ item }) => {
           const rupa = RUPA[item.jenis];
-          const sedangSibuk = sibuk === `${item.jenis}-${item.id}`;
+          const sub = [item.nomor ? `#${item.nomor}` : null, item.pengaju ? `Diajukan oleh ${item.pengaju}` : null]
+            .filter(Boolean)
+            .join(' · ');
 
-          return (
-            <View style={[gs.card, { marginBottom: Spacing.md }]}>
-              <View style={gs.rowBetween}>
-                <View style={[gs.badge, gs.badgeBrand]}>
-                  <Icon name={rupa.icon as any} size={12} color={brand[700]} />
-                  <Text style={[gs.badgeText, gs.badgeTextBrand]}>{rupa.label}</Text>
-                </View>
-                <Text style={gs.caption}>{jarakWaktu(item.tanggal)}</Text>
+          const baris = (
+            <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={() => buka(item)}>
+              <View style={[styles.logo, { backgroundColor: rupa.tile }]}>
+                <Icon name={rupa.icon as any} size={18} color={rupa.warna} />
               </View>
 
-              <Text style={[gs.title, { marginTop: Spacing.sm }]} numberOfLines={2}>
-                {item.judul}
-              </Text>
-
-              {item.nomor ? (
-                <Text style={gs.caption} numberOfLines={1}>
-                  #{item.nomor}
+              <View style={gs.flex1}>
+                <Text style={styles.judul} numberOfLines={1}>
+                  {item.judul}
                 </Text>
-              ) : null}
-              {item.pengaju ? (
-                <Text style={[gs.bodySm, { marginTop: 2 }]} numberOfLines={1}>
-                  Diajukan oleh {item.pengaju}
-                </Text>
-              ) : null}
-              {item.keterangan ? (
-                <Text style={[gs.bodySm, { marginTop: Spacing.xs }]} numberOfLines={2}>
-                  {item.keterangan}
-                </Text>
-              ) : null}
-
-              <View style={[gs.row, gs.gapSm, { marginTop: Spacing.lg }]}>
-                {sedangSibuk ? (
-                  <View style={[gs.flex1, gs.center, { paddingVertical: Spacing.sm }]}>
-                    <BrandSpinner size={24} />
-                  </View>
-                ) : item.jenis === 'kaizen' ? (
-                  <>
-                    <Button variant="muted" label="Tolak" onPress={() => tolak(item)} style={gs.flex1} />
-                    <Button icon="check" label="Setujui" onPress={() => setujui(item)} style={gs.flex1} />
-                  </>
-                ) : (
-                  <Button icon="progress-wrench" label="Mulai Proses" onPress={() => proses(item)} style={gs.flex1} />
-                )}
+                {sub ? (
+                  <Text style={styles.sub} numberOfLines={1}>
+                    {sub}
+                  </Text>
+                ) : null}
               </View>
-            </View>
+
+              <View style={styles.kanan}>
+                <Text style={styles.waktu} numberOfLines={1}>{jarakWaktu(item.tanggal)}</Text>
+              </View>
+              <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+            </TouchableOpacity>
+          );
+
+          // Tiket: geser ke kiri untuk "Proses" (halaman detail tiket belum punya aksi itu).
+          return item.jenis === 'tiket' ? (
+            <Swipeable
+              overshootRight={false}
+              renderRightActions={(_progres, _geser, metode) => (
+                <TouchableOpacity
+                  style={styles.aksiProses}
+                  onPress={() => {
+                    metode.close();
+                    proses(item);
+                  }}
+                >
+                  <Icon name="progress-wrench" size={18} color={Colors.white} />
+                  <Text style={styles.teksAksi}>Proses</Text>
+                </TouchableOpacity>
+              )}
+            >
+              {baris}
+            </Swipeable>
+          ) : (
+            baris
           );
         }}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  baris: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Colors.white,
+  },
+  logo: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  judul: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+    color: Colors.textPrimary,
+  },
+  sub: {
+    marginTop: 2,
+    fontSize: 12,
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary,
+  },
+  kanan: {
+    alignItems: 'flex-end',
+    maxWidth: '30%',
+  },
+  waktu: {
+    fontSize: 12,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+  },
+  wadahPemisah: {
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.lg,
+  },
+  pemisah: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.border,
+    marginLeft: 42 + Spacing.md,
+  },
+  aksiProses: {
+    width: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    backgroundColor: brand[600],
+  },
+  teksAksi: {
+    color: Colors.white,
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+  },
+  kosong: {
+    alignItems: 'center',
+    paddingTop: Spacing.xxxl,
+    paddingHorizontal: Spacing.xl,
+  },
+  kosongIkon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: brand[50],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+});

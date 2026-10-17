@@ -36,6 +36,7 @@ import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { kaizenService } from '../../../src/services/kaizenService';
+import SliderManfaat from '../../../src/components/kaizen/SliderManfaat';
 import { KaizenOpsiBuat, KaryawanRingkas } from '../../../src/types/kaizen';
 import { LENCANA } from '../../../src/utils/kaizen';
 import { drafKaizen, buatIdDraf } from '../../../src/utils/drafKaizen';
@@ -63,6 +64,8 @@ const MANFAAT_KOSONG: Manfaat = {
 };
 
 const RE_WA = /^08[0-9]{8,11}$/;
+/** Nomor dari data karyawan ditulis bermacam bentuk (+62…, 62…); rapikan ke 08… supaya lolos RE_WA. */
+const rapikanWa = (n?: string | null) => (n ?? '').replace(/[^0-9]/g, '').replace(/^62/, '0');
 const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Aturan langkah 1, sama dgn FormBuatkaizen di website. */
@@ -203,7 +206,7 @@ export default function BuatKaizenScreen() {
     tema: '',
     pelaksana: (user?.nik ? { nama: user.nama_lengkap || user.name, nik: user.nik } : null) as Orang | null,
     saran: null as Orang | null,
-    nomor_whatsapp: (user?.phone || '').replace(/[^0-9+]/g, ''),
+    nomor_whatsapp: rapikanWa(user?.phone),
     email: user?.email || '',
     id_departemen: null as number | null,
     detail_sebelum: '',
@@ -267,6 +270,25 @@ export default function BuatKaizenScreen() {
   };
   useEffect(muatOpsi, []);
 
+  // WA & email ada di data karyawan (HARIS), bukan di akun pengguna: ambil untuk pelaksana bawaan
+  // (diri sendiri) dan isi hanya bila masih kosong, supaya tidak menimpa yang sudah diketik/dipulihkan dari draf.
+  useEffect(() => {
+    const nik = user?.nik;
+    if (!nik) return;
+    let batal = false;
+    kaizenService
+      .cariKaryawan(nik)
+      .then((hasil) => {
+        const saya = hasil.find((k) => k.nik === nik);
+        if (batal || !saya) return;
+        setForm((f) => ({ ...f, nomor_whatsapp: f.nomor_whatsapp || rapikanWa(saya.phone), email: f.email || saya.email || '' }));
+      })
+      .catch(() => {});
+    return () => {
+      batal = true;
+    };
+  }, [user?.nik]);
+
   // Kembali dari langkah 2 = ke langkah 1; keluar dgn isian terisi = konfirmasi.
   const selesai = useRef(false);
   const kondisi = useRef({ langkah, kotor: false });
@@ -310,7 +332,7 @@ export default function BuatKaizenScreen() {
       setForm((f) => ({
         ...f,
         pelaksana: orang,
-        nomor_whatsapp: f.nomor_whatsapp || k.phone || '',
+        nomor_whatsapp: f.nomor_whatsapp || rapikanWa(k.phone),
         email: f.email || k.email || '',
       }));
       setGalat((g) => ({ ...g, pelaksana: '' }));
@@ -787,63 +809,34 @@ export default function BuatKaizenScreen() {
         title={`Manfaat ${kategoriNama(sheetKategori ?? null)}`}
         subtitle={`${butirSheet.length} manfaat ditambahkan`}
       >
-        {butirSheet.map(({ m, i }, urut) => {
-          const l = ikonKategori(m.kategori);
-          return (
-            <React.Fragment key={i}>
-            {urut > 0 ? <View style={styles.garisButir} /> : null}
-            <View style={styles.butir}>
-              <View style={gs.rowBetween}>
-                <Text style={styles.nomorButir}>Manfaat {urut + 1}</Text>
-                <View style={styles.chipButir}>
-                  <Text style={styles.teksChipButir}>
-                    {m.pelaksanaan === 'Internal' ? 'Dalam perusahaan' : 'Luar perusahaan'}
-                  </Text>
+        <SliderManfaat
+          key={String(sheetKategori)}
+          items={butirSheet.map(({ m, i }) => {
+            const l = ikonKategori(m.kategori);
+            return {
+              ikon: l.ikon,
+              warna: l.warna[2],
+              tipe: m.pelaksanaan,
+              hemat: m.hemat,
+              sebelum: m.sebelum,
+              sesudah: m.sesudah,
+              area: m.area,
+              pic: m.pic?.nama ?? null,
+              aksi: (
+                <View style={styles.aksiButir}>
+                  <Button
+                    variant="outline"
+                    icon="pencil"
+                    label="Ubah"
+                    onPress={() => setDraf({ data: m, index: i, galat: {} })}
+                    style={gs.flex1}
+                  />
+                  <Button variant="dangerOutline" icon="delete-outline" onPress={() => hapusManfaat(i)} accessibilityLabel="Hapus manfaat" />
                 </View>
-              </View>
-
-              <View style={styles.hematButir}>
-                <Icon name={l.ikon} size={18} color={l.warna[2]} />
-                <View style={gs.flex1}>
-                  <Text style={styles.labelButir}>Penghematan</Text>
-                  <Text style={[styles.nilaiHemat, { color: l.warna[2] }]}>{m.hemat}</Text>
-                </View>
-              </View>
-
-              <View style={styles.panelButir}>
-                <Text style={styles.labelButir}>Sebelum</Text>
-                <Text style={styles.teksButir}>{m.sebelum}</Text>
-              </View>
-              <View style={styles.panelButir}>
-                <Text style={styles.labelButir}>Sesudah</Text>
-                <Text style={styles.teksButir}>{m.sesudah}</Text>
-              </View>
-
-              <View style={styles.metaButir}>
-                <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
-                <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
-              </View>
-              {m.pic ? (
-                <View style={styles.metaButir}>
-                  <Avatar nama={m.pic.nama} ukuran={20} />
-                  <Text style={styles.teksMeta} numberOfLines={1}>PIC · {m.pic.nama}</Text>
-                </View>
-              ) : null}
-
-              <View style={styles.aksiButir}>
-                <Button
-                  variant="outline"
-                  icon="pencil"
-                  label="Ubah"
-                  onPress={() => setDraf({ data: m, index: i, galat: {} })}
-                  style={gs.flex1}
-                />
-                <Button variant="dangerOutline" icon="delete-outline" onPress={() => hapusManfaat(i)} accessibilityLabel="Hapus manfaat" />
-              </View>
-            </View>
-            </React.Fragment>
-          );
-        })}
+              ),
+            };
+          })}
+        />
       </BottomSheet>
 
       <BottomSheet
@@ -1194,69 +1187,6 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
-  },
-  // Tanpa kartu: blok-blok dipisahkan garis tipis saja.
-  butir: {
-    marginHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
-  },
-  garisButir: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.border,
-    marginHorizontal: Spacing.lg,
-  },
-  nomorButir: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.bold,
-    color: Colors.textPrimary,
-  },
-  chipButir: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    backgroundColor: slate[100],
-  },
-  teksChipButir: {
-    fontSize: 10,
-    fontFamily: fonts.semibold,
-    color: Colors.textSecondary,
-  },
-  hematButir: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  nilaiHemat: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-  },
-  panelButir: {},
-  labelButir: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
-    color: Colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  teksButir: {
-    marginTop: 2,
-    fontSize: ukuranIsi,
-    fontFamily: fonts.regular,
-    color: Colors.textPrimary,
-    lineHeight: 18,
-  },
-  metaButir: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  teksMeta: {
-    flex: 1,
-    fontSize: ukuranIsi,
-    fontFamily: fonts.regular,
-    color: Colors.textSecondary,
   },
   aksiButir: {
     flexDirection: 'row',

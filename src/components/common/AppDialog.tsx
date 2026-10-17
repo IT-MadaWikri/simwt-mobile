@@ -60,6 +60,10 @@ interface DialogRequest {
 // ── Saluran sederhana antara API imperatif dan komponen host ──────────────
 let emit: ((req: DialogRequest | null) => void) | null = null;
 
+/** Apakah ada dialog yang sedang tampil? Slot dialog hanya satu: dialog baru menimpa yang lama. */
+let terbuka = false;
+export const adaDialogTerbuka = () => terbuka;
+
 function request(req: Omit<DialogRequest, 'resolve'>): Promise<any> {
   return new Promise((resolve) => {
     if (!emit) {
@@ -139,6 +143,10 @@ export function DialogHost() {
       emit = null;
     };
   }, []);
+
+  useEffect(() => {
+    terbuka = req !== null;
+  }, [req]);
 
   useEffect(() => {
     if (!req) return;

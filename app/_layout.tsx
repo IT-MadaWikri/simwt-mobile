@@ -22,6 +22,7 @@ import { fonts, judulAppBar } from '../constants/Typography';
 import LoadingSpinner from '../src/components/common/LoadingSpinner';
 import { DialogHost } from '../src/components/common/AppDialog';
 import { opsiAppBar } from '../src/components/common/AppBar';
+import { useAlertJaringan } from '../src/hooks/useAlertJaringan';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 
 // Keep splash screen visible while loading
@@ -45,6 +46,8 @@ SplashScreen.preventAutoHideAsync();
  */
 
 function RootLayoutNav() {
+  // Alert global bila request timeout / jaringan bermasalah (dilaporkan services/api.ts).
+  useAlertJaringan();
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
