@@ -1,5 +1,5 @@
 /**
- * Redeem Poin — tukar poin Kaizen akun yang login dengan gift di plant-nya.
+ * Redeem Hadiah — tukar poin Kaizen akun yang login dengan gift di plant-nya.
  * Aturannya mengikuti halaman redeem di web: poin harus cukup dan gift yang
  * sama tidak boleh punya request yang masih berjalan. Poin baru dipotong
  * saat admin mengubah status request ke "Diterima".
@@ -95,7 +95,7 @@ export default function RedeemPoin() {
       <View style={styles.grid}>
         {data?.gifts.map((g) => {
           const cukup = poin >= g.harga_gift;
-          const foto = urlFoto(g.gambar);
+          const foto = g.gambar_url ?? urlFoto(g.gambar);
           return (
             <View key={g.id} style={styles.gift}>
               <View style={styles.fotoGift}>

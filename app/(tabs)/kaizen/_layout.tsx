@@ -33,7 +33,7 @@ export default function KaizenLayout() {
         }} 
       />
       <Stack.Screen name="draf" options={{ title: 'Draft Kaizen Anda' }} />
-      <Stack.Screen name="redeem" options={{ title: 'Redeem Poin' }} />
+      <Stack.Screen name="redeem" options={{ title: 'Redeem Hadiah' }} />
       <Stack.Screen 
         name="[id]" 
         options={{ 

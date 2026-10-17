@@ -27,6 +27,24 @@ export const relatif = (iso: string) => {
   return bulan < 12 ? `${bulan} bln lalu` : `${Math.floor(bulan / 12)} thn lalu`;
 };
 
+/**
+ * Teks untuk dibagikan ke sosmed/WA saat Kaizen disetujui. Sengaja hanya tema,
+ * nomor, pelaksana, dan kategori — TANPA foto, nilai rupiah, atau rincian
+ * kondisi, karena itu bisa rahasia perusahaan.
+ */
+export const teksBagikanKaizen = (k: { tema?: string; nomor?: string; pelaksana?: string; kategori: string[] }) =>
+  [
+    '🎉 Kaizen saya disetujui!',
+    k.tema ? `"${k.tema}"` : null,
+    k.nomor ? `No. ${k.nomor}` : null,
+    k.pelaksana ? `Pelaksana: ${k.pelaksana}` : null,
+    k.kategori.length ? `Kategori: ${k.kategori.join(', ')}` : null,
+    '',
+    'PT Mada Wikri Tunggal · #Kaizen #MWT',
+  ]
+    .filter((b) => b !== null)
+    .join('\n');
+
 /** Foto Kaizen bisa berupa URL penuh atau path storage relatif. */
 export const urlFoto = (path?: string | null) =>
   !path ? null : path.startsWith('http') ? path : `https://mwtpart.co.id/storage/${path}`;

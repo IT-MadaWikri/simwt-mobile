@@ -14,6 +14,8 @@ export interface ServiceItem {
   iconColor: string;
   route: string;
   description: string;
+  /** Lencana angka merah di pojok ikon (mis. jumlah yang menunggu); 0/kosong = tidak tampil. */
+  lencana?: number;
 }
 
 export const SERVICES: ServiceItem[] = [

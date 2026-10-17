@@ -20,6 +20,8 @@ import {
   TouchableOpacity,
   Modal,
   RefreshControl,
+  useWindowDimensions,
+  Share,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,7 +36,10 @@ import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenDetail } from '../../../src/types/kaizen';
-import { BULAN, LENCANA, urlFoto, warnaStatus } from '../../../src/utils/kaizen';
+import { BULAN, LENCANA, teksBagikanKaizen, urlFoto, warnaStatus } from '../../../src/utils/kaizen';
+import AppBar from '../../../src/components/common/AppBar';
+import BrandSpinner from '../../../src/components/common/BrandSpinner';
+import { bagikanBuktiKaizen } from '../../../src/services/buktiKaizenService';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 
 const PQCDSM = ['Productivity', 'Quality', 'Cost', 'Delivery', 'Safety', 'Morale'];
@@ -54,6 +59,7 @@ const pesanGalat = (e: any, cadangan: string) => {
 export default function KaizenDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const { width: lebarLayar } = useWindowDimensions();
   const [data, setData] = useState<KaizenDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -63,6 +69,11 @@ export default function KaizenDetailScreen() {
   const [sheetTolak, setSheetTolak] = useState(false);
   // Kategori manfaat yang rinciannya sedang dibuka di sheet ('' = Manfaat tanpa kategori).
   const [sheetManfaat, setSheetManfaat] = useState<string | null>(null);
+  // Kartu manfaat yang sedang terlihat di slider (untuk indikator titik).
+  const [butirAktif, setButirAktif] = useState(0);
+  // Menu Bagikan (pesan / bukti PDF); `membuatPdf` = PDF sedang dibuat.
+  const [sheetBagikan, setSheetBagikan] = useState(false);
+  const [membuatPdf, setMembuatPdf] = useState(false);
   const [alasan, setAlasan] = useState('');
 
   const muat = useCallback(() => {
@@ -116,10 +127,34 @@ export default function KaizenDetailScreen() {
       .entries()
   );
   const butirSheet = sheetManfaat === null ? [] : manfaats.filter((m) => (m.manfaat_nilai?.kategori ?? '') === sheetManfaat);
+  // Satu manfaat: selebar sheet. Lebih dari satu: kartu sedikit lebih sempit supaya yang berikutnya mengintip (bisa digeser).
+  const lebarButir = butirSheet.length > 1 ? Math.round(lebarLayar * 0.86) : lebarLayar - Spacing.lg * 2;
   const warna = warnaStatus(kaizen.status);
   const k = kaizen as any;
   const departemen = kaizen.departemen?.nama || k.departemen?.nama_departemen || kaizen.nama_departemen;
   const tags = [departemen, kaizen.plant?.nama].filter(Boolean) as string[];
+  const bagikanPesan = () => {
+    setSheetBagikan(false);
+    Share.share({
+      message: teksBagikanKaizen({
+        tema: kaizen.tema,
+        nomor: kaizen.nomor,
+        pelaksana: kaizen.nama_pelaksana,
+        kategori: kelompokManfaat.map(([kat]) => kat).filter(Boolean),
+      }),
+    }).catch(() => {});
+  };
+  const bagikanPdf = async () => {
+    setMembuatPdf(true);
+    try {
+      await bagikanBuktiKaizen(data);
+    } catch (e: any) {
+      dialog.alert('Gagal Membuat PDF', e?.message || 'Bukti Kaizen tidak bisa dibuat. Coba lagi.', 'danger');
+    } finally {
+      setMembuatPdf(false);
+      setSheetBagikan(false);
+    }
+  };
   const fotos = [
     { label: 'Sebelum', uri: k.foto_sebelum_url ?? urlFoto(kaizen.foto_sebelum || kaizen.foto_kondisi_sebelum) },
     { label: 'Sesudah', uri: k.foto_sesudah_url ?? urlFoto(kaizen.foto_sesudah || kaizen.foto_kondisi_sesudah) },
@@ -191,6 +226,17 @@ export default function KaizenDetailScreen() {
 
   return (
     <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+      {/* Hanya Kaizen yang sudah disetujui yang layak dibagikan. Share sheet bawaan OS (WA, FB, dll). */}
+      <AppBar
+        judul="Detail Kaizen"
+        kanan={
+          kaizen.status === 'DISETUJUI' ? (
+            <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
+              <Icon name="share-variant" size={20} color={Colors.white} />
+            </TouchableOpacity>
+          ) : undefined
+        }
+      />
       <ScrollView
         contentContainerStyle={styles.isi}
         showsVerticalScrollIndicator={false}
@@ -370,20 +416,52 @@ export default function KaizenDetailScreen() {
         </View>
       ) : null}
 
+      <BottomSheet visible={sheetBagikan} onClose={() => (membuatPdf ? null : setSheetBagikan(false))} title="Bagikan Kaizen">
+        <TouchableOpacity style={styles.opsiBagikan} onPress={bagikanPesan} disabled={membuatPdf} activeOpacity={0.7}>
+          <View style={styles.ikonBagikan}>
+            <Icon name="chat-outline" size={18} color={brand[700]} />
+          </View>
+          <View style={gs.flex1}>
+            <Text style={styles.judulBagikan}>Bagikan sebagai pesan</Text>
+            <Text style={styles.ketBagikan}>Teks ringkas ke WhatsApp, Facebook, dan lainnya</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.opsiBagikan} onPress={bagikanPdf} disabled={membuatPdf} activeOpacity={0.7}>
+          <View style={styles.ikonBagikan}>
+            {membuatPdf ? <BrandSpinner size={18} color={brand[700]} /> : <Icon name="file-document" size={18} color={brand[700]} />}
+          </View>
+          <View style={gs.flex1}>
+            <Text style={styles.judulBagikan}>{membuatPdf ? 'Membuat PDF…' : 'Bagikan bukti Kaizen (PDF)'}</Text>
+            <Text style={styles.ketBagikan}>Formulir Bukti Kaizen Digital berisi foto dan penilaian</Text>
+          </View>
+        </TouchableOpacity>
+      </BottomSheet>
+
       <BottomSheet
         visible={sheetManfaat !== null}
         onClose={() => setSheetManfaat(null)}
         title={`Manfaat ${sheetManfaat || ''}`.trim()}
         subtitle={`${butirSheet.length} manfaat`}
       >
-        {butirSheet.map((m, urut) => {
-          const l = LENCANA[m.manfaat_nilai?.kategori ?? ''];
-          return (
-            <React.Fragment key={m.id ?? urut}>
-              {urut > 0 ? <View style={styles.garisButir} /> : null}
-              <View style={styles.butir}>
+        <ScrollView
+          key={sheetManfaat}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={(e) => setButirAktif(Math.round(e.nativeEvent.contentOffset.x / (lebarButir + Spacing.sm)))}
+          snapToInterval={lebarButir + Spacing.sm}
+          decelerationRate="fast"
+          contentContainerStyle={styles.isiButir}
+        >
+          {butirSheet.map((m, urut) => {
+            const l = LENCANA[m.manfaat_nilai?.kategori ?? ''];
+            return (
+              <View key={m.id ?? urut} style={[styles.butir, { width: lebarButir }]}>
                 <View style={gs.rowBetween}>
-                  <Text style={styles.nomorButir}>Manfaat {urut + 1}</Text>
+                  <View style={[gs.row, { gap: 6 }]}>
+                    <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={16} color={l?.warna[2] ?? Colors.textSecondary} />
+                    <Text style={styles.nomorButir}>Manfaat {urut + 1}</Text>
+                  </View>
                   {m.tipe_area ? (
                     <View style={styles.chipButir}>
                       <Text style={styles.teksChipButir}>{m.tipe_area === 'Eksternal' ? 'Luar perusahaan' : 'Dalam perusahaan'}</Text>
@@ -391,39 +469,55 @@ export default function KaizenDetailScreen() {
                   ) : null}
                 </View>
 
-                <View style={styles.hematButir}>
-                  <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={18} color={l?.warna[2] ?? Colors.textSecondary} />
-                  <View style={gs.flex1}>
-                    <Text style={styles.labelButir}>Penghematan</Text>
-                    <Text style={[styles.nilaiHemat, { color: l?.warna[2] ?? Colors.textPrimary }]}>{m.hemat || '—'}</Text>
+                <View style={styles.barisButir}>
+                  <View style={styles.kolomLabel}>
+                    <Icon name="piggy-bank" size={14} color={Colors.textTertiary} />
+                    <Text style={styles.labelButir} numberOfLines={1}>Penghematan</Text>
                   </View>
+                  <Text style={[styles.nilaiHemat, { color: l?.warna[2] ?? Colors.textPrimary }]}>{m.hemat || '—'}</Text>
                 </View>
-
-                <View>
-                  <Text style={styles.labelButir}>Sebelum</Text>
+                <View style={styles.barisButir}>
+                  <View style={styles.kolomLabel}>
+                    <Icon name="history" size={14} color={Colors.textTertiary} />
+                    <Text style={styles.labelButir} numberOfLines={1}>Sebelum</Text>
+                  </View>
                   <Text style={styles.teksButir}>{m.sebelum || '-'}</Text>
                 </View>
-                <View>
-                  <Text style={styles.labelButir}>Sesudah</Text>
+                <View style={styles.barisButir}>
+                  <View style={styles.kolomLabel}>
+                    <Icon name="creation" size={14} color={Colors.textTertiary} />
+                    <Text style={styles.labelButir} numberOfLines={1}>Sesudah</Text>
+                  </View>
                   <Text style={styles.teksButir}>{m.sesudah || '-'}</Text>
                 </View>
 
-                {m.area ? (
-                  <View style={styles.metaButir}>
-                    <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
-                    <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
-                  </View>
-                ) : null}
-                {m.pic ? (
-                  <View style={styles.metaButir}>
-                    <Avatar nama={m.pic} ukuran={20} />
-                    <Text style={styles.teksMeta} numberOfLines={1}>PIC · {m.pic}</Text>
+                {m.area || m.pic ? (
+                  <View style={[gs.row, { gap: Spacing.md }]}>
+                    {m.area ? (
+                      <View style={styles.metaButir}>
+                        <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
+                        <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
+                      </View>
+                    ) : null}
+                    {m.pic ? (
+                      <View style={styles.metaButir}>
+                        <Avatar nama={m.pic} ukuran={18} />
+                        <Text style={styles.teksMeta} numberOfLines={1}>{m.pic}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 ) : null}
               </View>
-            </React.Fragment>
-          );
-        })}
+            );
+          })}
+        </ScrollView>
+        {butirSheet.length > 1 ? (
+          <View style={styles.titikWadah}>
+            {butirSheet.map((_, i) => (
+              <View key={i} style={[styles.titikSlider, i === butirAktif && styles.titikSliderAktif]} />
+            ))}
+          </View>
+        ) : null}
       </BottomSheet>
 
       <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen" penuh>
@@ -636,15 +730,65 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: brand[700],
   },
-  butir: {
-    marginHorizontal: Spacing.lg,
+  // Tiap manfaat satu kartu sendiri, supaya batas antar-manfaat jelas saat ada lebih dari satu.
+  opsiBagikan: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
     paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  ikonBagikan: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: brand[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  judulBagikan: {
+    fontSize: ukuranIsi,
+    fontFamily: fonts.semibold,
+    color: Colors.textPrimary,
+  },
+  ketBagikan: {
+    marginTop: 2,
+    fontSize: 12,
+    fontFamily: fonts.regular,
+    color: Colors.textTertiary,
+  },
+  titikWadah: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.sm,
+  },
+  titikSlider: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: slate[300],
+  },
+  titikSliderAktif: {
+    width: 16,
+    backgroundColor: Colors.primary,
+  },
+  // Daftar kartu digeser mendatar; lebar tiap kartu diberikan saat dirender.
+  isiButir: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
     gap: Spacing.sm,
   },
-  garisButir: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.border,
-    marginHorizontal: Spacing.lg,
+  butir: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    gap: 4,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.borderSubtle,
+    backgroundColor: slate[50],
   },
   nomorButir: {
     fontSize: ukuranIsi,
@@ -663,30 +807,37 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     color: Colors.textSecondary,
   },
-  hematButir: {
+  barisButir: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: Spacing.sm,
   },
   nilaiHemat: {
+    flex: 1,
     fontSize: 12,
     fontFamily: fonts.bold,
   },
+  // Lebar tetap + tanpa wrap supaya isi semua baris rata di kolom yang sama.
+  kolomLabel: {
+    width: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   labelButir: {
+    flexShrink: 1,
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fonts.medium,
     color: Colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
   teksButir: {
-    marginTop: 2,
+    flex: 1,
     fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textPrimary,
-    lineHeight: 18,
   },
   metaButir: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

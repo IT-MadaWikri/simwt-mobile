@@ -13,6 +13,7 @@ export interface Kaizen {
   nomor?: string;
   tema: string;
   disarankan_oleh?: string;
+  disetujui_oleh?: string | null;
   nama_pelaksana: string;
   nik_nama_pelaksana: string;
   id_departemen: number;
@@ -91,7 +92,14 @@ export interface KaizenDetail {
   jumlahManfaat: number;
   kategoriNilai: Record<string, number>;
   totalKategoriNilai: number;
-  nilaiPanitia: { nilai_panitia: number; nilai_final: number; dinilai_oleh?: string } | null;
+  nilaiPanitia: {
+    nilai_panitia: number;
+    nilai_final: number;
+    nilai_pelaksanaan?: number | null;
+    dinilai_oleh?: string;
+    /** Gambar QR bukti Kaizen (URL siap pakai dari server). */
+    qr_code_url?: string | null;
+  } | null;
   nilaiFinal: { total_nilai: number } | null;
   kriteriaPenilaian: KaizenKriteria[];
   /** Hak pengguna atas Kaizen ini, dihitung server. */
@@ -110,6 +118,8 @@ export interface KaizenGift {
   nama_gift: string;
   harga_gift: number;
   gambar?: string | null;
+  /** URL siap pakai dari server; `gambar` hanya path relatif. */
+  gambar_url?: string | null;
 }
 
 export interface KaizenRedeem {

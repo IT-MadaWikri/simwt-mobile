@@ -87,11 +87,9 @@ function RootLayoutNav() {
           gestureEnabled: true,
         }}
       >
-        {/* Login & beranda bertukar lewat `router.replace`, bukan dorongan —
-            memudar lebih pas daripada menggeser, karena tidak ada hubungan
-            "maju/mundur" antara keduanya. */}
-        <Stack.Screen name="login" options={{ headerShown: false, animation: 'fade' }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+        {/* Semua halaman memakai transisi geser (default di atas), termasuk login & beranda. */}
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="services/[id]"
           options={opsiAppBar}

@@ -188,7 +188,7 @@ export default function LoadingScreen({
   });
 
   // View biasa di web — pembungkus Animated bisa tidak meneruskan
-  // properti CSS khas react-native-web. Lihat BrandSpinner.tsx.
+  // properti CSS khas react-native-web (`animationKeyframes`, lihat useSpin).
   const Cincin: any = DI_WEB ? View : Animated.View;
   const Gambar: any = DI_WEB ? Image : Animated.Image;
 
