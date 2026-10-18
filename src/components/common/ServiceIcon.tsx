@@ -17,10 +17,10 @@ import { gs } from '../../../constants/GlobalStyles';
 import { ServiceItem } from '../../../constants/Services';
 
 /** Campur warna hex #rrggbb dengan putih; `bagian` 0 = warna asli, 1 = putih. */
-const cerahkan = (hex: string, bagian: number) => {
+const cerahkan = (hex: string, bagian: number, alfa = 1) => {
   const n = parseInt(hex.slice(1), 16);
   const kanal = (geser: number) => Math.round(((n >> geser) & 255) * (1 - bagian) + 255 * bagian);
-  return `rgb(${kanal(16)},${kanal(8)},${kanal(0)})`;
+  return `rgba(${kanal(16)},${kanal(8)},${kanal(0)},${alfa})`;
 };
 
 interface ServiceIconProps {
@@ -44,7 +44,10 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   const containerSize = size === 'small' ? 44 : size === 'large' ? 64 : 54;
   // Dua ubin kaca bertumpuk: ubin depan di kiri-bawah, ubin belakang yang lebih pucat bergeser ke kanan-atas.
   const ubin = containerSize - 10;
-  const gradasi = [cerahkan(service.iconColor, 0.55), cerahkan(service.iconColor, 0.15)] as const;
+  // Efek kaca: ubin depan agak tembus pandang (ubin belakang terlihat di baliknya), ada kilap putih
+  // di sudut kiri-atas dan tepi putih tipis; ubin belakang lebih bening lagi.
+  const depan = [cerahkan(service.iconColor, 0.3, 0.95), cerahkan(service.iconColor, 0, 0.85)] as const;
+  const belakang = [cerahkan(service.iconColor, 0.5, 0.5), cerahkan(service.iconColor, 0.3, 0.22)] as const;
 
   // Selalu ikuti `route` yang didefinisikan di constants/Services.ts —
   // dulu tujuan dirakit dari `id` dengan satu pengecualian ber-hardcode untuk
@@ -96,17 +99,23 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
       <Animated.View style={[styles.iconWrapper, { transform: [{ scale: skala }] }]}>
         <View style={{ width: containerSize, height: containerSize }}>
           <LinearGradient
-            colors={gradasi}
+            colors={belakang}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[styles.ubin, styles.ubinBelakang, { width: ubin, height: ubin }]}
           />
           <LinearGradient
-            colors={gradasi}
+            colors={depan}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[styles.ubin, styles.ubinDepan, { width: ubin, height: ubin }]}
           >
+            <LinearGradient
+              colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0.7, y: 0.7 }}
+              style={StyleSheet.absoluteFill}
+            />
             <Icon name={service.icon} size={iconSize} color={Colors.white} />
           </LinearGradient>
         </View>
@@ -145,13 +154,15 @@ const styles = StyleSheet.create({
   ubinBelakang: {
     top: 0,
     right: 0,
-    opacity: 0.45,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   ubinDepan: {
     bottom: 0,
     left: 0,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.35)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.75)',
+    overflow: 'hidden',
   },
   badge: {
     position: 'absolute',
