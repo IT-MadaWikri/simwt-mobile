@@ -2,10 +2,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
-import LencanaStatusTiket from './LencanaStatusTiket';
+import LencanaStatusTiket, { WARNA_STATUS_TIKET } from './LencanaStatusTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
+import { STATUS_TIKET } from '../../adapters/tiket';
 import { StatusTiket } from '../../types/tiket';
 import { BULAN } from '../../utils/kaizen';
 
@@ -26,6 +27,16 @@ interface KartuTiketProps {
   onPress: () => void;
 }
 
+/** Potongan kecil berikon (jenis, plant) di baris keterangan. */
+function Potongan({ ikon, teks }: { ikon: string; teks: string }) {
+  return (
+    <View style={styles.potongan}>
+      <Icon name={ikon as any} size={12} color={Colors.textTertiary} />
+      <Text style={styles.sub} numberOfLines={1}>{teks}</Text>
+    </View>
+  );
+}
+
 export default function KartuTiket({
   noTiket,
   judul,
@@ -36,21 +47,28 @@ export default function KartuTiket({
   tanggalSelesai,
   onPress,
 }: KartuTiketProps) {
-  const meta = [jenis, plant].filter(Boolean).join(' · ');
+  const warna = WARNA_STATUS_TIKET[status];
   return (
     <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={onPress}>
-      <View style={styles.isi}>
-        <View style={styles.atas}>
-          <Text style={styles.nomor} numberOfLines={1}>#{noTiket}</Text>
-          <LencanaStatusTiket status={status} />
-        </View>
-        <Text style={styles.judul} numberOfLines={2}>{judul}</Text>
-        {meta ? <Text style={styles.sub} numberOfLines={1}>{meta}</Text> : null}
-        <Text style={styles.sub}>
-          Diajukan {tanggal(tanggalDiajukan)}
-          {status === 'OK' ? ` · Selesai ${tanggal(tanggalSelesai)}` : ''}
-        </Text>
+      <View style={[styles.logo, { backgroundColor: warna.bg }]}>
+        <Icon name={STATUS_TIKET[status].ikon as any} size={18} color={warna.fg} />
       </View>
+
+      <View style={styles.isi}>
+        <Text style={styles.judul} numberOfLines={1}>{judul}</Text>
+        <Text style={styles.nomor} numberOfLines={1}>#{noTiket}</Text>
+        <View style={styles.meta}>
+          {jenis ? <Potongan ikon="shape-outline" teks={jenis} /> : null}
+          {plant ? <Potongan ikon="factory" teks={plant} /> : null}
+        </View>
+      </View>
+
+      <View style={styles.kanan}>
+        <LencanaStatusTiket status={status} />
+        <Text style={styles.sub}>{tanggal(tanggalDiajukan)}</Text>
+        {status === 'OK' ? <Text style={styles.selesai}>Selesai {tanggal(tanggalSelesai)}</Text> : null}
+      </View>
+
       <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
     </TouchableOpacity>
   );
@@ -65,9 +83,20 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
   },
+  logo: {
+    width: 42,
+    height: 42,
+    borderRadius: Spacing.radius.sm,
+    ...Spacing.curve,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   isi: { flex: 1, gap: 2 },
-  atas: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.sm },
-  nomor: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textSecondary, flexShrink: 1 },
   judul: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginTop: 2 },
+  potongan: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },
+  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  kanan: { alignItems: 'flex-end', gap: 4, flexShrink: 0 },
+  selesai: { fontFamily: fonts.regular, fontSize: 10, color: Colors.textTertiary },
 });
