@@ -12,6 +12,7 @@ import AppBar from '../../../src/components/common/AppBar';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 import RingkasanTiket from '../../../src/components/tiket/RingkasanTiket';
 import FotoTiket from '../../../src/components/tiket/FotoTiket';
+import MetrikTiket from '../../../src/components/tiket/MetrikTiket';
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -67,6 +68,11 @@ export default function DetailTiketScreen() {
             departemen={tiket.departemen}
             aset={tiket.aset}
           />
+        </View>
+
+        <View style={styles.seksi}>
+          <Text style={styles.judulSeksi}>Waktu penanganan</Text>
+          <MetrikTiket metrik={tiket.metrik} />
         </View>
 
         <View style={styles.seksi}>
