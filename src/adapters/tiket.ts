@@ -2,7 +2,7 @@
  * Adapter murni modul Tiket: mengubah respons `GET /tiket/lihat/{nomor}` menjadi
  * `DetailTiket` yang siap dirender. Tanpa React, api, atau storage.
  */
-import { DetailTiket, LangkahLinimasa, StatusTiket, TiketRingkas } from '../types/tiket';
+import { DetailTiket, LangkahLinimasa, MetrikTiket, StatusTiket, TiketRingkas } from '../types/tiket';
 
 /** Label & nada warna per status — dipakai daftar, filter, dan detail. */
 export const STATUS_TIKET: Record<StatusTiket, { label: string; keterangan: string; ikon: string }> = {
@@ -31,6 +31,40 @@ const barisProgress = (p: any): string[] =>
     p.hasil_trial && `Hasil trial: ${p.hasil_trial}`,
     p.pic_perbaikan && `PIC: ${p.pic_perbaikan}`,
   ].filter(Boolean) as string[];
+
+/** Durasi final seperti di web: ≥ 1 menit → "1h 5m", kurang dari itu → "42s". */
+export function formatDurasi(detik: number): string {
+  const menit = Math.floor(detik / 60);
+  return menit > 0 ? `${Math.floor(menit / 60)}h ${menit % 60}m` : `${detik}s`;
+}
+
+const selisihDetik = (dari?: string | null, sampai?: string | null) =>
+  dari && sampai ? Math.max(0, Math.round((new Date(sampai).getTime() - new Date(dari).getTime()) / 1000)) : null;
+
+/**
+ * Empat metrik waktu detail tiket — rumus sama dengan web (`ticket/lihat.blade.php`):
+ * downtime = masuk→selesai, tunggu = masuk→proses, proses = proses→selesai, perbaikan = durasi
+ * perbaikan (proses→selesai; tiket berjenjang Dies/Mold di web memotongnya per segmen trial,
+ * di sini belum). Tahap yang masih jalan menampilkan jam berjalan, bukan durasi final.
+ */
+export function hitungMetrik(mentah: any): MetrikTiket[] {
+  const masuk = mentah?.tanggal_diajukan ?? null;
+  const proses = mentah?.tanggal_proses ?? null;
+  const selesai = mentah?.tanggal_selesai ?? null;
+  const aktif = !['OK', 'CANCEL', 'FATAL'].includes(mentah?.status_pengajuan);
+
+  const downtime = selesai ? selisihDetik(masuk, selesai) : null;
+  const tunggu = proses ? selisihDetik(masuk, proses) : null;
+  const prosesFinal = proses && selesai ? selisihDetik(proses, selesai) : null;
+  const prosesBerjalan = !!proses && !selesai && aktif;
+
+  return [
+    { id: 'downtime', label: 'Total Downtime', keterangan: 'Dari masuk sampai selesai', detik: downtime, berjalanSejak: !selesai && aktif ? masuk : null },
+    { id: 'tunggu', label: 'Waktu Tunggu', keterangan: 'Masuk → Proses', detik: tunggu, berjalanSejak: !proses && aktif ? masuk : null },
+    { id: 'proses', label: 'Waktu Proses', keterangan: 'Proses → Final', detik: prosesFinal, berjalanSejak: prosesBerjalan ? proses : null },
+    { id: 'perbaikan', label: 'Total Perbaikan', keterangan: 'Durasi perbaikan', detik: prosesFinal, berjalanSejak: prosesBerjalan ? proses : null },
+  ];
+}
 
 export function adaptasiDetailTiket(mentah: any): DetailTiket {
   const status = statusAman(mentah?.status_pengajuan);
@@ -86,6 +120,7 @@ export function adaptasiDetailTiket(mentah: any): DetailTiket {
     fotoSebelum: mentah?.foto_sebelum_url ?? null,
     fotoSesudah: mentah?.foto_sesudah_url ?? null,
     linimasa,
+    metrik: hitungMetrik(mentah),
   };
 }
 

@@ -24,6 +24,17 @@ export interface LangkahLinimasa {
   selesai: boolean;
 }
 
+/** Satu metrik waktu pada detail tiket (Total Downtime, Waktu Tunggu, …). */
+export interface MetrikTiket {
+  id: 'downtime' | 'tunggu' | 'proses' | 'perbaikan';
+  label: string;
+  keterangan: string;
+  /** Durasi final dalam detik; null bila belum ada/belum bisa dihitung. */
+  detik: number | null;
+  /** ISO waktu mulai bila tahapnya masih berjalan (tampil sebagai jam berjalan); selain itu null. */
+  berjalanSejak: string | null;
+}
+
 /** Detail tiket yang sudah dirapikan oleh `adaptasiDetailTiket`. */
 export interface DetailTiket {
   id: number;
@@ -42,6 +53,7 @@ export interface DetailTiket {
   fotoSebelum: string | null;
   fotoSesudah: string | null;
   linimasa: LangkahLinimasa[];
+  metrik: MetrikTiket[];
 }
 
 export interface OpsiRef {
