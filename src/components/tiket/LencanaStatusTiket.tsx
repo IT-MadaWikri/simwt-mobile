@@ -8,7 +8,7 @@ import { fonts } from '../../../constants/Typography';
 import { STATUS_TIKET } from '../../adapters/tiket';
 import { StatusTiket } from '../../types/tiket';
 
-const WARNA: Record<StatusTiket, { bg: string; fg: string }> = {
+export const WARNA_STATUS_TIKET: Record<StatusTiket, { bg: string; fg: string }> = {
   PENDING: { bg: '#fffbeb', fg: '#b45309' },
   PROSES: { bg: brand[50], fg: brand[700] },
   OK: { bg: slate[100], fg: slate[600] },
@@ -22,7 +22,7 @@ interface LencanaStatusTiketProps {
 
 export default function LencanaStatusTiket({ status, panjang = false }: LencanaStatusTiketProps) {
   const meta = STATUS_TIKET[status];
-  const { bg, fg } = WARNA[status];
+  const { bg, fg } = WARNA_STATUS_TIKET[status];
   return (
     <View style={[styles.lencana, { backgroundColor: bg }]}>
       <Icon name={meta.ikon as any} size={12} color={fg} />
