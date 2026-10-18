@@ -37,7 +37,7 @@ export const SERVICES: ServiceItem[] = [
     icon: 'ticket-confirmation-outline',
     backgroundColor: Colors.serviceRed,
     iconColor: Colors.dangerDark,
-    route: '/services/tiket-masalah',
+    route: '/services/tiket',
     description: 'Sistem ticketing & helpdesk',
   },
   {
