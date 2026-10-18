@@ -69,6 +69,7 @@ const ICONS: Record<string, LucideIcon> = {
   'check-circle': CircleCheck,
   'check-circle-outline': CircleCheck,
   'check-decagram': BadgeCheck,
+  'camera': Camera,
   'chevron-down': ChevronDown,
   'chevron-right': ChevronRight,
   'clipboard-check': ClipboardCheck,

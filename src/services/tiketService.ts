@@ -5,13 +5,21 @@
  */
 import api from './api';
 import { adaptasiDetailTiket } from '../adapters/tiket';
-import { DetailTiket, OpsiRef, TiketRingkas } from '../types/tiket';
+import { DetailTiket, FormTiket, MasterBuatTiket, TiketRingkas } from '../types/tiket';
 
-export type { OpsiRef, TiketRingkas };
+export type { TiketRingkas };
 
-export interface MasterBuatTiket {
-  jenisTicket: OpsiRef[];
-  daftarDepartemen: OpsiRef[];
+/** Susun multipart dari isian form; field kosong tidak dikirim. */
+export function buatPayloadTiket(form: FormTiket): FormData {
+  const data = new FormData();
+  data.append('id_ticket_jenis', String(form.idJenis));
+  data.append('id_sub_jenis', String(form.idKategori));
+  data.append('id_departemen', String(form.idDepartemen));
+  if (form.idSub) data.append('sub_departemen', String(form.idSub));
+  if (form.idArea) data.append('id_departemen_area', String(form.idArea));
+  data.append('detail_masalah', form.detail.trim());
+  if (form.foto) data.append('foto_sebelum', form.foto as any);
+  return data;
 }
 
 export const tiketService = {
@@ -27,41 +35,23 @@ export const tiketService = {
     return response.data?.tiket ? adaptasiDetailTiket(response.data.tiket) : null;
   },
 
-  /** Master data untuk form buat tiket. */
+  /** Master data form buat tiket: jenis + kategori, departemen + sub, area. */
   async masterBuat(): Promise<MasterBuatTiket> {
     const response = await api.get('/tiket/buat');
+    const data = response.data?.data;
     return {
-      jenisTicket: response.data?.jenisTicket ?? [],
-      daftarDepartemen: response.data?.daftarDepartemen ?? [],
+      jenis: data?.jenis ?? [],
+      departemen: data?.departemen ?? [],
+      area: data?.area ?? {},
     };
   },
 
-  /**
-   * Buat tiket baru. `id_plant` & `diajukan_oleh` diisi server dari akun
-   * login bila tidak dikirim — tetap dikirim eksplisit agar validasinya lolos.
-   */
-  async buat(data: {
-    judul_masalah: string;
-    detail_masalah: string;
-    id_ticket_jenis: number;
-    id_departemen: number;
-    id_plant: number;
-    diajukan_oleh: string;
-    foto_sebelum?: { uri: string; name: string; type: string } | null;
-  }): Promise<TiketRingkas | null> {
-    const formData = new FormData();
-    formData.append('judul_masalah', data.judul_masalah);
-    formData.append('detail_masalah', data.detail_masalah);
-    formData.append('id_ticket_jenis', String(data.id_ticket_jenis));
-    formData.append('id_departemen', String(data.id_departemen));
-    formData.append('id_plant', String(data.id_plant));
-    formData.append('diajukan_oleh', data.diajukan_oleh);
-    if (data.foto_sebelum) formData.append('foto_sebelum', data.foto_sebelum as any);
-
-    const response = await api.post('/tiket/simpan-tiket', formData, {
+  /** Kirim tiket baru. Pengaju & plant diambil server dari akun login. */
+  async buat(form: FormTiket): Promise<{ id: number; no_ticket: string }> {
+    const response = await api.post('/tiket/simpan-tiket', buatPayloadTiket(form), {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data?.tiket ?? null;
+    return response.data.tiket;
   },
 };
 

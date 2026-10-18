@@ -1,267 +1,182 @@
 /**
- * Buat tiket baru.
- *
- * Field wajib mengikuti validasi server (BuatRequest di api-simwt):
- * judul, jenis, departemen tujuan, detail. Plant & nama pengaju diambil dari
- * akun login. Pilihan jenis/departemen memakai bottom sheet daftar — pola
- * pilih-opsi yang lazim di aplikasi native, bukan <select> web.
+ * Buat Tiket (tiket IT) — alur sama dengan form web: jenis → kategori masalah,
+ * departemen (+ sub-departemen bila ada), area (opsional), detail, foto (opsional).
+ * Plant dan nama pengaju diambil server dari akun login. Logika ada di `useBuatTiket`.
  */
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Animated,
-  Easing,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import Icon from '../../../src/components/common/Icon';
-import Button from '../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand } from '../../../constants/Colors';
-import Spacing from '../../../constants/Spacing';
-import { gs } from '../../../constants/GlobalStyles';
-import { dialog } from '../../../src/components/common/AppDialog';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { tiketService, OpsiRef } from '../../../src/services/tiketService';
+import AppBar from '../../../src/components/common/AppBar';
+import Button from '../../../src/components/common/Button';
+import Icon from '../../../src/components/common/Icon';
+import FieldPilihan from '../../../src/components/common/FieldPilihan';
+import SheetPilihan from '../../../src/components/common/SheetPilihan';
+import BottomSheet from '../../../src/components/common/BottomSheet';
 import { SkeletonForm } from '../../../src/components/common/Skeleton';
+import { dialog } from '../../../src/components/common/AppDialog';
+import Colors from '../../../constants/Colors';
+import Spacing from '../../../constants/Spacing';
+import { fonts } from '../../../constants/Typography';
+import { gs, inputReset } from '../../../constants/GlobalStyles';
+import { useBuatTiket } from '../../../src/hooks/useBuatTiket';
+
+type Sheet = 'jenis' | 'kategori' | 'departemen' | 'sub' | 'area' | 'foto' | null;
 
 export default function BuatTiketScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
-
-  const [memuat, setMemuat] = useState(true);
-  const [mengirim, setMengirim] = useState(false);
-  const [jenisOpsi, setJenisOpsi] = useState<OpsiRef[]>([]);
-  const [departemenOpsi, setDepartemenOpsi] = useState<OpsiRef[]>([]);
-
-  const [judul, setJudul] = useState('');
-  const [detail, setDetail] = useState('');
-  const [jenis, setJenis] = useState<OpsiRef | null>(null);
-  const [departemen, setDepartemen] = useState<OpsiRef | null>(null);
-
-  /** Bottom sheet pilihan: null = tertutup. */
-  const [pilih, setPilih] = useState<'jenis' | 'departemen' | null>(null);
-
-  // Panel digeser terpisah dari lapisan gelapnya, supaya latar muncul seketika
-  // sementara panelnya saja yang naik dari bawah.
-  const naikPanel = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (pilih === null) {
-      naikPanel.setValue(0);
-      return;
-    }
-    Animated.timing(naikPanel, {
-      toValue: 1,
-      duration: 260,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [pilih]);
-
-  const geserPanel = naikPanel.interpolate({ inputRange: [0, 1], outputRange: [340, 0] });
-
-  useEffect(() => {
-    tiketService
-      .masterBuat()
-      .then((master) => {
-        setJenisOpsi(master.jenisTicket);
-        setDepartemenOpsi(master.daftarDepartemen);
-      })
-      .catch(() => {
-        dialog.alert('Gagal Memuat', 'Data formulir tidak bisa diambil dari server.', 'danger');
-      })
-      .finally(() => setMemuat(false));
-  }, []);
+  const t = useBuatTiket();
+  const [sheet, setSheet] = useState<Sheet>(null);
+  const [diperiksa, setDiperiksa] = useState(false);
 
   const kirim = async () => {
-    if (!judul.trim() || !detail.trim() || !jenis || !departemen) {
-      dialog.alert(
-        'Belum Lengkap',
-        'Judul, jenis, departemen tujuan, dan detail masalah wajib diisi.'
-      );
-      return;
-    }
-
-    setMengirim(true);
-    try {
-      await tiketService.buat({
-        judul_masalah: judul.trim(),
-        detail_masalah: detail.trim(),
-        id_ticket_jenis: jenis.id,
-        id_departemen: departemen.id,
-        id_plant: Number(user?.plant) || 1,
-        diajukan_oleh: user?.nama_lengkap || user?.name || user?.username || 'Pengguna',
-      });
-      await dialog.alert('Tiket Terkirim', 'Tiket Anda sudah masuk antrean penanganan.', 'success');
+    setDiperiksa(true);
+    if (t.kekurangan) return;
+    const nomor = await t.kirim();
+    if (nomor) {
+      await dialog.alert('Tiket Terkirim', `Tiket #${nomor} sudah masuk antrean penanganan.`, 'success');
       router.back();
-    } catch (err: any) {
-      dialog.alert(
-        'Gagal Mengirim',
-        err?.response?.data?.message || err?.message || 'Terjadi kesalahan.',
-        'danger'
-      );
-    } finally {
-      setMengirim(false);
     }
   };
 
-  if (memuat) {
+  const ambilFoto = async (sumber: 'kamera' | 'galeri') => {
+    setSheet(null);
+    try {
+      const pesan = await t.ambilFoto(sumber);
+      if (pesan) dialog.alert('Izin Ditolak', pesan);
+    } catch (e: any) {
+      dialog.alert('Foto Gagal', e?.message || 'Foto tidak bisa diproses.', 'danger');
+    }
+  };
+
+  if (t.memuat) {
     return (
       <View style={gs.screen}>
+        <AppBar judul="Buat Tiket" />
         <SkeletonForm />
       </View>
     );
   }
 
-  const opsiAktif = pilih === 'jenis' ? jenisOpsi : departemenOpsi;
+  if (t.errorMuat) {
+    return (
+      <View style={[gs.screen, gs.centerFill]}>
+        <AppBar judul="Buat Tiket" />
+        <Icon name="alert-circle-outline" size={44} color={Colors.textTertiary} />
+        <Text style={gs.emptyTitle}>Gagal memuat formulir</Text>
+        <Text style={gs.emptyText}>{t.errorMuat}</Text>
+        <Button label="Coba Lagi" onPress={t.muatMaster} style={{ marginTop: Spacing.lg }} />
+      </View>
+    );
+  }
 
-  /** Field pemilih: tampak seperti input, membuka bottom sheet. */
-  const Pemilih = ({
-    label,
-    nilai,
-    onPress,
-  }: {
-    label: string;
-    nilai: string | null;
-    onPress: () => void;
-  }) => (
-    <View style={{ marginBottom: Spacing.lg }}>
-      <Text style={gs.label}>
-        {label} <Text style={gs.textDanger}>*</Text>
-      </Text>
-      <TouchableOpacity style={[gs.fieldWrap, { paddingVertical: 2 }]} onPress={onPress}>
-        <Text style={[gs.fieldInner, !nilai && { color: Colors.placeholder }]}>
-          {nilai ?? `Pilih ${label.toLowerCase()}`}
-        </Text>
-        <Icon name="chevron-down" size={22} color={Colors.textTertiary} />
-      </TouchableOpacity>
-    </View>
-  );
+  const { form } = t;
+  const tampilkanGalat = diperiksa ? t.kekurangan ?? t.galatServer : t.galatServer;
 
   return (
-    <KeyboardAvoidingView
-      style={gs.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={gs.screen} behavior="padding">
+      <AppBar judul="Buat Tiket" />
       <ScrollView
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
       >
-        <View style={[gs.cardBrand, gs.row, gs.gapSm, { marginBottom: Spacing.lg }]}>
-          <Icon name="information-outline" size={18} color={brand[700]} />
-          <Text style={[gs.bodySm, gs.flex1, { color: brand[800] }]}>
-            Jelaskan masalah sedetail mungkin agar tim terkait bisa langsung menindaklanjuti.
-          </Text>
-        </View>
-
-        <View style={{ marginBottom: Spacing.lg }}>
-          <Text style={gs.label}>
-            Judul Masalah <Text style={gs.textDanger}>*</Text>
-          </Text>
-          <TextInput
-            style={gs.field}
-            placeholder="Contoh: Printer tidak bisa mencetak"
-            placeholderTextColor={Colors.placeholder}
-            value={judul}
-            onChangeText={setJudul}
-          />
-        </View>
-
-        <Pemilih label="Jenis Tiket" nilai={jenis?.nama ?? null} onPress={() => setPilih('jenis')} />
-        <Pemilih
-          label="Departemen Tujuan"
-          nilai={departemen?.nama ?? null}
-          onPress={() => setPilih('departemen')}
+        <FieldPilihan label="Jenis Masalah" wajib nilai={t.labelDari(t.opsiJenis, form.idJenis)} onPress={() => setSheet('jenis')} />
+        <FieldPilihan
+          label="Kategori Masalah"
+          wajib
+          nonaktif={!form.idJenis}
+          placeholder={form.idJenis ? 'Pilih kategori masalah' : 'Pilih jenis masalah dulu'}
+          nilai={t.labelDari(t.opsiKategori, form.idKategori)}
+          onPress={() => setSheet('kategori')}
         />
+        <FieldPilihan label="Departemen" wajib nilai={t.labelDari(t.opsiDepartemen, form.idDepartemen)} onPress={() => setSheet('departemen')} />
+        {t.opsiSub.length > 0 ? (
+          <FieldPilihan label="Sub Departemen" wajib nilai={t.labelDari(t.opsiSub, form.idSub)} onPress={() => setSheet('sub')} />
+        ) : null}
+        {t.opsiArea.length > 0 ? (
+          <FieldPilihan label="Area" nilai={t.labelDari(t.opsiArea, form.idArea)} onPress={() => setSheet('area')} />
+        ) : null}
 
-        <View style={{ marginBottom: Spacing.xl }}>
-          <Text style={gs.label}>
-            Detail Masalah <Text style={gs.textDanger}>*</Text>
-          </Text>
+        <Text style={gs.label}>
+          Detail Masalah <Text style={gs.textDanger}>*</Text>
+        </Text>
+        <View style={[gs.fieldWrap, styles.areaTeks]}>
           <TextInput
-            style={[gs.field, { minHeight: 110, textAlignVertical: 'top' }]}
-            placeholder="Ceritakan kronologi, lokasi, dan dampaknya..."
+            style={[gs.fieldInner, styles.isianTeks]}
+            placeholder="Jelaskan masalah: kapan terjadi, dampaknya, dan langkah yang sudah dicoba…"
             placeholderTextColor={Colors.placeholder}
-            value={detail}
-            onChangeText={setDetail}
+            value={form.detail}
+            onChangeText={(v) => t.ubah('detail', v)}
             multiline
+            textAlignVertical="top"
+            maxLength={5000}
           />
         </View>
 
-        <Button icon="send" label="Kirim Tiket" onPress={kirim} loading={mengirim} block />
+        <Text style={[gs.label, { marginTop: Spacing.lg }]}>
+          Foto Masalah <Text style={gs.caption}>(opsional)</Text>
+        </Text>
+        {form.foto ? (
+          <View style={styles.fotoWadah}>
+            <Image source={{ uri: form.foto.uri }} style={styles.foto} resizeMode="cover" />
+            <TouchableOpacity style={styles.hapusFoto} onPress={() => t.ubah('foto', null)} accessibilityLabel="Hapus foto">
+              <Icon name="close" size={16} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Button variant="secondary" icon="image" label="Tambah Foto" onPress={() => setSheet('foto')} block />
+        )}
+
+        {tampilkanGalat ? (
+          <View style={styles.galat} accessibilityRole="alert">
+            <Icon name="alert-circle" size={18} color={Colors.danger} />
+            <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{tampilkanGalat}</Text>
+          </View>
+        ) : null}
+
+        <Button label="Kirim Tiket" iconRight="send" onPress={kirim} loading={t.mengirim} block style={{ marginTop: Spacing.xl }} />
       </ScrollView>
 
-      {/* Bottom sheet pilihan jenis/departemen. */}
-      {/*
-        `animationType="slide"` menggeser SELURUH isi modal — termasuk lapisan
-        gelapnya — sehingga latar ikut merayap naik dari bawah bersama panelnya.
-        Dipakai `fade` supaya latar langsung muncul di tempat, lalu panelnya
-        saja yang digeser lewat animasi tersendiri di bawah.
-      */}
-      <Modal visible={pilih !== null} transparent animationType="fade" onRequestClose={() => setPilih(null)}>
-        <View style={styles.sheetOverlay}>
-          <TouchableOpacity style={gs.flex1} activeOpacity={1} onPress={() => setPilih(null)} />
-          <Animated.View
-            style={[
-              styles.sheet,
-              { paddingBottom: insets.bottom + Spacing.lg, transform: [{ translateY: geserPanel }] },
-            ]}
-          >
-            <Text style={[gs.h3, { marginBottom: Spacing.md }]}>
-              {pilih === 'jenis' ? 'Pilih Jenis Tiket' : 'Pilih Departemen Tujuan'}
-            </Text>
-            <FlatList
-              data={opsiAktif}
-              keyExtractor={(item) => String(item.id)}
-              style={{ maxHeight: 380 }}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[gs.row, gs.gapMd, styles.opsi]}
-                  onPress={() => {
-                    if (pilih === 'jenis') setJenis(item);
-                    else setDepartemen(item);
-                    setPilih(null);
-                  }}
-                >
-                  <Text style={[gs.textBase, gs.flex1]}>{item.nama}</Text>
-                  {((pilih === 'jenis' && jenis?.id === item.id) ||
-                    (pilih === 'departemen' && departemen?.id === item.id)) && (
-                    <Icon name="check" size={20} color={brand[600]} />
-                  )}
-                </TouchableOpacity>
-              )}
-            />
-          </Animated.View>
+      <SheetPilihan visible={sheet === 'jenis'} judul="Jenis Masalah" opsi={t.opsiJenis} terpilih={form.idJenis} onPilih={(id) => t.ubah('idJenis', id)} onClose={() => setSheet(null)} />
+      <SheetPilihan visible={sheet === 'kategori'} judul="Kategori Masalah" opsi={t.opsiKategori} terpilih={form.idKategori} onPilih={(id) => t.ubah('idKategori', id)} onClose={() => setSheet(null)} />
+      <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={t.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => t.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
+      <SheetPilihan visible={sheet === 'sub'} judul="Sub Departemen" opsi={t.opsiSub} terpilih={form.idSub} onPilih={(id) => t.ubah('idSub', id)} onClose={() => setSheet(null)} />
+      <SheetPilihan visible={sheet === 'area'} judul="Area" opsi={t.opsiArea} terpilih={form.idArea} bolehKosong onPilih={(id) => t.ubah('idArea', id ?? null)} onClose={() => setSheet(null)} />
+
+      <BottomSheet visible={sheet === 'foto'} onClose={() => setSheet(null)} title="Tambah Foto">
+        <View style={styles.pilihanFoto}>
+          <Button variant="outline" icon="camera" label="Ambil dari Kamera" onPress={() => ambilFoto('kamera')} block />
+          <Button variant="outline" icon="image" label="Pilih dari Galeri" onPress={() => ambilFoto('galeri')} block />
         </View>
-      </Modal>
+      </BottomSheet>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = {
-  sheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(4, 61, 35, 0.55)',
-    justifyContent: 'flex-end' as const,
+const styles = StyleSheet.create({
+  areaTeks: { alignItems: 'flex-start', minHeight: 120, paddingVertical: Spacing.sm },
+  isianTeks: { minHeight: 100, fontFamily: fonts.regular, ...inputReset },
+  fotoWadah: { width: 140, height: 140 },
+  foto: { width: '100%', height: '100%', borderRadius: Spacing.radius.sm, backgroundColor: Colors.borderSubtle },
+  hapusFoto: {
+    position: 'absolute',
+    top: Spacing.xs,
+    right: Spacing.xs,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sheet: {
-    backgroundColor: Colors.card,
-    borderTopLeftRadius: Spacing.radius.xxl,
-    borderTopRightRadius: Spacing.radius.xxl,
-    padding: Spacing.xl,
+  galat: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    marginTop: Spacing.lg,
+    borderRadius: Spacing.radius.md,
+    backgroundColor: Colors.serviceRed,
   },
-  opsi: {
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
-  },
-};
+  pilihanFoto: { gap: Spacing.md, paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
+});
