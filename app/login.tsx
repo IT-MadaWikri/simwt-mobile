@@ -254,7 +254,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.lupa} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.lupa} activeOpacity={0.7} onPress={() => router.push('/lupa-password')}>
             <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>Lupa Password?</Text>
           </TouchableOpacity>
 

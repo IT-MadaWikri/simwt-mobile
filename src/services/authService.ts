@@ -50,6 +50,16 @@ export const authService = {
   },
 
   /**
+   * Lupa password — POST /api/lupa-password
+   * Server membalas sama untuk semua identitas (anti-enumerasi); tautan reset dikirim
+   * ke email akun dan formulir sandi barunya dibuka di web. Mengembalikan pesan server.
+   */
+  async kirimLinkReset(identitas: string): Promise<string> {
+    const response = await api.post<{ message: string }>(API_CONFIG.ENDPOINTS.LUPA_PASSWORD, { identitas });
+    return response.data.message;
+  },
+
+  /**
    * Logout — clear local auth data
    */
   async logout(): Promise<void> {

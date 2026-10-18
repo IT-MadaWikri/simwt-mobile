@@ -24,6 +24,7 @@ export const API_CONFIG = {
     // Auth
     LOGIN: '/login',
     LOGOUT: '/logout',
+    LUPA_PASSWORD: '/lupa-password',
     USER: '/user',
     UPDATE_EMAIL: '/update-email',
     VERIFY_EMAIL: '/verifikasi-email/kirim-ulang',
