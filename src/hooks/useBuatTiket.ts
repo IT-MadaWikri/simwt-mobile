@@ -1,7 +1,8 @@
 /**
  * Form Buat Tiket (tiket IT): memuat master data, menyimpan isian, menurunkan
  * pilihan bertingkat (kategori ← jenis, sub-departemen & area ← departemen),
- * memvalidasi seperti server (`galat` per field), mengambil foto, dan mengirim.
+ * memvalidasi seperti server (`galat` per field), mengatur foto (kamera/galeri →
+ * editor crop), dan mengirim.
  *
  * Pilihan bertingkat direset otomatis saat induknya berganti. Galat 422 dari
  * server dipetakan ke `galatServer` agar layar menampilkan pesan yang sama
@@ -9,13 +10,12 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { tiketService } from '../services/tiketService';
+import { FotoKaizen } from '../components/kaizen/EditorFoto';
 import { FormTiket, MasterBuatTiket, OpsiPilihan } from '../types/tiket';
 
-const SISI_MAKS = 1600;
-
 const FORM_KOSONG: FormTiket = {
+  aset: null,
   idJenis: null,
   idKategori: null,
   idDepartemen: null,
@@ -34,6 +34,10 @@ export function useBuatTiket() {
   const [form, setForm] = useState<FormTiket>(FORM_KOSONG);
   const [mengirim, setMengirim] = useState(false);
   const [galatServer, setGalatServer] = useState<string | null>(null);
+
+  // Foto: `fotoAtur` menyimpan posisi crop (untuk dibuka ulang); hasilnya masuk ke `form.foto`.
+  const [fotoAtur, setFotoAtur] = useState<FotoKaizen | null>(null);
+  const [editorTerbuka, setEditorTerbuka] = useState(false);
 
   const muatMaster = useCallback(async () => {
     setMemuat(true);
@@ -103,7 +107,7 @@ export function useBuatTiket() {
     return g;
   }, [form, opsiSub.length]);
 
-  /** Ambil foto dari kamera/galeri; diperkecil ke sisi terpanjang 1600 px dan dikompres JPEG. */
+  /** Ambil foto dari kamera/galeri lalu buka editor crop. Mengembalikan pesan bila izin ditolak. */
   const ambilFoto = async (sumber: SumberFoto): Promise<string | null> => {
     const izin =
       sumber === 'kamera'
@@ -118,15 +122,35 @@ export function useBuatTiket() {
         : await ImagePicker.launchImageLibraryAsync(opsi);
     if (hasil.canceled) return null;
 
-    const asli = hasil.assets[0];
-    const konteks = ImageManipulator.manipulate(asli.uri);
-    if (Math.max(asli.width, asli.height) > SISI_MAKS) {
-      konteks.resize(asli.width >= asli.height ? { width: SISI_MAKS } : { height: SISI_MAKS });
-    }
-    const gambar = await konteks.renderAsync();
-    const simpan = await gambar.saveAsync({ format: SaveFormat.JPEG, compress: 0.8 });
-    ubah('foto', { uri: simpan.uri, name: 'foto_sebelum.jpg', type: 'image/jpeg' });
+    const a = hasil.assets[0];
+    setFotoAtur({ uri: a.uri, width: a.width, height: a.height, rasio: 'asli', zoom: 1, nx: 0, ny: 0, tag: 'sebelum' });
+    setEditorTerbuka(true);
     return null;
+  };
+
+  /** Editor selesai: hasil crop menjadi foto yang dikirim. */
+  const selesaiFoto = (fotos: FotoKaizen[]) => {
+    const f = fotos[0];
+    if (f?.hasil) {
+      setFotoAtur(f);
+      ubah('foto', { uri: f.hasil.uri, name: 'foto_sebelum.jpg', type: 'image/jpeg' });
+    }
+    setEditorTerbuka(false);
+  };
+
+  /** Editor dibatalkan: foto baru dibuang, foto lama (bila ada) tetap. */
+  const batalFoto = () => {
+    setEditorTerbuka(false);
+    if (!form.foto) setFotoAtur(null);
+  };
+
+  const bukaEditorFoto = () => {
+    if (fotoAtur) setEditorTerbuka(true);
+  };
+
+  const hapusFoto = () => {
+    ubah('foto', null);
+    setFotoAtur(null);
   };
 
   /** Kirim; mengembalikan nomor tiket bila berhasil, null bila gagal (`galatServer` terisi). */
@@ -163,6 +187,12 @@ export function useBuatTiket() {
     labelDari,
     galat,
     ambilFoto,
+    fotoAtur,
+    editorTerbuka,
+    selesaiFoto,
+    batalFoto,
+    bukaEditorFoto,
+    hapusFoto,
     mengirim,
     galatServer,
     kirim,

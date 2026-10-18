@@ -1,7 +1,7 @@
 /**
  * Buat Tiket (tiket IT) — tata letak sama dengan Buat Kaizen: bagian berjudul di
  * atas latar putih, kolom isian rata, galat per field, ubin foto putus-putus, dan
- * footer tetap berisi tombol kirim. Isian mengikuti form web: jenis → kategori,
+ * footer tetap berisi tombol kirim. Isian mengikuti form web: aset (opsional), jenis → kategori,
  * departemen (+ sub-departemen bila ada), area (opsional), detail, foto (opsional).
  * Plant dan nama pengaju diambil server dari akun login. Logika di `useBuatTiket`.
  */
@@ -15,6 +15,8 @@ import Icon from '../../../src/components/common/Icon';
 import FieldPilihan from '../../../src/components/common/FieldPilihan';
 import SheetPilihan from '../../../src/components/common/SheetPilihan';
 import BottomSheet from '../../../src/components/common/BottomSheet';
+import SheetAset from '../../../src/components/tiket/SheetAset';
+import EditorFoto from '../../../src/components/kaizen/EditorFoto';
 import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
@@ -22,8 +24,9 @@ import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useBuatTiket } from '../../../src/hooks/useBuatTiket';
+import { useCariAset } from '../../../src/hooks/useCariAset';
 
-type Sheet = 'jenis' | 'kategori' | 'departemen' | 'sub' | 'area' | 'foto' | null;
+type Sheet = 'aset' | 'jenis' | 'kategori' | 'departemen' | 'sub' | 'area' | 'foto' | null;
 
 const MAKS_DETAIL = 5000;
 
@@ -32,6 +35,7 @@ export default function BuatTiketScreen() {
   const insets = useSafeAreaInsets();
   const t = useBuatTiket();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const cariAset = useCariAset(sheet === 'aset');
   // Galat per field baru tampil setelah percobaan kirim pertama.
   const [diperiksa, setDiperiksa] = useState(false);
 
@@ -87,6 +91,24 @@ export default function BuatTiketScreen() {
       <AppBar judul="Buat Tiket" />
 
       <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Text style={styles.judulBagian}>Aset</Text>
+        <View style={styles.bagian}>
+          <FieldPilihan
+            label="Aset"
+            placeholder="Cari aset (opsional)"
+            nilai={form.aset ? `${form.aset.asset_name} · ${form.aset.asset_number}` : null}
+            onPress={() => setSheet('aset')}
+          />
+          {form.aset ? (
+            <TouchableOpacity onPress={() => t.ubah('aset', null)} hitSlop={8} style={styles.lepasAset}>
+              <Icon name="close-circle" size={14} color={Colors.textTertiary} />
+              <Text style={styles.ket}>Lepas aset</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.ketAset}>Pilih bila masalahnya terkait aset tertentu.</Text>
+          )}
+        </View>
+
         <Text style={styles.judulBagian}>Masalah</Text>
         <View style={styles.bagian}>
           <FieldPilihan
@@ -155,19 +177,19 @@ export default function BuatTiketScreen() {
         <Text style={styles.judulBagian}>Foto</Text>
         <View style={styles.bagian}>
           {form.foto ? (
-            <View style={styles.ubinFoto}>
+            <TouchableOpacity style={styles.ubinFoto} activeOpacity={0.85} onPress={t.bukaEditorFoto}>
               <Image source={{ uri: form.foto.uri }} style={styles.gambar} />
-              <TouchableOpacity style={styles.hapusFoto} onPress={() => t.ubah('foto', null)} hitSlop={8} accessibilityLabel="Hapus foto">
+              <TouchableOpacity style={styles.hapusFoto} onPress={t.hapusFoto} hitSlop={8} accessibilityLabel="Hapus foto">
                 <Icon name="close" size={14} color={Colors.white} />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           ) : (
             <TouchableOpacity style={[styles.ubinFoto, styles.ubinTambah]} activeOpacity={0.8} onPress={() => setSheet('foto')}>
               <Icon name="camera-plus-outline" size={22} color={brand[700]} />
               <Text style={styles.teksSumber}>Upload foto</Text>
             </TouchableOpacity>
           )}
-          <Text style={styles.ket}>Opsional. Foto membantu tim IT memahami masalahnya lebih cepat.</Text>
+          <Text style={styles.ket}>Opsional. Tap foto untuk crop ulang. Foto membantu tim IT memahami masalahnya lebih cepat.</Text>
         </View>
 
         {t.galatServer ? (
@@ -181,6 +203,25 @@ export default function BuatTiketScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
         <Button label="Kirim Tiket" iconRight="send" onPress={kirim} loading={t.mengirim} style={gs.flex1} />
       </View>
+
+      <SheetAset
+        visible={sheet === 'aset'}
+        q={cariAset.q}
+        onChangeQ={cariAset.setQ}
+        hasil={cariAset.hasil}
+        memuat={cariAset.memuat}
+        gagal={cariAset.gagal}
+        onPilih={(a) => t.ubah('aset', a)}
+        onClose={() => setSheet(null)}
+      />
+
+      <EditorFoto
+        visible={t.editorTerbuka}
+        fotos={t.fotoAtur ? [t.fotoAtur] : []}
+        tanpaTag
+        onBatal={t.batalFoto}
+        onSelesai={t.selesaiFoto}
+      />
 
       <SheetPilihan visible={sheet === 'jenis'} judul="Jenis Masalah" opsi={t.opsiJenis} terpilih={form.idJenis} onPilih={(id) => t.ubah('idJenis', id)} onClose={() => setSheet(null)} />
       <SheetPilihan visible={sheet === 'kategori'} judul="Kategori Masalah" opsi={t.opsiKategori} terpilih={form.idKategori} onPilih={(id) => t.ubah('idKategori', id)} onClose={() => setSheet(null)} />
@@ -267,6 +308,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  lepasAset: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
+  ketAset: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
   ket: { marginTop: Spacing.sm, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
   footer: {
     flexDirection: 'row',

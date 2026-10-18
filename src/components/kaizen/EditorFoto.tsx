@@ -107,9 +107,11 @@ interface Props {
   awal?: number;
   onBatal: () => void;
   onSelesai: (fotos: FotoKaizen[]) => void;
+  /** Sembunyikan penanda Sebelum/Sesudah (khusus Kaizen) — untuk foto tunggal di modul lain. */
+  tanpaTag?: boolean;
 }
 
-export default function EditorFoto({ visible, fotos, awal = 0, onBatal, onSelesai }: Props) {
+export default function EditorFoto({ visible, fotos, awal = 0, onBatal, onSelesai, tanpaTag = false }: Props) {
   const insets = useSafeAreaInsets();
   const [daftar, setDaftar] = useState<FotoKaizen[]>(fotos);
   const [aktif, setAktif] = useState(awal);
@@ -247,17 +249,21 @@ export default function EditorFoto({ visible, fotos, awal = 0, onBatal, onSelesa
             </View>
           ) : null}
 
-          <Text style={styles.labelBagian}>Tandai sebagai</Text>
-          <View style={styles.segmen}>
-            {(['sebelum', 'sesudah'] as TagFoto[]).map((t) => {
-              const on = f?.tag === t;
-              return (
-                <TouchableOpacity key={t} style={[styles.ruas, on && styles.ruasAktif]} onPress={() => pilihTag(t)}>
-                  <Text style={[styles.teksRuas, on && styles.teksRuasAktif]}>{t === 'sebelum' ? 'Sebelum' : 'Sesudah'}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          {tanpaTag ? null : (
+            <>
+              <Text style={styles.labelBagian}>Tandai sebagai</Text>
+              <View style={styles.segmen}>
+                {(['sebelum', 'sesudah'] as TagFoto[]).map((t) => {
+                  const on = f?.tag === t;
+                  return (
+                    <TouchableOpacity key={t} style={[styles.ruas, on && styles.ruasAktif]} onPress={() => pilihTag(t)}>
+                      <Text style={[styles.teksRuas, on && styles.teksRuasAktif]}>{t === 'sebelum' ? 'Sebelum' : 'Sesudah'}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </>
+          )}
 
           <Text style={styles.labelBagian}>Rasio</Text>
           <View style={styles.barisRasio}>
