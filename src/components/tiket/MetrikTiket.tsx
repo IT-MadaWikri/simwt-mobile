@@ -1,81 +1,101 @@
 /**
- * Metrik waktu penanganan tiket dalam tata letak bento: Total Downtime melebar di atas,
- * Waktu Tunggu & Waktu Proses berdampingan, Total Perbaikan melebar di bawah. Tahap yang
- * masih berjalan menampilkan jam berjalan (HH:MM:SS) dan penanda "Berjalan".
+ * Metrik waktu penanganan tiket: grid 2 kolom berisi kartu persegi putih (Total Downtime,
+ * Waktu Tunggu, Waktu Proses, Total Perbaikan). Tahap yang masih berjalan menampilkan jam
+ * berjalan (HH:MM:SS) dan titik hijau berdenyut di pojok kartu.
  */
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Icon from '../common/Icon';
-import Colors, { brand, slate } from '../../../constants/Colors';
+import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { formatDurasi } from '../../adapters/tiket';
 import { formatJam, useJamBerjalan } from '../../hooks/useJamBerjalan';
 import { MetrikTiket as Metrik } from '../../types/tiket';
 
-function KartuMetrik({ metrik, lebar }: { metrik: Metrik; lebar?: boolean }) {
+/** Titik hijau berdenyut = tahap sedang berjalan. */
+function TitikBerjalan() {
+  const redup = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(redup, { toValue: 0.25, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(redup, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [redup]);
+  return (
+    <View accessibilityLabel="Sedang berjalan" style={styles.cincin}>
+      <Animated.View style={[styles.titik, { opacity: redup }]} />
+    </View>
+  );
+}
+
+function KartuMetrik({ metrik }: { metrik: Metrik }) {
   const jam = useJamBerjalan(metrik.berjalanSejak);
   const berjalan = jam !== null;
   const nilai = berjalan ? formatJam(jam) : metrik.detik !== null ? formatDurasi(metrik.detik) : '-';
 
   return (
-    <View style={[styles.kartu, berjalan && styles.kartuBerjalan, lebar ? styles.lebar : styles.setengah]}>
+    <View style={styles.kartu}>
       <View style={styles.atas}>
-        <Text style={styles.label} numberOfLines={1}>{metrik.label}</Text>
+        <Text style={styles.label} numberOfLines={2}>{metrik.label}</Text>
         {berjalan ? (
-          <View style={styles.penanda}>
-            <View style={styles.titik} />
-            <Text style={styles.teksPenanda}>Berjalan</Text>
-          </View>
+          <TitikBerjalan />
         ) : (
-          <Icon name="clock-outline" size={16} color={metrik.detik !== null ? brand[600] : Colors.textTertiary} />
+          <Icon name="clock-outline" size={18} color={metrik.detik !== null ? brand[600] : Colors.textTertiary} />
         )}
       </View>
-      <Text style={[styles.nilai, berjalan && { color: brand[700] }, nilai === '-' && { color: Colors.textTertiary }]}>
-        {nilai}
-      </Text>
-      <Text style={styles.ket} numberOfLines={1}>{metrik.keterangan}</Text>
+      <View>
+        <Text
+          style={[styles.nilai, berjalan && { color: brand[700] }, nilai === '-' && { color: Colors.textTertiary }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          {nilai}
+        </Text>
+        <Text style={styles.ket} numberOfLines={2}>{metrik.keterangan}</Text>
+      </View>
     </View>
   );
 }
 
 export default function MetrikTiket({ metrik }: { metrik: Metrik[] }) {
-  const ambil = (id: Metrik['id']) => metrik.find((m) => m.id === id);
-  const downtime = ambil('downtime');
-  const tunggu = ambil('tunggu');
-  const proses = ambil('proses');
-  const perbaikan = ambil('perbaikan');
-
   return (
     <View style={styles.grid}>
-      {downtime ? <KartuMetrik metrik={downtime} lebar /> : null}
-      {tunggu ? <KartuMetrik metrik={tunggu} /> : null}
-      {proses ? <KartuMetrik metrik={proses} /> : null}
-      {perbaikan ? <KartuMetrik metrik={perbaikan} lebar /> : null}
+      {metrik.map((m) => (
+        <KartuMetrik key={m.id} metrik={m} />
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: Spacing.md },
   kartu: {
+    width: '48%',
+    aspectRatio: 1,
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
     padding: Spacing.md,
     backgroundColor: Colors.white,
-    gap: 2,
   },
-  kartuBerjalan: { backgroundColor: brand[50], borderColor: brand[100] },
-  lebar: { width: '100%' },
-  // Dua kolom: setengah lebar dikurangi separuh celah.
-  setengah: { flexGrow: 1, flexBasis: '45%' },
-  atas: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.sm },
-  label: { flexShrink: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  nilai: { fontFamily: fonts.bold, fontSize: 18, color: Colors.textPrimary, marginTop: 2 },
-  ket: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  penanda: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  titik: { width: 6, height: 6, borderRadius: 3, backgroundColor: brand[500] },
-  teksPenanda: { fontFamily: fonts.semibold, fontSize: 10, color: brand[700] },
+  atas: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.sm },
+  label: { flex: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  nilai: { fontFamily: fonts.bold, fontSize: 20, color: Colors.textPrimary },
+  ket: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, marginTop: 2 },
+  cincin: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: brand[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titik: { width: 8, height: 8, borderRadius: 4, backgroundColor: brand[500] },
 });
