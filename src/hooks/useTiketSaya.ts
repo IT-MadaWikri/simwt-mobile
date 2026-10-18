@@ -1,11 +1,13 @@
 /**
- * Daftar "Tiket Saya": memuat riwayat tiket milik akun, filter status di sisi
- * klien (server mengembalikan maksimal 50), dan tarik-untuk-segarkan.
+ * Daftar "Tiket Saya": memuat riwayat tiket milik akun; cari, filter (status,
+ * tanggal diajukan), dan urutan diterapkan di sisi klien (server mengembalikan
+ * maksimal 50), plus tarik-untuk-segarkan.
  *
  * Spinner `menyegarkan` terpisah dari `memuat` dan dijamin padam lewat batas
  * waktu, supaya permintaan yang tak kunjung selesai tidak menggantungkannya.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { saringTiket } from '../adapters/tiket';
 import { tiketService } from '../services/tiketService';
 import { StatusTiket, TiketRingkas } from '../types/tiket';
 
@@ -18,7 +20,11 @@ export function useTiketSaya() {
   const [memuat, setMemuat] = useState(true);
   const [menyegarkan, setMenyegarkan] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [status, setStatus] = useState<FilterStatusTiket>('');
+  const [tanggalDari, setTanggalDari] = useState('');
+  const [tanggalSampai, setTanggalSampai] = useState('');
+  const [urutkan, setUrutkan] = useState<'TERBARU' | 'TERLAMA'>('TERBARU');
   const permintaanTerakhir = useRef(0);
 
   const muat = useCallback(async () => {
@@ -56,9 +62,17 @@ export function useTiketSaya() {
   }, [muat]);
 
   const tiket = useMemo(
-    () => (status ? semua.filter((t) => t.status_pengajuan === status) : semua),
-    [semua, status]
+    () => saringTiket(semua, { search, status, dari: tanggalDari, sampai: tanggalSampai, urutkan }),
+    [semua, search, status, tanggalDari, tanggalSampai, urutkan]
   );
+
+  const terapkanFilter = useCallback((n: { status: FilterStatusTiket; dari: string; sampai: string }) => {
+    setStatus(n.status);
+    setTanggalDari(n.dari);
+    setTanggalSampai(n.sampai);
+  }, []);
+
+  const gantiUrutan = useCallback(() => setUrutkan((u) => (u === 'TERBARU' ? 'TERLAMA' : 'TERBARU')), []);
 
   /** Jumlah per status, untuk label chip filter. */
   const jumlah = useMemo(() => {
@@ -69,5 +83,25 @@ export function useTiketSaya() {
     return hitung;
   }, [semua]);
 
-  return { tiket, jumlah, status, setStatus, memuat, menyegarkan, error, muat, muatUlang, segarkan };
+  const adaFilter = !!(search.trim() || status || tanggalDari || tanggalSampai);
+
+  return {
+    tiket,
+    jumlah,
+    search,
+    setSearch,
+    status,
+    tanggalDari,
+    tanggalSampai,
+    terapkanFilter,
+    urutkan,
+    gantiUrutan,
+    adaFilter,
+    memuat,
+    menyegarkan,
+    error,
+    muat,
+    muatUlang,
+    segarkan,
+  };
 }
