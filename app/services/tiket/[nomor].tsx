@@ -1,26 +1,28 @@
 /**
- * Detail tiket + linimasa progres penanganan.
- * Sumber: GET /tiket/lihat/{no_ticket}, dirapikan oleh `adaptasiDetailTiket`.
+ * Detail tiket — gaya sama dengan detail Kaizen: seksi selebar layar di atas latar
+ * putih (dipisah celah tipis): ringkasan, detail masalah, foto, dan progres
+ * penanganan. Sumber: GET /tiket/lihat/{no_ticket}, dirapikan `adaptasiDetailTiket`.
  */
 import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
 import AppBar from '../../../src/components/common/AppBar';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
-import LencanaStatusTiket from '../../../src/components/tiket/LencanaStatusTiket';
+import RingkasanTiket from '../../../src/components/tiket/RingkasanTiket';
+import FotoTiket from '../../../src/components/tiket/FotoTiket';
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
-import Colors, { brand } from '../../../constants/Colors';
+import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailTiket } from '../../../src/hooks/useDetailTiket';
 
 export default function DetailTiketScreen() {
   const { nomor } = useLocalSearchParams<{ nomor: string }>();
   const insets = useSafeAreaInsets();
-  const { tiket, memuat, error } = useDetailTiket(nomor);
+  const { tiket, memuat, menyegarkan, error, segarkan } = useDetailTiket(nomor);
 
   if (memuat) {
     return (
@@ -42,65 +44,45 @@ export default function DetailTiketScreen() {
     );
   }
 
-  const info = [
-    { ikon: 'shape-outline', teks: tiket.jenis },
-    { ikon: 'office-building-outline', teks: tiket.departemen },
-    { ikon: 'factory', teks: tiket.plant },
-    { ikon: 'barcode', teks: tiket.aset },
-  ].filter((i) => i.teks);
-
-  const foto = [
-    { label: 'Foto sebelum', uri: tiket.fotoSebelum },
-    { label: 'Foto sesudah', uri: tiket.fotoSesudah },
-  ].filter((f) => f.uri);
+  const adaFoto = !!(tiket.fotoSebelum || tiket.fotoSesudah);
 
   return (
     <>
       <AppBar judul={`Tiket #${tiket.noTiket}`} />
       <ScrollView
-        style={gs.screen}
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+        }
       >
-        <View style={gs.card}>
-          <View style={gs.rowBetween}>
-            <Text style={[gs.caption, gs.textSemibold]}>#{tiket.noTiket}</Text>
-            <LencanaStatusTiket status={tiket.status} panjang />
-          </View>
-
-          <Text style={[gs.h3, { marginTop: Spacing.sm }]}>{tiket.judul}</Text>
-          {tiket.detail ? <Text style={[gs.body, { marginTop: Spacing.sm }]}>{tiket.detail}</Text> : null}
-
-          {info.length > 0 ? (
-            <>
-              <View style={gs.divider} />
-              <View style={styles.info}>
-                {info.map((i) => (
-                  <View key={i.ikon} style={[gs.row, gs.gapXs]}>
-                    <Icon name={i.ikon as any} size={14} color={brand[600]} />
-                    <Text style={[gs.bodySm, gs.flex1]}>{i.teks}</Text>
-                  </View>
-                ))}
-              </View>
-            </>
-          ) : null}
+        <View style={styles.seksi}>
+          <RingkasanTiket
+            noTiket={tiket.noTiket}
+            judul={tiket.judul}
+            status={tiket.status}
+            jenis={tiket.jenis}
+            plant={tiket.plant}
+            diajukanOleh={tiket.diajukanOleh}
+            departemen={tiket.departemen}
+            aset={tiket.aset}
+          />
         </View>
 
-        {foto.length > 0 ? (
-          <>
-            <Text style={[gs.sectionTitle, { marginTop: Spacing.sectionGap }]}>Foto</Text>
-            <View style={styles.fotoBaris}>
-              {foto.map((f) => (
-                <View key={f.label} style={styles.fotoKolom}>
-                  <Image source={{ uri: f.uri! }} style={styles.foto} resizeMode="cover" />
-                  <Text style={styles.fotoLabel}>{f.label}</Text>
-                </View>
-              ))}
-            </View>
-          </>
+        <View style={styles.seksi}>
+          <Text style={styles.judulSeksi}>Detail masalah</Text>
+          <Text style={styles.teks}>{tiket.detail || '-'}</Text>
+        </View>
+
+        {adaFoto ? (
+          <View style={styles.seksi}>
+            <Text style={styles.judulSeksi}>Foto</Text>
+            <FotoTiket fotoSebelum={tiket.fotoSebelum} fotoSesudah={tiket.fotoSesudah} />
+          </View>
         ) : null}
 
-        <Text style={[gs.sectionTitle, { marginTop: Spacing.sectionGap }]}>Progres Penanganan</Text>
-        <View style={gs.card}>
+        <View style={styles.seksi}>
+          <Text style={styles.judulSeksi}>Progres penanganan</Text>
           <LinimasaTiket langkah={tiket.linimasa} />
         </View>
       </ScrollView>
@@ -109,9 +91,20 @@ export default function DetailTiketScreen() {
 }
 
 const styles = StyleSheet.create({
-  info: { gap: Spacing.sm },
-  fotoBaris: { flexDirection: 'row', gap: Spacing.md },
-  fotoKolom: { flex: 1, gap: Spacing.xs },
-  foto: { width: '100%', aspectRatio: 1, borderRadius: Spacing.radius.sm, backgroundColor: Colors.borderSubtle },
-  fotoLabel: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  /** Seksi selebar layar (tanpa kartu), dipisah celah abu-abu tipis. */
+  seksi: {
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  judulSeksi: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+    color: Colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: Spacing.sm,
+  },
+  teks: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary, lineHeight: 18 },
 });

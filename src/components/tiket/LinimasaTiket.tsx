@@ -1,10 +1,14 @@
-/** Linimasa progres tiket: titik + garis penghubung + keterangan tiap langkah. */
+/**
+ * Linimasa progres tiket (gaya "jejak keputusan" Kaizen): ikon kecil + garis tipis
+ * penghubung, judul semibold, keterangan dan waktu di bawahnya. Langkah yang belum
+ * terjadi digambar abu-abu. Presentasional.
+ */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
-import Colors, { brand } from '../../../constants/Colors';
+import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { LangkahLinimasa } from '../../types/tiket';
 
 const waktu = (iso: string) =>
@@ -19,35 +23,38 @@ const waktu = (iso: string) =>
 export default function LinimasaTiket({ langkah }: { langkah: LangkahLinimasa[] }) {
   return (
     <View>
-      {langkah.map((l, i) => (
-        <View key={l.id} style={styles.baris}>
-          <View style={styles.penanda}>
-            <View style={[styles.titik, { backgroundColor: l.selesai ? brand[500] : Colors.border }]}>
-              {l.selesai ? <Icon name="check" size={10} color={Colors.white} /> : null}
+      {langkah.map((l, i) => {
+        const terakhir = i === langkah.length - 1;
+        return (
+          <View key={l.id} style={styles.baris}>
+            <View style={styles.kolom}>
+              <Icon
+                name={l.selesai ? 'check-circle' : 'clock-outline'}
+                size={16}
+                color={l.selesai ? brand[600] : slate[400]}
+              />
+              {terakhir ? null : <View style={styles.tiang} />}
             </View>
-            {i < langkah.length - 1 ? <View style={styles.garis} /> : null}
+            <View style={[styles.isi, { paddingBottom: terakhir ? 0 : Spacing.md }]}>
+              <Text style={[styles.judul, !l.selesai && { color: Colors.textTertiary }]}>{l.judul}</Text>
+              {l.isi.map((baris, n) => (
+                <Text key={n} style={styles.teks}>{baris}</Text>
+              ))}
+              {l.waktu ? <Text style={styles.waktu}>{waktu(l.waktu)}</Text> : null}
+            </View>
           </View>
-
-          <View style={styles.isi}>
-            <Text style={styles.judul}>{l.judul}</Text>
-            {l.isi.map((baris, n) => (
-              <Text key={n} style={styles.teks}>{baris}</Text>
-            ))}
-            {l.waktu ? <Text style={styles.waktu}>{waktu(l.waktu)}</Text> : null}
-          </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  baris: { flexDirection: 'row', alignItems: 'flex-start' },
-  penanda: { alignItems: 'center', width: 24 },
-  titik: { width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
-  garis: { flex: 1, width: 2, minHeight: 22, backgroundColor: Colors.borderSubtle },
-  isi: { flex: 1, marginLeft: Spacing.sm, paddingBottom: Spacing.lg, gap: 2 },
-  judul: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
-  teks: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  waktu: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  baris: { flexDirection: 'row', gap: Spacing.sm },
+  kolom: { alignItems: 'center', width: 18 },
+  tiang: { flex: 1, width: 1.5, marginVertical: 3, backgroundColor: slate[200] },
+  isi: { flex: 1, gap: 2 },
+  judul: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  teks: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
+  waktu: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
 });
