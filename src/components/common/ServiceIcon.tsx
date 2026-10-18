@@ -50,7 +50,7 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   // Efek kaca: ubin belakang pekat, ubin depan tembus pandang (warna belakang terlihat di baliknya)
   // dengan kilap putih di sudut kiri-atas dan tepi putih tipis.
   const belakang = [cerahkan(service.iconColor, 0.2), cerahkan(service.iconColor, 0)] as const;
-  const depan = [cerahkan(service.iconColor, 0.3, 0.72), cerahkan(service.iconColor, 0.1, 0.6)] as const;
+  const depan = [cerahkan(service.iconColor, 0.1, 0.5), cerahkan(service.iconColor, 0, 0.32)] as const;
 
   // Selalu ikuti `route` yang didefinisikan di constants/Services.ts —
   // dulu tujuan dirakit dari `id` dengan satu pengecualian ber-hardcode untuk
@@ -112,9 +112,9 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
           <BlurView
             blurTarget={sasaranBlur}
             blurMethod="dimezisBlurView"
-            intensity={100}
-            blurReductionFactor={2}
-            tint="light"
+            intensity={30}
+            blurReductionFactor={4}
+            tint="default"
             style={[styles.ubin, styles.ubinDepan, { width: ubin, height: ubin }]}
           >
             <LinearGradient
@@ -124,7 +124,7 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
               style={StyleSheet.absoluteFill}
             />
             <LinearGradient
-              colors={['rgba(255,255,255,0.45)', 'rgba(255,255,255,0)']}
+              colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 0.7, y: 0.7 }}
               style={StyleSheet.absoluteFill}
