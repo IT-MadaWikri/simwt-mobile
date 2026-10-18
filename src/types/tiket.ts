@@ -82,8 +82,17 @@ export interface FotoTiket {
   type: string;
 }
 
+/** Aset hasil pencarian untuk form Buat Tiket. */
+export interface AsetRingkas {
+  asset_number: string;
+  asset_name: string;
+  alias: string | null;
+  asset_pic: string | null;
+}
+
 /** Isian form Buat Tiket; `null` = belum dipilih. */
 export interface FormTiket {
+  aset: AsetRingkas | null;
   idJenis: number | null;
   idKategori: number | null;
   idDepartemen: number | null;

@@ -5,13 +5,14 @@
  */
 import api from './api';
 import { adaptasiDetailTiket } from '../adapters/tiket';
-import { DetailTiket, FormTiket, MasterBuatTiket, TiketRingkas } from '../types/tiket';
+import { AsetRingkas, DetailTiket, FormTiket, MasterBuatTiket, TiketRingkas } from '../types/tiket';
 
 export type { TiketRingkas };
 
 /** Susun multipart dari isian form; field kosong tidak dikirim. */
 export function buatPayloadTiket(form: FormTiket): FormData {
   const data = new FormData();
+  if (form.aset) data.append('asset_number', form.aset.asset_number);
   data.append('id_ticket_jenis', String(form.idJenis));
   data.append('id_sub_jenis', String(form.idKategori));
   data.append('id_departemen', String(form.idDepartemen));
@@ -44,6 +45,12 @@ export const tiketService = {
       departemen: data?.departemen ?? [],
       area: data?.area ?? {},
     };
+  },
+
+  /** Cari aset (nama, alias, PIC, nomor); server membalas maksimal 10. */
+  async cariAset(kata: string): Promise<AsetRingkas[]> {
+    const response = await api.get('/tiket/aset', { params: { q: kata } });
+    return response.data?.data ?? [];
   },
 
   /** Kirim tiket baru. Pengaju & plant diambil server dari akun login. */
