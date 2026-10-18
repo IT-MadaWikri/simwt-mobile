@@ -8,13 +8,20 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Icon from './Icon';
-import ClayIcon, { punyaClay } from './ClayIcon';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import Typography, { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { ServiceItem } from '../../../constants/Services';
+
+/** Campur warna hex #rrggbb dengan putih; `bagian` 0 = warna asli, 1 = putih. */
+const cerahkan = (hex: string, bagian: number) => {
+  const n = parseInt(hex.slice(1), 16);
+  const kanal = (geser: number) => Math.round(((n >> geser) & 255) * (1 - bagian) + 255 * bagian);
+  return `rgb(${kanal(16)},${kanal(8)},${kanal(0)})`;
+};
 
 interface ServiceIconProps {
   service: ServiceItem;
@@ -33,8 +40,11 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   const lepas = () =>
     Animated.spring(skala, { toValue: 1, speed: 14, bounciness: 18, useNativeDriver: true }).start();
 
-  const iconSize = size === 'small' ? 24 : size === 'large' ? 36 : 30;
+  const iconSize = size === 'small' ? 20 : size === 'large' ? 30 : 24;
   const containerSize = size === 'small' ? 44 : size === 'large' ? 64 : 54;
+  // Dua ubin kaca bertumpuk: ubin depan di kiri-bawah, ubin belakang yang lebih pucat bergeser ke kanan-atas.
+  const ubin = containerSize - 10;
+  const gradasi = [cerahkan(service.iconColor, 0.55), cerahkan(service.iconColor, 0.15)] as const;
 
   // Selalu ikuti `route` yang didefinisikan di constants/Services.ts —
   // dulu tujuan dirakit dari `id` dengan satu pengecualian ber-hardcode untuk
@@ -84,21 +94,21 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
       activeOpacity={0.7}
     >
       <Animated.View style={[styles.iconWrapper, { transform: [{ scale: skala }] }]}>
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor: service.backgroundColor,
-              width: containerSize,
-              height: containerSize,
-            },
-          ]}
-        >
-          {punyaClay(service.id) ? (
-            <ClayIcon id={service.id} size={containerSize - 8} bg={service.backgroundColor} />
-          ) : (
-            <Icon name={service.icon} size={iconSize} color={service.iconColor} />
-          )}
+        <View style={{ width: containerSize, height: containerSize }}>
+          <LinearGradient
+            colors={gradasi}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.ubin, styles.ubinBelakang, { width: ubin, height: ubin }]}
+          />
+          <LinearGradient
+            colors={gradasi}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.ubin, styles.ubinDepan, { width: ubin, height: ubin }]}
+          >
+            <Icon name={service.icon} size={iconSize} color={Colors.white} />
+          </LinearGradient>
         </View>
         {renderBadge()}
       </Animated.View>
@@ -125,11 +135,23 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: Spacing.sm,
   },
-  iconContainer: {
+  ubin: {
+    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: Spacing.radius.lg,
+    borderRadius: Spacing.radius.sm,
     ...Spacing.curve,
+  },
+  ubinBelakang: {
+    top: 0,
+    right: 0,
+    opacity: 0.45,
+  },
+  ubinDepan: {
+    bottom: 0,
+    left: 0,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
   },
   badge: {
     position: 'absolute',
