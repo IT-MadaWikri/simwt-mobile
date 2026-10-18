@@ -1,7 +1,7 @@
 /**
  * Layar Masuk — SIMWT Mobile.
  *
- * Satu kolom bersih: maskot di atas, judul, lalu username + password saja
+ * Satu kolom bersih: maskot, logo, lalu username + password saja
  * (tanpa masuk lewat pihak ketiga). Tombol biometrik hanya muncul bila sudah
  * diaktifkan. Dialog memakai `AppDialog` bersama.
  */
@@ -36,6 +36,7 @@ const MASKOT = require('../assets/images/maskot-login.png');
 const RASIO_MASKOT = 213 / 340;
 const LOGO = require('../assets/images/logo-simwt-mobile.png');
 const RASIO_LOGO = 1382 / 143;
+const LEBAR_LOGO = 200;
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -175,13 +176,11 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Kepala bergradasi: maskot + judul — gradasi berhenti di sini ── */}
+        {/* ── Kepala bergradasi: maskot + logo — gradasi berhenti di sini ── */}
         <LinearGradient
           colors={[palet.mint, Colors.white]}
           style={[styles.kepala, { paddingTop: insets.top + Spacing.xl }]}
         >
-          <Image source={LOGO} style={styles.logo} resizeMode="contain" />
-
           <View style={styles.panggung}>
             <View style={[styles.sorot, { width: tinggiMaskot * 0.95, height: tinggiMaskot * 0.95 }]} />
             <Image
@@ -190,7 +189,7 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
           </View>
-          <Text style={[gs.h2, styles.judul]}>Selamat Datang</Text>
+          <Image source={LOGO} style={styles.logo} resizeMode="contain" />
         </LinearGradient>
 
         <Animated.View style={[styles.form, { opacity: masuk, transform: [{ translateY: geser }] }]}>
@@ -293,9 +292,8 @@ const styles = StyleSheet.create({
 
   logo: {
     alignSelf: 'center',
-    width: 190,
-    aspectRatio: RASIO_LOGO,
-    marginBottom: Spacing.lg,
+    width: LEBAR_LOGO,
+    height: LEBAR_LOGO / RASIO_LOGO,
   },
   panggung: {
     alignItems: 'center',
@@ -311,10 +309,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 
-  judul: {
-    color: Colors.primaryDarker,
-    textAlign: 'center',
-  },
   subjudul: {
     textAlign: 'center',
     marginBottom: Spacing.xl,
