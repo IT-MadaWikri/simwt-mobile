@@ -38,7 +38,7 @@ export interface DetailTiket {
   aset: string | null;
   tanggalDiajukan: string | null;
   tanggalSelesai: string | null;
-  /** Path/URL foto sebelum; null bila tidak ada. */
+  /** URL utuh foto sebelum; null bila tidak ada. */
   fotoSebelum: string | null;
   fotoSesudah: string | null;
   linimasa: LangkahLinimasa[];

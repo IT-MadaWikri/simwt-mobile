@@ -82,8 +82,9 @@ export function adaptasiDetailTiket(mentah: any): DetailTiket {
     aset,
     tanggalDiajukan: mentah?.tanggal_diajukan ?? null,
     tanggalSelesai: mentah?.tanggal_selesai ?? null,
-    fotoSebelum: mentah?.foto_sebelum ?? null,
-    fotoSesudah: mentah?.foto_sesudah ?? null,
+    // URL utuh dari server (storage api atau web); path mentah tidak bisa dibuka HP.
+    fotoSebelum: mentah?.foto_sebelum_url ?? null,
+    fotoSesudah: mentah?.foto_sesudah_url ?? null,
     linimasa,
   };
 }
