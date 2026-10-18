@@ -173,8 +173,6 @@ const styles = StyleSheet.create({
   ubinDepan: {
     bottom: 0,
     left: 0,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.75)',
     overflow: 'hidden',
   },
   badge: {
