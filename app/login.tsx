@@ -36,7 +36,7 @@ const MASKOT = require('../assets/images/maskot-login.png');
 const RASIO_MASKOT = 213 / 340;
 const LOGO = require('../assets/images/logo-simwt-mobile.png');
 const RASIO_LOGO = 1382 / 143;
-const LEBAR_LOGO = 200;
+const LEBAR_LOGO = 130;
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -54,6 +54,10 @@ export default function LoginScreen() {
   // Maskot menyesuaikan tinggi layar, dengan batas supaya tetap pas di layar kecil.
   const tinggiMaskot = Math.min(230, Math.max(150, height * 0.26));
 
+  // Gradasi berhenti di bawah logo, ke mana pun blok konten bergeser karena dipusatkan:
+  // batas = posisi blok + posisi & tinggi kepala di dalamnya.
+  const [yBlok, setYBlok] = useState(0);
+  const [batasKepala, setBatasKepala] = useState(0);
   const masuk = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -172,14 +176,23 @@ export default function LoginScreen() {
       <StatusBar style="dark" />
 
       <ScrollView
-        contentContainerStyle={[styles.isiGulir, { paddingBottom: insets.bottom + Spacing.xl }]}
+        contentContainerStyle={[
+          styles.isiGulir,
+          { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.xl },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Kepala bergradasi: maskot + logo — gradasi berhenti di sini ── */}
+        {/* Gradasi mint ke putih dari puncak layar sampai bawah logo. */}
         <LinearGradient
           colors={[palet.mint, Colors.white]}
-          style={[styles.kepala, { paddingTop: insets.top + Spacing.xl }]}
+          style={[styles.gradasi, { height: yBlok + batasKepala }]}
+        />
+
+        <View onLayout={(e) => setYBlok(e.nativeEvent.layout.y)}>
+        <View
+          style={styles.kepala}
+          onLayout={(e) => setBatasKepala(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}
         >
           <View style={styles.panggung}>
             <View style={[styles.sorot, { width: tinggiMaskot * 0.95, height: tinggiMaskot * 0.95 }]} />
@@ -190,7 +203,7 @@ export default function LoginScreen() {
             />
           </View>
           <Image source={LOGO} style={styles.logo} resizeMode="contain" />
-        </LinearGradient>
+        </View>
 
         <Animated.View style={[styles.form, { opacity: masuk, transform: [{ translateY: geser }] }]}>
           <Text style={[gs.bodySm, styles.subjudul]}>
@@ -269,6 +282,7 @@ export default function LoginScreen() {
         <View style={[gs.center, styles.kaki]}>
           <Text style={gs.caption}>SIMWT Mobile v1.0.0</Text>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -281,6 +295,13 @@ const styles = StyleSheet.create({
   },
   isiGulir: {
     flexGrow: 1,
+    justifyContent: 'center',
+  },
+  gradasi: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   kepala: {
     paddingHorizontal: Spacing.screenPadding + Spacing.xs,
