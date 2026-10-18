@@ -30,15 +30,7 @@ export default function BirthdayBanner() {
 
   if (birthdays.length === 0) return null;
 
-  const calculateAge = (dob: string | undefined) => {
-    if (!dob) return 0;
-    const birthDate = new Date(dob);
-    const today = new Date();
-    return today.getFullYear() - birthDate.getFullYear();
-  };
-
   const renderEmployee = ({ item }: { item: Employee }) => {
-    const age = calculateAge(item.tanggal_lahir);
     const jabatanText =
       typeof item.jabatan === 'string' ? item.jabatan : item.jabatan?.nama || 'Tidak diketahui';
 
@@ -61,7 +53,7 @@ export default function BirthdayBanner() {
             {item.nama_lengkap}
           </Text>
           <Text style={styles.meta} numberOfLines={1}>
-            {jabatanText} · {age} tahun
+            {jabatanText} · {item.umur} tahun
           </Text>
         </View>
 
