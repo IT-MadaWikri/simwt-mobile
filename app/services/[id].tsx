@@ -173,20 +173,6 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
         subtitle: 'Menunggu alur scan disiapkan di server',
       },
     ],
-    'tiket-masalah': [
-      {
-        icon: 'format-list-bulleted',
-        label: 'Tiket Saya',
-        subtitle: 'Riwayat & progres tiket yang Anda ajukan',
-        route: '/services/tiket',
-      },
-      {
-        icon: 'plus-circle-outline',
-        label: 'Buat Tiket Baru',
-        subtitle: 'Laporkan masalah baru',
-        route: '/services/tiket/buat',
-      },
-    ],
     'skill-assessment': [
       { icon: 'star-circle-outline', label: 'Penilaian Skill', subtitle: 'Hasil & jadwal assessment' },
     ],

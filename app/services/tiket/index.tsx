@@ -1,164 +1,113 @@
 /**
- * Tiket Masalah — riwayat tiket yang pernah diajukan pengguna ini.
- *
- * Sumber: GET /tiket/saya (dicocokkan lewat id_pengguna, dgn jaring pengaman
- * nama untuk tiket lama). Ketuk kartu → detail + progres; tombol bulat
- * mengambang → buat tiket baru.
+ * Menu Tiket Masalah — layar pertama tumpukan Tiket, dibuka dari ikon Tiket di
+ * beranda. Isinya dua menu (Tiket Saya, Buat Tiket) dan tiga tiket terbaru.
  */
-import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import Icon from '../../../src/components/common/Icon';
-import Button from '../../../src/components/common/Button';
+import React, { useCallback, useRef } from 'react';
+import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand } from '../../../constants/Colors';
+import AppBar from '../../../src/components/common/AppBar';
+import ServiceIcon from '../../../src/components/common/ServiceIcon';
+import SectionHeader from '../../../src/components/common/SectionHeader';
+import { SkeletonBaris } from '../../../src/components/common/Skeleton';
+import KartuTiket from '../../../src/components/tiket/KartuTiket';
+import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
-import { tiketService, TiketRingkas } from '../../../src/services/tiketService';
-import { jalankanSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
-import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
+import { ServiceItem } from '../../../constants/Services';
+import { useTiketSaya } from '../../../src/hooks/useTiketSaya';
 
-/** Rupa lencana per status — PENDING kuning, PROSES brand, OK netral. */
-const STATUS: Record<string, { label: string; badge: any; text: any; icon: string }> = {
-  PENDING: { label: 'Menunggu', badge: gs.badgeWarning, text: gs.badgeTextWarning, icon: 'clock-outline' },
-  PROSES: { label: 'Diproses', badge: gs.badgeBrand, text: gs.badgeTextBrand, icon: 'progress-wrench' },
-  OK: { label: 'Selesai', badge: gs.badgeMuted, text: gs.badgeTextMuted, icon: 'check-circle-outline' },
-};
+const WARNA = { backgroundColor: Colors.serviceRed, iconColor: Colors.dangerDark };
 
-function tanggal(iso: string | null): string {
-  if (!iso) return '-';
-  return new Date(iso).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+const MENU: ServiceItem[] = [
+  {
+    id: 'tiket-saya',
+    name: 'Tiket\nSaya',
+    icon: 'ticket-confirmation-outline',
+    route: '/services/tiket/saya',
+    description: 'Riwayat dan progres tiket yang kamu ajukan',
+    ...WARNA,
+  },
+  {
+    id: 'tiket-buat',
+    name: 'Buat\nTiket',
+    icon: 'plus',
+    route: '/services/tiket/buat',
+    description: 'Laporkan masalah baru',
+    ...WARNA,
+  },
+];
 
-export default function TiketSayaScreen() {
+export default function MenuTiketScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [tiket, setTiket] = useState<TiketRingkas[]>([]);
-  const [memuat, setMemuat] = useState(true);
-  const [menyegarkan, setMenyegarkan] = useState(false);
-  const [galat, setGalat] = useState<string | null>(null);
+  const { tiket, memuat, menyegarkan, error, muat, segarkan } = useTiketSaya();
 
-  const muat = useCallback(async () => {
-    try {
-      setGalat(null);
-      setTiket(await tiketService.tiketSaya());
-    } catch (err: any) {
-      setGalat(err?.message ?? 'Gagal memuat riwayat tiket.');
-    } finally {
-      setMemuat(false);
-      setMenyegarkan(false);
-    }
-  }, []);
-
-  // Segarkan tiap kembali fokus — tiket yang baru dibuat langsung tampil.
+  // Segar tiap kembali ke menu (mis. setelah membuat tiket); muat pertama ditangani hook.
+  const pertamaFokus = useRef(true);
   useFocusEffect(
-    useCallback(() => jalankanSetelahTransisi(() => muat()), [muat])
+    useCallback(() => {
+      if (pertamaFokus.current) {
+        pertamaFokus.current = false;
+        return;
+      }
+      muat();
+    }, [muat])
   );
 
-  if (memuat) {
-    return (
-      <View style={gs.screen}>
-        <SkeletonDaftar />
-      </View>
-    );
-  }
+  const terbaru = tiket.slice(0, 3);
 
   return (
-    <View style={gs.screen}>
-      <FlatList
-        data={tiket}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + 96 }]}
+    <>
+      <AppBar judul="Tiket Masalah" />
+      <ScrollView
+        style={[gs.screen, { backgroundColor: Colors.white }]}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: Spacing.lg, paddingBottom: insets.bottom + Spacing.xxl }}
         refreshControl={
-          <RefreshControl
-            refreshing={menyegarkan}
-            onRefresh={() => {
-              setMenyegarkan(true);
-              muat();
-            }}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
-          />
+          <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
         }
-        ListEmptyComponent={
-          <View style={[gs.card, gs.center, { marginTop: Spacing.xl }]}>
-            <Icon
-              name={galat ? 'alert-circle-outline' : 'ticket-confirmation-outline'}
-              size={44}
-              color={Colors.textTertiary}
-            />
-            <Text style={gs.emptyTitle}>{galat ? 'Gagal memuat' : 'Belum ada tiket'}</Text>
-            <Text style={gs.emptyText}>
-              {galat ?? 'Tiket yang Anda ajukan akan tampil di sini.'}
-            </Text>
-            {galat && (
-              <Button
-                label="Coba Lagi"
-                onPress={() => {
-                  setMemuat(true);
-                  muat();
-                }}
-                style={{ marginTop: Spacing.lg }}
-              />
-            )}
-          </View>
-        }
-        renderItem={({ item }) => {
-          const status = STATUS[item.status_pengajuan] ?? STATUS.PENDING;
-          return (
-            <TouchableOpacity
-              style={[gs.card, { marginBottom: Spacing.md }]}
-              activeOpacity={0.75}
-              onPress={() => router.push(`/services/tiket/${item.no_ticket}` as any)}
-            >
-              <View style={gs.rowBetween}>
-                <Text style={[gs.caption, gs.textSemibold]}>#{item.no_ticket}</Text>
-                <View style={[gs.badge, status.badge]}>
-                  <Icon
-                    name={status.icon as any}
-                    size={12}
-                    color={(status.text as any).color}
-                  />
-                  <Text style={[gs.badgeText, status.text]}>{status.label}</Text>
-                </View>
+      >
+        <SectionHeader title="Menu Tiket" />
+        <View style={styles.grid}>
+          {MENU.map((m) => (
+            <ServiceIcon key={m.id} service={m} />
+          ))}
+        </View>
+
+        <View style={styles.bagian}>
+          <SectionHeader title="Tiket Terbaru" actionText="Lihat Semua" onAction={() => router.push('/services/tiket/saya')} />
+          {memuat ? (
+            <SkeletonBaris jumlah={3} />
+          ) : error ? (
+            <Text style={[gs.emptyText, gs.containerX]}>{error}</Text>
+          ) : terbaru.length === 0 ? (
+            <Text style={[gs.emptyText, gs.containerX]}>Belum ada tiket. Laporkan masalah pertamamu.</Text>
+          ) : (
+            terbaru.map((t, i) => (
+              <View key={t.id}>
+                {i > 0 ? <View style={styles.pemisah} /> : null}
+                <KartuTiket
+                  noTiket={t.no_ticket}
+                  judul={t.judul_masalah}
+                  status={t.status_pengajuan}
+                  jenis={t.jenis}
+                  plant={t.plant}
+                  tanggalDiajukan={t.tanggal_diajukan}
+                  tanggalSelesai={t.tanggal_selesai}
+                  onPress={() => router.push(`/services/tiket/${t.no_ticket}` as any)}
+                />
               </View>
-
-              <Text style={[gs.title, { marginTop: Spacing.xs }]} numberOfLines={2}>
-                {item.judul_masalah}
-              </Text>
-
-              <View style={[gs.rowWrap, gs.gapMd, { marginTop: Spacing.sm }]}>
-                {item.jenis && <Text style={gs.caption}>{item.jenis}</Text>}
-                {item.plant && <Text style={gs.caption}>· {item.plant}</Text>}
-                <Text style={gs.caption}>· Diajukan {tanggal(item.tanggal_diajukan)}</Text>
-                {item.status_pengajuan === 'OK' && (
-                  <Text style={gs.caption}>· Selesai {tanggal(item.tanggal_selesai)}</Text>
-                )}
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-      />
-
-      {/* Tombol buat mengambang ala aplikasi native. */}
-      <Button
-        icon="plus"
-        label="Buat Tiket"
-        onPress={() => router.push('/services/tiket/buat' as any)}
-        style={[styles.fab, { bottom: insets.bottom + Spacing.xl }]}
-        accessibilityLabel="Buat tiket baru"
-      />
-    </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
-const styles = {
-  fab: {
-    position: 'absolute' as const,
-    right: Spacing.xl,
-  },
-};
+const styles = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
+  bagian: { marginTop: Spacing.xl },
+  pemisah: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginHorizontal: Spacing.screenPadding },
+});

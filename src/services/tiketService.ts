@@ -4,22 +4,10 @@
  * Status tiket: PENDING → PROSES → OK (selesai).
  */
 import api from './api';
+import { adaptasiDetailTiket } from '../adapters/tiket';
+import { DetailTiket, OpsiRef, TiketRingkas } from '../types/tiket';
 
-export interface TiketRingkas {
-  id: number;
-  no_ticket: string;
-  judul_masalah: string;
-  status_pengajuan: 'PENDING' | 'PROSES' | 'OK';
-  jenis: string | null;
-  plant: string | null;
-  tanggal_diajukan: string | null;
-  tanggal_selesai: string | null;
-}
-
-export interface OpsiRef {
-  id: number;
-  nama: string;
-}
+export type { OpsiRef, TiketRingkas };
 
 export interface MasterBuatTiket {
   jenisTicket: OpsiRef[];
@@ -27,10 +15,16 @@ export interface MasterBuatTiket {
 }
 
 export const tiketService = {
-  /** Riwayat tiket milik pengguna login (terbaru dulu). */
+  /** Riwayat tiket milik pengguna login (terbaru dulu, maks. 50). */
   async tiketSaya(): Promise<TiketRingkas[]> {
     const response = await api.get('/tiket/saya');
     return response.data?.data ?? [];
+  },
+
+  /** Detail satu tiket beserta progress, sudah dirapikan untuk layar. */
+  async lihat(noTicket: string): Promise<DetailTiket | null> {
+    const response = await api.get(`/tiket/lihat/${noTicket}`);
+    return response.data?.tiket ? adaptasiDetailTiket(response.data.tiket) : null;
   },
 
   /** Master data untuk form buat tiket. */
@@ -67,12 +61,6 @@ export const tiketService = {
     const response = await api.post('/tiket/simpan-tiket', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data?.tiket ?? null;
-  },
-
-  /** Detail satu tiket (berisi relasi progress untuk timeline). */
-  async lihat(noTicket: string): Promise<any> {
-    const response = await api.get(`/tiket/lihat/${noTicket}`);
     return response.data?.tiket ?? null;
   },
 };

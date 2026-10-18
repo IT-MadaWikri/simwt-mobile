@@ -1,5 +1,5 @@
 /**
- * Tumpukan layar Tiket Masalah: riwayat (index) → buat → detail ([nomor]).
+ * Tumpukan layar Tiket Masalah: menu (index) → Tiket Saya (saya) / buat → detail ([nomor]).
  */
 import React from 'react';
 import { Stack } from 'expo-router';
@@ -21,6 +21,7 @@ export default function TiketLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Tiket Masalah' }} />
+      <Stack.Screen name="saya" options={{ title: 'Tiket Saya' }} />
       <Stack.Screen name="buat" options={{ title: 'Buat Tiket' }} />
       <Stack.Screen name="[nomor]" options={{ title: 'Detail Tiket' }} />
     </Stack>
