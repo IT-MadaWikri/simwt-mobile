@@ -1,7 +1,7 @@
 /**
  * Form Buat Tiket (tiket IT): memuat master data, menyimpan isian, menurunkan
  * pilihan bertingkat (kategori ← jenis, sub-departemen & area ← departemen),
- * memvalidasi seperti server, mengambil foto, dan mengirim.
+ * memvalidasi seperti server (`galat` per field), mengambil foto, dan mengirim.
  *
  * Pilihan bertingkat direset otomatis saat induknya berganti. Galat 422 dari
  * server dipetakan ke `galatServer` agar layar menampilkan pesan yang sama
@@ -92,14 +92,15 @@ export function useBuatTiket() {
     });
   }, []);
 
-  /** Pesan kekurangan isian pertama (urutan sama dengan layar), atau null bila lengkap. */
-  const kekurangan = useMemo(() => {
-    if (!form.idJenis) return 'Jenis masalah wajib dipilih.';
-    if (!form.idKategori) return 'Kategori masalah wajib dipilih.';
-    if (!form.idDepartemen) return 'Departemen wajib dipilih.';
-    if (opsiSub.length > 0 && !form.idSub) return 'Departemen ini punya sub-departemen — pilih salah satunya.';
-    if (!form.detail.trim()) return 'Detail masalah wajib diisi.';
-    return null;
+  /** Galat per field (kosong = aman); layar menampilkannya setelah percobaan kirim pertama. */
+  const galat = useMemo(() => {
+    const g: Partial<Record<'jenis' | 'kategori' | 'departemen' | 'sub' | 'detail', string>> = {};
+    if (!form.idJenis) g.jenis = 'Jenis masalah wajib dipilih.';
+    if (!form.idKategori) g.kategori = 'Kategori masalah wajib dipilih.';
+    if (!form.idDepartemen) g.departemen = 'Departemen wajib dipilih.';
+    if (form.idDepartemen && opsiSub.length > 0 && !form.idSub) g.sub = 'Pilih salah satu sub-departemen.';
+    if (!form.detail.trim()) g.detail = 'Detail masalah wajib diisi.';
+    return g;
   }, [form, opsiSub.length]);
 
   /** Ambil foto dari kamera/galeri; diperkecil ke sisi terpanjang 1600 px dan dikompres JPEG. */
@@ -135,9 +136,9 @@ export function useBuatTiket() {
     try {
       return (await tiketService.buat(form)).no_ticket;
     } catch (e: any) {
-      const galat = e?.response?.data?.errors;
+      const galatApi = e?.response?.data?.errors;
       setGalatServer(
-        (galat && (Object.values(galat)[0] as string[])?.[0]) ||
+        (galatApi && (Object.values(galatApi)[0] as string[])?.[0]) ||
           e?.response?.data?.message ||
           e?.message ||
           'Tiket belum bisa dikirim. Coba lagi.'
@@ -160,7 +161,7 @@ export function useBuatTiket() {
     opsiSub,
     opsiArea,
     labelDari,
-    kekurangan,
+    galat,
     ambilFoto,
     mengirim,
     galatServer,
