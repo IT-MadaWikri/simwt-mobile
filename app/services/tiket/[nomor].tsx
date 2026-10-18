@@ -57,6 +57,11 @@ export default function DetailTiketScreen() {
           <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
         }
       >
+        {/* Kartu metrik langsung di atas latar layar (tanpa pembungkus putih). */}
+        <View style={styles.metrik}>
+          <MetrikTiket metrik={tiket.metrik} />
+        </View>
+
         <View style={styles.seksi}>
           <RingkasanTiket
             noTiket={tiket.noTiket}
@@ -68,11 +73,6 @@ export default function DetailTiketScreen() {
             departemen={tiket.departemen}
             aset={tiket.aset}
           />
-        </View>
-
-        <View style={styles.seksi}>
-          <Text style={styles.judulSeksi}>Waktu penanganan</Text>
-          <MetrikTiket metrik={tiket.metrik} />
         </View>
 
         <View style={styles.seksi}>
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     marginBottom: Spacing.sm,
   },
+  metrik: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
   judulSeksi: {
     fontSize: 12,
     fontFamily: fonts.semibold,
