@@ -34,6 +34,8 @@ import Button from '../src/components/common/Button';
 
 const MASKOT = require('../assets/images/maskot-login.png');
 const RASIO_MASKOT = 213 / 340;
+const LOGO = require('../assets/images/logo-simwt-mobile.png');
+const RASIO_LOGO = 1382 / 143;
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -178,6 +180,8 @@ export default function LoginScreen() {
           colors={[palet.mint, Colors.white]}
           style={[styles.kepala, { paddingTop: insets.top + Spacing.xl }]}
         >
+          <Image source={LOGO} style={styles.logo} resizeMode="contain" />
+
           <View style={styles.panggung}>
             <View style={[styles.sorot, { width: tinggiMaskot * 0.95, height: tinggiMaskot * 0.95 }]} />
             <Image
@@ -191,7 +195,7 @@ export default function LoginScreen() {
 
         <Animated.View style={[styles.form, { opacity: masuk, transform: [{ translateY: geser }] }]}>
           <Text style={[gs.bodySm, styles.subjudul]}>
-            SIMWT Mobile · PT Mada Wikri Tunggal
+            PT Mada Wikri Tunggal
           </Text>
 
           {/* Username — awalan mwt- ditampilkan sebagai bagian kolom supaya
@@ -287,6 +291,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.screenPadding + Spacing.xs,
   },
 
+  logo: {
+    alignSelf: 'center',
+    width: 190,
+    aspectRatio: RASIO_LOGO,
+    marginBottom: Spacing.lg,
+  },
   panggung: {
     alignItems: 'center',
     justifyContent: 'flex-end',
