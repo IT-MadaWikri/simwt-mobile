@@ -16,7 +16,6 @@ import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailTiket } from '../../../src/hooks/useDetailTiket';
-import { urlFoto } from '../../../src/utils/kaizen';
 
 export default function DetailTiketScreen() {
   const { nomor } = useLocalSearchParams<{ nomor: string }>();
@@ -51,8 +50,8 @@ export default function DetailTiketScreen() {
   ].filter((i) => i.teks);
 
   const foto = [
-    { label: 'Foto sebelum', uri: urlFoto(tiket.fotoSebelum) },
-    { label: 'Foto sesudah', uri: urlFoto(tiket.fotoSesudah) },
+    { label: 'Foto sebelum', uri: tiket.fotoSebelum },
+    { label: 'Foto sesudah', uri: tiket.fotoSesudah },
   ].filter((f) => f.uri);
 
   return (
