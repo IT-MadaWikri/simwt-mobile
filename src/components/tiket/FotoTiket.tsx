@@ -1,6 +1,6 @@
 /**
- * Foto sebelum/sesudah pada detail tiket: ubin berlabel; ketuk untuk memperbesar
- * (layar penuh). Hanya foto yang ada yang ditampilkan. Presentasional — satu-satunya
+ * Foto sebelum/sesudah pada detail tiket: dua ubin berdampingan (Sebelum kiri, Sesudah kanan);
+ * ketuk untuk memperbesar (layar penuh). Sisi yang belum punya foto diisi penanda kosong. Presentasional — satu-satunya
  * state-nya adalah foto yang sedang diperbesar.
  */
 import React, { useState } from 'react';
@@ -22,21 +22,28 @@ export default function FotoTiket({ fotoSebelum, fotoSesudah }: FotoTiketProps) 
   const foto = [
     { label: 'Sebelum', uri: fotoSebelum },
     { label: 'Sesudah', uri: fotoSesudah },
-  ].filter((f) => f.uri);
+  ];
 
-  if (foto.length === 0) return null;
+  if (!fotoSebelum && !fotoSesudah) return null;
 
   return (
     <>
       <View style={styles.baris}>
-        {foto.map((f) => (
-          <TouchableOpacity key={f.label} style={styles.ubin} activeOpacity={0.85} onPress={() => setBesar(f.uri)}>
-            <Image source={{ uri: f.uri! }} style={styles.gambar} resizeMode="cover" />
-            <View style={[styles.tag, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
-              <Text style={styles.teksTag}>{f.label}</Text>
+        {foto.map((f) =>
+          f.uri ? (
+            <TouchableOpacity key={f.label} style={styles.ubin} activeOpacity={0.85} onPress={() => setBesar(f.uri)}>
+              <Image source={{ uri: f.uri }} style={styles.gambar} resizeMode="cover" />
+              <View style={[styles.tag, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
+                <Text style={styles.teksTag}>{f.label}</Text>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <View key={f.label} style={[styles.ubin, styles.kosong]}>
+              <Icon name="image" size={22} color={Colors.textTertiary} />
+              <Text style={styles.teksKosong}>{f.label}: belum ada foto</Text>
             </View>
-          </TouchableOpacity>
-        ))}
+          )
+        )}
       </View>
 
       <Modal visible={!!besar} transparent animationType="fade" onRequestClose={() => setBesar(null)} statusBarTranslucent>
@@ -66,6 +73,8 @@ const styles = StyleSheet.create({
     backgroundColor: slate[100],
   },
   gambar: { width: '100%', height: '100%' },
+  kosong: { alignItems: 'center', justifyContent: 'center', gap: 4, padding: Spacing.sm },
+  teksKosong: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, textAlign: 'center' },
   tag: {
     position: 'absolute',
     left: 8,
