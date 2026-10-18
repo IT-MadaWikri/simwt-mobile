@@ -48,3 +48,47 @@ export interface OpsiRef {
   id: number;
   nama: string;
 }
+
+/** Opsi pilihan generik untuk bottom sheet. */
+export interface OpsiPilihan {
+  id: number;
+  label: string;
+}
+
+export interface JenisTiket {
+  id: number;
+  nama: string;
+  kategori: { id: number; nama: string }[];
+}
+
+export interface DepartemenTiket {
+  id: number;
+  nama: string;
+  kode: string;
+  subs: { id: number; nama: string; kode: string }[];
+}
+
+/** Master data form Buat Tiket (`GET /tiket/buat`). */
+export interface MasterBuatTiket {
+  jenis: JenisTiket[];
+  departemen: DepartemenTiket[];
+  /** Area per id departemen/sub-departemen. */
+  area: Record<string, { id: number; label: string }[]>;
+}
+
+export interface FotoTiket {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+/** Isian form Buat Tiket; `null` = belum dipilih. */
+export interface FormTiket {
+  idJenis: number | null;
+  idKategori: number | null;
+  idDepartemen: number | null;
+  idSub: number | null;
+  idArea: number | null;
+  detail: string;
+  foto: FotoTiket | null;
+}
