@@ -47,10 +47,10 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   const containerSize = size === 'small' ? 44 : size === 'large' ? 64 : 54;
   // Dua ubin kaca bertumpuk: ubin depan di kiri-bawah, ubin belakang yang lebih pucat bergeser ke kanan-atas.
   const ubin = containerSize - 10;
-  // Efek kaca: ubin belakang pekat, ubin depan tembus pandang (warna belakang terlihat di baliknya)
+  // Efek kaca (warna pastel): ubin belakang lebih pekat, ubin depan tembus pandang (warna belakang terlihat di baliknya)
   // dengan kilap putih di sudut kiri-atas dan tepi putih tipis.
-  const belakang = [cerahkan(service.iconColor, 0.2), cerahkan(service.iconColor, 0)] as const;
-  const depan = [cerahkan(service.iconColor, 0.1, 0.5), cerahkan(service.iconColor, 0, 0.32)] as const;
+  const belakang = [cerahkan(service.iconColor, 0.6), cerahkan(service.iconColor, 0.35)] as const;
+  const depan = [cerahkan(service.iconColor, 0.7, 0.55), cerahkan(service.iconColor, 0.5, 0.4)] as const;
 
   // Selalu ikuti `route` yang didefinisikan di constants/Services.ts —
   // dulu tujuan dirakit dari `id` dengan satu pengecualian ber-hardcode untuk
@@ -129,7 +129,7 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
               end={{ x: 0.7, y: 0.7 }}
               style={StyleSheet.absoluteFill}
             />
-            <Icon name={service.icon} size={iconSize} color={Colors.white} />
+            <Icon name={service.icon} size={iconSize} color={service.iconColor} />
           </BlurView>
         </View>
         {renderBadge()}
