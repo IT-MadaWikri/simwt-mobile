@@ -4,9 +4,9 @@
  * state-nya adalah foto yang sedang diperbesar.
  */
 import React, { useState } from 'react';
-import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
+import ZoomFoto from './ZoomFoto';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
@@ -17,8 +17,11 @@ interface FotoTiketProps {
 }
 
 export default function FotoTiket({ fotoSebelum, fotoSesudah }: FotoTiketProps) {
-  const insets = useSafeAreaInsets();
   const [besar, setBesar] = useState<string | null>(null);
+  const [gagal, setGagal] = useState<string[]>([]);
+  // Sisi ubin dihitung dari lebar baris: flex + aspectRatio membuat ubin kosong & berfoto beda ukuran.
+  const [lebar, setLebar] = useState(0);
+  const sisi = lebar > 0 ? (lebar - Spacing.sm) / 2 : undefined;
   const foto = [
     { label: 'Sebelum', uri: fotoSebelum },
     { label: 'Sesudah', uri: fotoSesudah },
@@ -28,45 +31,37 @@ export default function FotoTiket({ fotoSebelum, fotoSesudah }: FotoTiketProps) 
 
   return (
     <>
-      <View style={styles.baris}>
+      <View style={styles.baris} onLayout={(e) => setLebar(e.nativeEvent.layout.width)}>
         {foto.map((f) =>
-          f.uri ? (
-            <TouchableOpacity key={f.label} style={styles.ubin} activeOpacity={0.85} onPress={() => setBesar(f.uri)}>
-              <Image source={{ uri: f.uri }} style={styles.gambar} resizeMode="cover" />
+          f.uri && !gagal.includes(f.uri) ? (
+            <TouchableOpacity key={f.label} style={[styles.ubin, { width: sisi, height: sisi }]} activeOpacity={0.85} onPress={() => setBesar(f.uri)}>
+              <Image
+                source={{ uri: f.uri }}
+                style={styles.gambar}
+                resizeMode="cover"
+                onError={() => setGagal((g) => [...g, f.uri as string])}
+              />
               <View style={[styles.tag, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
                 <Text style={styles.teksTag}>{f.label}</Text>
               </View>
             </TouchableOpacity>
           ) : (
-            <View key={f.label} style={[styles.ubin, styles.kosong]}>
+            <View key={f.label} style={[styles.ubin, styles.kosong, { width: sisi, height: sisi }]}>
               <Icon name="image" size={22} color={Colors.textTertiary} />
-              <Text style={styles.teksKosong}>{f.label}: belum ada foto</Text>
+              <Text style={styles.teksKosong}>{f.label}: {f.uri ? 'foto gagal dimuat' : 'belum ada foto'}</Text>
             </View>
           )
         )}
       </View>
 
-      <Modal visible={!!besar} transparent animationType="fade" onRequestClose={() => setBesar(null)} statusBarTranslucent>
-        <View style={styles.latar}>
-          {besar ? <Image source={{ uri: besar }} style={StyleSheet.absoluteFill} resizeMode="contain" /> : null}
-          <TouchableOpacity
-            style={[styles.tutup, { top: insets.top + Spacing.md }]}
-            onPress={() => setBesar(null)}
-            accessibilityLabel="Tutup foto"
-          >
-            <Icon name="close" size={20} color={Colors.white} />
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      <ZoomFoto uri={besar} onTutup={() => setBesar(null)} />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  baris: { flexDirection: 'row', gap: Spacing.sm },
+  baris: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm },
   ubin: {
-    flex: 1,
-    aspectRatio: 1,
     borderRadius: Spacing.radius.lg,
     ...Spacing.curve,
     overflow: 'hidden',
@@ -86,15 +81,4 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTag: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.white },
-  latar: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)' },
-  tutup: {
-    position: 'absolute',
-    right: Spacing.lg,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

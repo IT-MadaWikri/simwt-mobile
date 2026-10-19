@@ -26,6 +26,7 @@ const STATUS: { label: string; value: StatusTiket | '' }[] = [
   { label: 'Semua', value: '' },
   { label: 'Menunggu', value: 'PENDING' },
   { label: 'Diproses', value: 'PROSES' },
+  { label: 'Konfirmasi', value: 'RESOLVED' },
   { label: 'Selesai', value: 'OK' },
 ];
 

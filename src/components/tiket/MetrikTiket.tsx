@@ -1,10 +1,12 @@
 /**
- * Metrik waktu penanganan tiket: grid 2 kolom berisi kartu persegi putih (Total Downtime,
+ * Metrik waktu penanganan tiket: grid 2 kolom berisi kartu persegi panjang putih (Total Downtime,
  * Waktu Tunggu, Waktu Proses, Total Perbaikan). Tahap yang masih berjalan menampilkan jam
  * berjalan (HH:MM:SS) dan titik hijau berdenyut di pojok kartu.
+ * Keterangan tiap metrik ada di BottomSheet yang dibuka dari ikon info.
  */
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import BottomSheet from '../common/BottomSheet';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -33,42 +35,49 @@ function TitikBerjalan() {
   );
 }
 
-function KartuMetrik({ metrik }: { metrik: Metrik }) {
+function KartuMetrik({ metrik, onInfo }: { metrik: Metrik; onInfo: () => void }) {
   const jam = useJamBerjalan(metrik.berjalanSejak);
   const berjalan = jam !== null;
   const nilai = berjalan ? formatJam(jam) : metrik.detik !== null ? formatDurasi(metrik.detik) : '-';
 
   return (
     <View style={styles.kartu}>
-      <View style={styles.atas}>
-        <Text style={styles.label} numberOfLines={2}>{metrik.label}</Text>
-        {berjalan ? (
-          <TitikBerjalan />
-        ) : (
-          <Icon name="clock-outline" size={18} color={metrik.detik !== null ? brand[600] : Colors.textTertiary} />
-        )}
+      <View style={styles.baris}>
+        <Text style={styles.label} numberOfLines={1}>{metrik.label}</Text>
+        <TouchableOpacity onPress={onInfo} hitSlop={10} accessibilityLabel={`Info ${metrik.label}`}>
+          <Icon name="information-outline" size={16} color={Colors.textTertiary} />
+        </TouchableOpacity>
       </View>
-      <View>
+      <View style={styles.baris}>
         <Text
           style={[styles.nilai, berjalan && { color: brand[700] }, nilai === '-' && { color: Colors.textTertiary }]}
           numberOfLines={1}
-          adjustsFontSizeToFit
         >
           {nilai}
         </Text>
-        <Text style={styles.ket} numberOfLines={2}>{metrik.keterangan}</Text>
+        {berjalan ? (
+          <TitikBerjalan />
+        ) : (
+          <Icon name="clock-outline" size={16} color={metrik.detik !== null ? brand[600] : Colors.textTertiary} />
+        )}
       </View>
     </View>
   );
 }
 
 export default function MetrikTiket({ metrik }: { metrik: Metrik[] }) {
+  const [info, setInfo] = useState<Metrik | null>(null);
   return (
-    <View style={styles.grid}>
-      {metrik.map((m) => (
-        <KartuMetrik key={m.id} metrik={m} />
-      ))}
-    </View>
+    <>
+      <View style={styles.grid}>
+        {metrik.map((m) => (
+          <KartuMetrik key={m.id} metrik={m} onInfo={() => setInfo(m)} />
+        ))}
+      </View>
+      <BottomSheet visible={info !== null} onClose={() => setInfo(null)} title={info?.label}>
+        <Text style={styles.ket}>{info?.keterangan}</Text>
+      </BottomSheet>
+    </>
   );
 }
 
@@ -76,8 +85,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: Spacing.md },
   kartu: {
     width: '48%',
-    aspectRatio: 1,
-    justifyContent: 'space-between',
+    gap: Spacing.sm,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     borderRadius: Spacing.radius.xl,
@@ -85,10 +93,10 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     backgroundColor: Colors.white,
   },
-  atas: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.sm },
+  baris: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.sm },
   label: { flex: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  nilai: { fontFamily: fonts.bold, fontSize: 20, color: Colors.textPrimary },
-  ket: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, marginTop: 2 },
+  nilai: { fontFamily: fonts.bold, fontSize: 12, color: Colors.textPrimary },
+  ket: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, paddingHorizontal: Spacing.screenPadding },
   cincin: {
     width: 18,
     height: 18,

@@ -1,4 +1,4 @@
-/** Lencana status tiket (PENDING / PROSES / OK) — presentasional. */
+/** Lencana status tiket (PENDING, PROSES, RESOLVED, OK, …) — presentasional. */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
@@ -10,8 +10,12 @@ import { StatusTiket } from '../../types/tiket';
 
 export const WARNA_STATUS_TIKET: Record<StatusTiket, { bg: string; fg: string }> = {
   PENDING: { bg: '#fffbeb', fg: '#b45309' },
+  NEED_APPROVAL: { bg: '#fffbeb', fg: '#b45309' },
   PROSES: { bg: brand[50], fg: brand[700] },
+  RESOLVED: { bg: brand[50], fg: brand[700] },
   OK: { bg: slate[100], fg: slate[600] },
+  FATAL: { bg: '#fef2f2', fg: '#b91c1c' },
+  CANCEL: { bg: slate[100], fg: slate[600] },
 };
 
 interface LencanaStatusTiketProps {

@@ -76,7 +76,7 @@ export function useTiketSaya() {
 
   /** Jumlah per status, untuk label chip filter. */
   const jumlah = useMemo(() => {
-    const hitung: Record<string, number> = { '': semua.length, PENDING: 0, PROSES: 0, OK: 0 };
+    const hitung: Record<string, number> = { '': semua.length, PENDING: 0, PROSES: 0, RESOLVED: 0, OK: 0 };
     semua.forEach((t) => {
       hitung[t.status_pengajuan] = (hitung[t.status_pengajuan] ?? 0) + 1;
     });

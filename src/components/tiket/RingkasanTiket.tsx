@@ -19,6 +19,7 @@ interface RingkasanTiketProps {
   jenis: string | null;
   plant: string | null;
   diajukanOleh: string;
+  pic: string | null;
   departemen: string | null;
   aset: string | null;
 }
@@ -30,6 +31,7 @@ export default function RingkasanTiket({
   jenis,
   plant,
   diajukanOleh,
+  pic,
   departemen,
   aset,
 }: RingkasanTiketProps) {
@@ -56,6 +58,14 @@ export default function RingkasanTiket({
         <View style={{ flex: 1 }}>
           <Text style={styles.nama} numberOfLines={1}>{diajukanOleh || '-'}</Text>
           <Text style={styles.kecil}>Pengaju</Text>
+        </View>
+      </View>
+
+      <View style={styles.pengaju}>
+        <Avatar nama={pic ?? '?'} ukuran={34} />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.nama, !pic && { color: Colors.textTertiary }]} numberOfLines={1}>{pic ?? 'Belum di-assign'}</Text>
+          <Text style={styles.kecil}>PIC perbaikan</Text>
         </View>
       </View>
 
