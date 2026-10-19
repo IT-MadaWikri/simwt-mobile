@@ -1,6 +1,6 @@
 /** Tipe domain modul Tiket Masalah. */
 
-export type StatusTiket = 'PENDING' | 'PROSES' | 'OK';
+export type StatusTiket = 'PENDING' | 'NEED_APPROVAL' | 'PROSES' | 'RESOLVED' | 'OK' | 'FATAL' | 'CANCEL';
 
 /** Satu baris pada daftar "Tiket Saya" (`GET /tiket/saya`). */
 export interface TiketRingkas {
@@ -22,6 +22,12 @@ export interface LangkahLinimasa {
   isi: string[];
   waktu: string | null;
   selesai: boolean;
+  /** URL foto langkah (mis. foto sesudah yang ditolak pelapor), bila ada. */
+  foto?: string | null;
+  /** Sparepart yang diganti pada langkah ini (nama dan jumlah), bila ada. */
+  sparepart?: string | null;
+  /** Keterangan di atas foto. */
+  keteranganFoto?: string;
 }
 
 /** Satu metrik waktu pada detail tiket (Total Downtime, Waktu Tunggu, …). */
@@ -43,12 +49,18 @@ export interface DetailTiket {
   detail: string;
   status: StatusTiket;
   diajukanOleh: string;
+  /** PIC perbaikan (akun yang di-assign atau nama PIC); null bila belum ada. */
+  pic: string | null;
   jenis: string | null;
   departemen: string | null;
   plant: string | null;
   aset: string | null;
   tanggalDiajukan: string | null;
   tanggalSelesai: string | null;
+  /** Akun ini boleh mengonfirmasi/menolak penyelesaian (pelapor/Superadmin, saat RESOLVED). */
+  bisaKonfirmasi: boolean;
+  /** Batas konfirmasi sebelum otomatis OK (12 jam sejak selesai); hanya saat RESOLVED. */
+  batasKonfirmasi: string | null;
   /** URL utuh foto sebelum; null bila tidak ada. */
   fotoSebelum: string | null;
   fotoSesudah: string | null;

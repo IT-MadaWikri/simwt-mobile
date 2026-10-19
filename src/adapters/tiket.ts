@@ -7,9 +7,28 @@ import { DetailTiket, LangkahLinimasa, MetrikTiket, StatusTiket, TiketRingkas } 
 /** Label & nada warna per status — dipakai daftar, filter, dan detail. */
 export const STATUS_TIKET: Record<StatusTiket, { label: string; keterangan: string; ikon: string }> = {
   PENDING: { label: 'Menunggu', keterangan: 'Menunggu ditangani', ikon: 'clock-outline' },
+  NEED_APPROVAL: { label: 'Persetujuan', keterangan: 'Menunggu persetujuan', ikon: 'clock-outline' },
   PROSES: { label: 'Diproses', keterangan: 'Sedang diproses', ikon: 'progress-wrench' },
+  RESOLVED: { label: 'Konfirmasi', keterangan: 'Menunggu konfirmasi pelapor', ikon: 'check-circle-outline' },
   OK: { label: 'Selesai', keterangan: 'Selesai', ikon: 'check-circle-outline' },
+  FATAL: { label: 'Fatal', keterangan: 'Tidak dapat diperbaiki', ikon: 'alert-circle-outline' },
+  CANCEL: { label: 'Dibatalkan', keterangan: 'Dibatalkan', ikon: 'close' },
 };
+
+/** Pesan ringkas untuk dibagikan (WhatsApp dll), sama gayanya dengan `teksBagikanKaizen`. */
+export const teksBagikanTiket = (t: DetailTiket) =>
+  [
+    `🎫 Tiket #${t.noTiket}`,
+    t.judul ? `"${t.judul}"` : null,
+    `Status: ${STATUS_TIKET[t.status].keterangan}`,
+    [t.jenis, t.plant].filter(Boolean).join(' · ') || null,
+    t.diajukanOleh ? `Pengaju: ${t.diajukanOleh}` : null,
+    t.pic ? `PIC: ${t.pic}` : null,
+    '',
+    'PT Mada Wikri Tunggal · #SIMWT',
+  ]
+    .filter((b) => b !== null)
+    .join('\n');
 
 const JUDUL_PROGRESS: Record<string, string> = {
   perbaikan: 'Perbaikan',
@@ -17,8 +36,9 @@ const JUDUL_PROGRESS: Record<string, string> = {
   request_trial: 'Permintaan trial',
 };
 
-const statusAman = (nilai: unknown): StatusTiket =>
-  nilai === 'PROSES' || nilai === 'OK' ? nilai : 'PENDING';
+/** Status dari server yang belum dikenal jatuh ke PENDING supaya label/warna tidak undefined. */
+export const statusAman = (nilai: unknown): StatusTiket =>
+  typeof nilai === 'string' && nilai in STATUS_TIKET ? (nilai as StatusTiket) : 'PENDING';
 
 /** Baris-baris keterangan sebuah progress; yang kosong dibuang. */
 const barisProgress = (p: any): string[] =>
@@ -26,7 +46,6 @@ const barisProgress = (p: any): string[] =>
     p.analisa && `Analisa: ${p.analisa}`,
     p.penanganan && `Penanganan: ${p.penanganan}`,
     p.jenis_penanganan && `Jenis: ${p.jenis_penanganan}`,
-    p.sparepart?.nama && `Sparepart: ${p.sparepart.nama}${p.qty_part ? ` × ${p.qty_part}` : ''}`,
     p.is_vendor && p.nama_vendor && `Vendor: ${p.nama_vendor}`,
     p.hasil_trial && `Hasil trial: ${p.hasil_trial}`,
     p.pic_perbaikan && `PIC: ${p.pic_perbaikan}`,
@@ -69,6 +88,9 @@ export function hitungMetrik(mentah: any): MetrikTiket[] {
 export function adaptasiDetailTiket(mentah: any): DetailTiket {
   const status = statusAman(mentah?.status_pengajuan);
   const selesai = status === 'OK';
+  // Pekerjaan sudah ditandai selesai teknisi (RESOLVED) atau sudah ditutup (OK).
+  const pekerjaanSelesai = selesai || status === 'RESOLVED';
+  const dikonfirmasi = selesai && !!mentah?.dikonfirmasi_pelapor_at;
 
   const progress: any[] = Array.isArray(mentah?.progress) ? mentah.progress : [];
 
@@ -76,7 +98,7 @@ export function adaptasiDetailTiket(mentah: any): DetailTiket {
     {
       id: 'diajukan',
       judul: 'Tiket diajukan',
-      isi: mentah?.diajukan_oleh ? [`Oleh ${mentah.diajukan_oleh}`] : [],
+      isi: mentah?.pengaju_nama ?? mentah?.diajukan_oleh ? [`Oleh ${mentah.pengaju_nama ?? mentah.diajukan_oleh}`] : [],
       waktu: mentah?.tanggal_diajukan ?? null,
       selesai: true,
     },
@@ -89,14 +111,32 @@ export function adaptasiDetailTiket(mentah: any): DetailTiket {
       isi: barisProgress(p),
       waktu: p.tanggal_progress ?? p.created_at ?? null,
       selesai: true,
+      foto: p.foto_url ?? null,
+      sparepart: p.sparepart?.nama ? `${p.sparepart.nama}${p.qty_part > 1 ? ` × ${p.qty_part}` : ''}` : null,
+      keteranganFoto: p.analisa === 'Reopen oleh Pelapor' ? 'Foto sesudah sebelumnya (ditolak pelapor)' : undefined,
     })),
     {
       id: 'selesai',
-      judul: selesai ? 'Tiket selesai' : 'Menunggu penyelesaian',
-      isi: selesai && mentah?.diselesaikan_oleh ? [`Oleh ${mentah.diselesaikan_oleh}`] : [],
-      waktu: selesai ? mentah?.tanggal_selesai ?? null : null,
-      selesai,
+      // Tiket lama (OK tanpa jejak konfirmasi) tetap "Tiket selesai"; alur baru memisahkan perbaikan dan konfirmasi.
+      judul: !pekerjaanSelesai ? 'Menunggu penyelesaian' : status === 'RESOLVED' || dikonfirmasi ? 'Perbaikan selesai' : 'Tiket selesai',
+      isi: pekerjaanSelesai && mentah?.diselesaikan_oleh ? [`Oleh ${mentah.diselesaikan_oleh}`] : [],
+      waktu: pekerjaanSelesai ? mentah?.tanggal_selesai ?? null : null,
+      selesai: pekerjaanSelesai,
     },
+    ...(status === 'RESOLVED'
+      ? [{ id: 'konfirmasi', judul: 'Menunggu konfirmasi pelapor', isi: [], waktu: null, selesai: false }]
+      : []),
+    ...(dikonfirmasi
+      ? [
+          {
+            id: 'konfirmasi',
+            judul: mentah?.is_auto_closed ? 'Otomatis selesai' : 'Dikonfirmasi pelapor',
+            isi: mentah?.is_auto_closed ? ['Tidak ada konfirmasi dalam 12 jam'] : [],
+            waktu: mentah.dikonfirmasi_pelapor_at,
+            selesai: true,
+          },
+        ]
+      : []),
   ];
 
   const aset = mentah?.aset?.asset_name
@@ -109,13 +149,16 @@ export function adaptasiDetailTiket(mentah: any): DetailTiket {
     judul: mentah?.judul_masalah ?? '',
     detail: mentah?.detail_masalah ?? '',
     status,
-    diajukanOleh: mentah?.diajukan_oleh ?? '-',
+    diajukanOleh: mentah?.pengaju_nama ?? mentah?.diajukan_oleh ?? '-',
+    pic: mentah?.pic_nama ?? null,
     jenis: mentah?.jenis?.nama ?? null,
     departemen: mentah?.departemen?.nama ?? null,
     plant: mentah?.plant?.nama ?? null,
     aset,
     tanggalDiajukan: mentah?.tanggal_diajukan ?? null,
     tanggalSelesai: mentah?.tanggal_selesai ?? null,
+    bisaKonfirmasi: mentah?.bisa_konfirmasi === true,
+    batasKonfirmasi: mentah?.batas_konfirmasi ?? null,
     // URL utuh dari server (storage api atau web); path mentah tidak bisa dibuka HP.
     fotoSebelum: mentah?.foto_sebelum_url ?? null,
     fotoSesudah: mentah?.foto_sesudah_url ?? null,
