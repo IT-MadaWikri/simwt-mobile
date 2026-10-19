@@ -41,7 +41,7 @@ const MENU: ServiceItem[] = [
 export default function MenuTiketScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { tiket, memuat, menyegarkan, error, muat, segarkan } = useTiketSaya();
+  const { tiket, memuat, menyegarkan, error, muatUlang, segarkan } = useTiketSaya({ perHalaman: 3 });
 
   // Segar tiap kembali ke menu (mis. setelah membuat tiket); muat pertama ditangani hook.
   const pertamaFokus = useRef(true);
@@ -51,8 +51,8 @@ export default function MenuTiketScreen() {
         pertamaFokus.current = false;
         return;
       }
-      muat();
-    }, [muat])
+      muatUlang();
+    }, [muatUlang])
   );
 
   const terbaru = tiket.slice(0, 3);

@@ -12,6 +12,7 @@ import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
+import { ModeFilter } from '../../hooks/useTiketSaya';
 import { StatusTiket } from '../../types/tiket';
 
 export interface NilaiFilterTiket {
@@ -35,11 +36,13 @@ interface SheetFilterTiketProps {
   aktif: NilaiFilterTiket;
   /** Jumlah tiket per status ('' = semua), untuk label chip. */
   jumlah: Record<string, number>;
-  onTerapkan: (n: NilaiFilterTiket) => void;
+  /** Mode yang sedang memuat (tombolnya berspinner, tombol lain mati); null = tidak memuat. */
+  memuat: null | ModeFilter;
+  onTerapkan: (n: NilaiFilterTiket, mode: ModeFilter) => void;
   onClose: () => void;
 }
 
-export default function SheetFilterTiket({ visible, aktif, jumlah, onTerapkan, onClose }: SheetFilterTiketProps) {
+export default function SheetFilterTiket({ visible, aktif, jumlah, memuat, onTerapkan, onClose }: SheetFilterTiketProps) {
   const [draf, setDraf] = useState<NilaiFilterTiket>(aktif);
 
   // Setiap dibuka mulai dari filter yang sedang aktif.
@@ -49,11 +52,6 @@ export default function SheetFilterTiket({ visible, aktif, jumlah, onTerapkan, o
   }, [visible]);
 
   const ubah = <K extends keyof NilaiFilterTiket>(k: K, v: NilaiFilterTiket[K]) => setDraf((d) => ({ ...d, [k]: v }));
-
-  const terapkan = (n: NilaiFilterTiket) => {
-    onTerapkan(n);
-    onClose();
-  };
 
   return (
     <BottomSheet visible={visible} onClose={onClose} title="Filter">
@@ -89,12 +87,21 @@ export default function SheetFilterTiket({ visible, aktif, jumlah, onTerapkan, o
           variant="outline"
           icon="restore"
           label="Reset"
+          loading={memuat === 'reset'}
+          disabled={memuat === 'terapkan'}
           onPress={() => {
             setDraf(FILTER_AWAL);
-            terapkan(FILTER_AWAL);
+            onTerapkan(FILTER_AWAL, 'reset');
           }}
         />
-        <Button icon="check" label="Terapkan filter" onPress={() => terapkan(draf)} style={gs.flex1} />
+        <Button
+          icon="check"
+          label="Terapkan filter"
+          loading={memuat === 'terapkan'}
+          disabled={memuat === 'reset'}
+          onPress={() => onTerapkan(draf, 'terapkan')}
+          style={gs.flex1}
+        />
       </View>
     </BottomSheet>
   );

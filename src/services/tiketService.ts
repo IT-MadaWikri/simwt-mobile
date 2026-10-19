@@ -6,7 +6,7 @@
  */
 import api from './api';
 import { adaptasiDetailTiket, statusAman } from '../adapters/tiket';
-import { AsetRingkas, DetailTiket, FormTiket, MasterBuatTiket, TiketRingkas } from '../types/tiket';
+import { AsetRingkas, DetailTiket, FilterTiketSaya, FormTiket, HalamanTiketSaya, MasterBuatTiket, TiketRingkas } from '../types/tiket';
 
 export type { TiketRingkas };
 
@@ -25,11 +25,28 @@ export function buatPayloadTiket(form: FormTiket): FormData {
 }
 
 export const tiketService = {
-  /** Riwayat tiket milik pengguna login (terbaru dulu, maks. 50). */
-  async tiketSaya(): Promise<TiketRingkas[]> {
-    const response = await api.get('/tiket/saya');
-    // Status yang belum dikenal dirapikan agar peta warna/label tidak undefined.
-    return ((response.data?.data ?? []) as TiketRingkas[]).map((t) => ({ ...t, status_pengajuan: statusAman(t.status_pengajuan) }));
+  /** Satu halaman riwayat tiket milik pengguna login; cari, filter, urutan, dan paginasi diproses server. */
+  async tiketSaya(f: FilterTiketSaya = {}): Promise<HalamanTiketSaya> {
+    const response = await api.get('/tiket/saya', {
+      params: {
+        search: f.search || undefined,
+        status: f.status || undefined,
+        tanggal_dari: f.dari || undefined,
+        tanggal_sampai: f.sampai || undefined,
+        urutkan: f.urutkan,
+        page: f.page,
+        per_page: f.perHalaman,
+      },
+    });
+    const halaman = response.data?.data;
+    return {
+      // Status yang belum dikenal dirapikan agar peta warna/label tidak undefined.
+      data: ((halaman?.data ?? []) as TiketRingkas[]).map((t) => ({ ...t, status_pengajuan: statusAman(t.status_pengajuan) })),
+      current_page: halaman?.current_page ?? 1,
+      last_page: halaman?.last_page ?? 1,
+      total: halaman?.total ?? 0,
+      jumlah: response.data?.jumlah ?? {},
+    };
   },
 
   /** Detail satu tiket beserta progress, sudah dirapikan untuk layar. */
