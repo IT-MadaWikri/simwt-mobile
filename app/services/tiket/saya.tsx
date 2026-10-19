@@ -2,10 +2,11 @@
  * Tiket Saya — riwayat tiket yang diajukan akun ini. Pola sama dengan Kaizen Saya:
  * kolom cari, tombol filter (status + tanggal) dan urutan, daftar dengan
  * tarik-untuk-segarkan, serta tombol "Buat Tiket" mengambang.
- * Sumber: GET /tiket/saya (maks. 50, terbaru dulu); saring & urut di klien.
+ * Sumber: GET /tiket/saya — cari, filter, urutan, dan paginasi (gulir tanpa batas) diproses server.
  */
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
+import BrandSpinner from '../../../src/components/common/BrandSpinner';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
@@ -24,8 +25,7 @@ export default function TiketSayaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const t = useTiketSaya();
-  const [filterTerbuka, setFilterTerbuka] = useState(false);
-  const { muat } = t;
+  const { muatUlang } = t;
 
   // Kembali dari "Buat Tiket" → daftar ikut segar tanpa skeleton penuh.
   const pertamaFokus = useRef(true);
@@ -35,8 +35,8 @@ export default function TiketSayaScreen() {
         pertamaFokus.current = false;
         return;
       }
-      muat();
-    }, [muat])
+      muatUlang();
+    }, [muatUlang])
   );
 
   // Titik hijau di tombol filter bila status/tanggal sedang menyaring (kata cari tampak di kolomnya sendiri).
@@ -63,7 +63,7 @@ export default function TiketSayaScreen() {
             </TouchableOpacity>
           ) : null}
         </View>
-        <TouchableOpacity style={styles.tombol} onPress={() => setFilterTerbuka(true)} accessibilityLabel="Filter">
+        <TouchableOpacity style={styles.tombol} onPress={t.bukaFilter} accessibilityLabel="Filter">
           <Icon name="filter-outline" size={16} color={Colors.textPrimary} />
           {filterAktif ? <View style={styles.titik} /> : null}
         </TouchableOpacity>
@@ -83,11 +83,14 @@ export default function TiketSayaScreen() {
           data={t.tiket}
           keyExtractor={(item) => String(item.id)}
           keyboardShouldPersistTaps="handled"
+          onEndReached={t.muatBerikutnya}
+          onEndReachedThreshold={0.4}
           contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
           ItemSeparatorComponent={() => <View style={styles.pemisah} />}
           refreshControl={
             <RefreshControl refreshing={t.menyegarkan} onRefresh={t.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
           }
+          ListFooterComponent={t.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
           ListEmptyComponent={
             <View style={[gs.center, { marginTop: Spacing.xxxl, paddingHorizontal: Spacing.xl }]}>
               <Icon
@@ -100,7 +103,7 @@ export default function TiketSayaScreen() {
                 {t.error ??
                   (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Tiket yang kamu ajukan akan tampil di sini.')}
               </Text>
-              {t.error ? <Button label="Coba Lagi" onPress={t.muatUlang} style={{ marginTop: Spacing.lg }} /> : null}
+              {t.error ? <Button label="Coba Lagi" onPress={t.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
             </View>
           }
           renderItem={({ item }) => (
@@ -127,10 +130,11 @@ export default function TiketSayaScreen() {
       />
 
       <SheetFilterTiket
-        visible={filterTerbuka}
-        onClose={() => setFilterTerbuka(false)}
+        visible={t.filterTerbuka}
+        onClose={t.tutupFilter}
         aktif={{ status: t.status, dari: t.tanggalDari, sampai: t.tanggalSampai }}
         jumlah={t.jumlah}
+        memuat={t.memuatFilter}
         onTerapkan={t.terapkanFilter}
       />
     </View>

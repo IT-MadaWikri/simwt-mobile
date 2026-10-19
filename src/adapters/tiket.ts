@@ -2,7 +2,7 @@
  * Adapter murni modul Tiket: mengubah respons `GET /tiket/lihat/{nomor}` menjadi
  * `DetailTiket` yang siap dirender. Tanpa React, api, atau storage.
  */
-import { DetailTiket, LangkahLinimasa, MetrikTiket, StatusTiket, TiketRingkas } from '../types/tiket';
+import { DetailTiket, LangkahLinimasa, MetrikTiket, StatusTiket } from '../types/tiket';
 
 /** Label & nada warna per status — dipakai daftar, filter, dan detail. */
 export const STATUS_TIKET: Record<StatusTiket, { label: string; keterangan: string; ikon: string }> = {
@@ -165,36 +165,4 @@ export function adaptasiDetailTiket(mentah: any): DetailTiket {
     linimasa,
     metrik: hitungMetrik(mentah),
   };
-}
-
-export interface KriteriaTiket {
-  search: string;
-  /** '' = semua status. */
-  status: StatusTiket | '';
-  /** 'YYYY-MM-DD' atau ''. */
-  dari: string;
-  sampai: string;
-  urutkan: 'TERBARU' | 'TERLAMA';
-}
-
-/** Tanggal lokal 'YYYY-MM-DD' dari ISO, supaya cocok dengan nilai FieldTanggal. */
-const tanggalLokal = (iso: string | null) => {
-  if (!iso) return '';
-  const t = new Date(iso);
-  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
-};
-
-/** Saring + urutkan daftar tiket di sisi klien (server mengirim maksimal 50). */
-export function saringTiket(daftar: TiketRingkas[], k: KriteriaTiket): TiketRingkas[] {
-  const kata = k.search.trim().toLowerCase();
-  const hasil = daftar.filter((t) => {
-    if (k.status && t.status_pengajuan !== k.status) return false;
-    const tgl = tanggalLokal(t.tanggal_diajukan);
-    if (k.dari && tgl < k.dari) return false;
-    if (k.sampai && tgl > k.sampai) return false;
-    if (!kata) return true;
-    return [t.no_ticket, t.judul_masalah, t.jenis, t.plant].some((v) => v?.toLowerCase().includes(kata));
-  });
-  const arah = k.urutkan === 'TERBARU' ? -1 : 1;
-  return hasil.sort((a, b) => arah * ((a.tanggal_diajukan ?? '').localeCompare(b.tanggal_diajukan ?? '')));
 }

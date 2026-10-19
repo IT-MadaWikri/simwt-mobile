@@ -68,6 +68,27 @@ export interface DetailTiket {
   metrik: MetrikTiket[];
 }
 
+/** Saringan daftar Tiket Saya yang dikirim ke server (kosong = tidak disaring). */
+export interface FilterTiketSaya {
+  search?: string;
+  status?: StatusTiket | '';
+  /** 'YYYY-MM-DD' */
+  dari?: string;
+  sampai?: string;
+  urutkan?: 'TERBARU' | 'TERLAMA';
+  page?: number;
+  perHalaman?: number;
+}
+
+/** Satu halaman Tiket Saya + jumlah per status ('' = semua) untuk saringan yang sama tanpa filter status. */
+export interface HalamanTiketSaya {
+  data: TiketRingkas[];
+  current_page: number;
+  last_page: number;
+  total: number;
+  jumlah: Record<string, number>;
+}
+
 export interface OpsiRef {
   id: number;
   nama: string;
