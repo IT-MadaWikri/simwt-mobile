@@ -17,6 +17,8 @@ export interface Notifikasi {
   tautan: string | null;
   /** Id Kaizen terkait (notifikasi Kaizen baru); notifikasi lama tidak punya. */
   idKaizen: number | null;
+  /** Id artikel Berita (notifikasi artikel CMS yang diterbitkan); notifikasi lain tidak punya. */
+  idBerita: number | null;
   waktu: string | null;
   dibaca: boolean;
 }
@@ -51,6 +53,7 @@ export const notifikasiService = {
       pesan: teks(item.data?.pesan) ?? teks(item.data?.message) ?? '',
       tautan: teks(item.data?.link) ?? teks(item.data?.tautan),
       idKaizen: Number(item.data?.id_kaizen) || null,
+      idBerita: Number(item.data?.id_berita) || null,
       waktu: item.created_at ?? null,
       dibaca: !!item.read_at,
     }));

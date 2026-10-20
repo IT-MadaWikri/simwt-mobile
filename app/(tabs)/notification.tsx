@@ -194,6 +194,10 @@ export default function NotifikasiScreen() {
   };
 
   const buka = async (item: Notifikasi) => {
+    if (item.idBerita) {
+      router.push(`/services/berita/${item.idBerita}` as any);
+      return;
+    }
     if (item.tipe.toLowerCase().includes('kaizen') && (await bukaKaizen(item))) return;
     if (!item.tautan) return;
     // Tautan menunjuk halaman SIMWT web — buka di peramban dalam aplikasi (Custom Tabs / Safari View).
