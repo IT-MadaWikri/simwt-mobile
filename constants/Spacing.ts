@@ -34,11 +34,11 @@ export const Spacing = {
    * `full` = tombol, chip, badge, segmen (pil).
    */
   radius: {
-    sm: 12,
-    md: 16,
-    lg: 20,
-    xl: 24,
-    xxl: 28,
+    sm: 8,
+    md: 10,
+    lg: 12,
+    xl: 14,
+    xxl: 20,
     screen: 48,
     full: 999,
   },

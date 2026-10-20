@@ -1,4 +1,20 @@
-import Colors, { brand } from '../constants/Colors';
+// Warna layanan: `ikon` = warna dasar yang cerah (ubin kaca di ServiceIcon diturunkan darinya,
+// glifnya putih), `latar` = tint pucatnya untuk tempat lain (mis. halaman layanan).
+const pucat = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  const k = (g: number) => Math.round(((n >> g) & 255) * 0.15 + 255 * 0.85).toString(16).padStart(2, '0');
+  return `#${k(16)}${k(8)}${k(0)}`;
+};
+const warna = (ikon: string) => ({ latar: pucat(ikon), ikon });
+const WARNA = {
+  jingga: warna('#ff9a2e'),
+  koral: warna('#ff6a5c'),
+  tosca: warna('#1fc2a8'),
+  ungu: warna('#9a6bff'),
+  biru: warna('#4a98ff'),
+  pink: warna('#ff5d9a'),
+  hijau: warna('#34c96b'),
+};
 
 /**
  * SIMWT Mobile — layanan di grid beranda.
@@ -25,8 +41,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'kaizen',
     name: 'Kaizen',
     icon: 'lightbulb-on-outline',
-    backgroundColor: Colors.serviceAmber,
-    iconColor: '#b45309',
+    backgroundColor: WARNA.jingga.latar,
+    iconColor: WARNA.jingga.ikon,
     // Layar pertama tumpukan Kaizen adalah halaman menu (Kaizen saya / Butuh approval).
     route: '/kaizen',
     description: 'Continuous improvement',
@@ -35,8 +51,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'tiket-masalah',
     name: 'Tiket\nMasalah',
     icon: 'ticket-confirmation-outline',
-    backgroundColor: Colors.serviceRed,
-    iconColor: Colors.dangerDark,
+    backgroundColor: WARNA.koral.latar,
+    iconColor: WARNA.koral.ikon,
     route: '/services/tiket',
     description: 'Sistem ticketing & helpdesk',
   },
@@ -44,8 +60,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'database-aset',
     name: 'Aset',
     icon: 'database-outline',
-    backgroundColor: brand[50],
-    iconColor: brand[700],
+    backgroundColor: WARNA.tosca.latar,
+    iconColor: WARNA.tosca.ikon,
     route: '/services/database-aset',
     description: 'Manajemen data aset perusahaan',
   },
@@ -53,8 +69,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'skill-assessment',
     name: 'Skill\nAssessment',
     icon: 'star-circle-outline',
-    backgroundColor: Colors.serviceIndigo,
-    iconColor: '#283593',
+    backgroundColor: WARNA.ungu.latar,
+    iconColor: WARNA.ungu.ikon,
     route: '/services/skill-assessment',
     description: 'Penilaian keterampilan karyawan produksi',
   },
@@ -62,8 +78,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'control-stock',
     name: 'Control\nStock',
     icon: 'clipboard-list-outline',
-    backgroundColor: Colors.serviceTeal,
-    iconColor: '#0f766e',
+    backgroundColor: WARNA.biru.latar,
+    iconColor: WARNA.biru.ikon,
     route: '/services/control-stock',
     description: 'Stok opname & kontrol stok',
   },
@@ -71,8 +87,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'layanan-it',
     name: 'Layanan\nIT',
     icon: 'headset',
-    backgroundColor: Colors.serviceBlue,
-    iconColor: '#1d4ed8',
+    backgroundColor: WARNA.pink.latar,
+    iconColor: WARNA.pink.ikon,
     route: '/services/layanan-it',
     description: 'Request akun, sistem & bantuan IT',
   },
@@ -80,8 +96,8 @@ export const SERVICES: ServiceItem[] = [
     id: 'layanan-hrd',
     name: 'Layanan\nHRD',
     icon: 'account-group-outline',
-    backgroundColor: Colors.servicePurple,
-    iconColor: '#7e22ce',
+    backgroundColor: WARNA.hijau.latar,
+    iconColor: WARNA.hijau.ikon,
     route: '/services/layanan-hrd',
     description: 'Data karyawan, rekrutmen & layanan HRD',
   },

@@ -3,19 +3,18 @@
  * 5 tabs: Home, Aktivitas, Scan (Camera), Notifikasi, Profil
  */
 import React, { useEffect, useRef } from 'react';
-import { Tabs, useRouter, useSegments } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
-import { View, StyleSheet, Platform, Animated, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../constants/Colors';
-import Spacing from '../../constants/Spacing';
-import Typography, { fonts } from '../../constants/Typography';
+import Colors, { palet } from '../../constants/Colors';
+import { fonts } from '../../constants/Typography';
 import { gayaAppBar, opsiAppBar } from '../../src/components/common/AppBar';
 import TombolKembali from '../../src/components/common/TombolKembali';
 
 // Ikon tab: tebal saat aktif. Animasinya ada di BouncePress (saat di-tap).
 function AnimatedTabIcon({ name, focused, color }: { name: string, focused: boolean, color: any }) {
-  return <Icon name={name} size={26} color={color} strokeWidth={focused ? 2.5 : 1.75} />;
+  return <Icon name={name} size={22} color={color} strokeWidth={focused ? 2.5 : 1.75} />;
 }
 
 // Efek bounce saat di-tap: sama persis dengan grid layanan (ServiceIcon).
@@ -44,49 +43,46 @@ function BouncePress({ children, style, onPress, onLongPress, testID, ...rest }:
   );
 }
 
-// Tombol scan besar di tengah tab bar — pola khas Gojek yang dipertahankan.
+// Tombol scan berupa lingkaran mint, sejajar dengan tab lain.
 const CustomScanButton = ({ onPress }: any) => (
   <BouncePress style={styles.scanButton} onPress={onPress}>
     <View style={styles.scanButtonInner}>
-      <Icon name="qrcode-scan" size={24} color={Colors.white} />
+      <Icon name="qrcode-scan" size={24} color={Colors.ink} />
     </View>
   </BouncePress>
 );
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   // Tab bar tetap tampil di daftar chat; hanya disembunyikan di ruang chat dan
   // layar "baru" (segmen ke-3 ada), karena keduanya punya bilah tulis sendiri.
   const segments = useSegments() as string[];
   const dalamRuangChat = segments[1] === 'chat' && segments.length > 2;
-
-  // Handle open camera manually for now
-  const handleScanPress = () => {
-    // Navigate to a dedicated scan screen or simply alert for now
-    // We will create a dummy scan screen or use an existing one
-    console.log('Open camera scanner');
-    // Jika belum ada layar scanner, Anda bisa buat app/(tabs)/scan.tsx nantinya
-  };
 
   return (
     <Tabs
       // Kembali ke tab yang terakhir dibuka (mis. Menu Kaizen), bukan selalu ke beranda.
       backBehavior="history"
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
+        // Ikon & teks aktif: teal #31AAA9.
+        tabBarActiveTintColor: '#31AAA9',
         tabBarInactiveTintColor: Colors.textTertiary,
         tabBarStyle: {
           backgroundColor: Colors.white,
           borderTopWidth: 1,
           borderTopColor: Colors.borderSubtle,
-          // Padding bawah mengikuti safe area agar tidak tertutup navigasi Android.
-          height: Platform.OS === 'ios' ? 88 : 65 + insets.bottom,
-          paddingBottom: Platform.OS === 'ios' ? 28 : insets.bottom + 8,
-          paddingTop: 6,
+          // Safe area ditambah di bawah area tab agar tidak tertutup navigasi sistem.
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 6,
+          paddingTop: 8,
         },
+        // Label tebal saat aktif, reguler saat tidak.
+        tabBarLabel: ({ focused, color, children }) => (
+          <Text style={[styles.tabLabel, { color, fontFamily: focused ? fonts.bold : fonts.regular }]}>
+            {children}
+          </Text>
+        ),
         tabBarButton: (props) => <BouncePress {...props} />,
-        tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
         ...gayaAppBar,
         // Pindah tab menggeser mendatar, sama gayanya dengan transisi halaman lain.
@@ -123,7 +119,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tautan untuk Tombol Tengah (Scan) - Kita gunakan screen palsu atau yang sudah ada */}
       <Tabs.Screen
         name="scan"
         options={{
@@ -132,14 +127,7 @@ export default function TabLayout() {
           // (tombol kembali + judul) — header bawaan akan menimpanya.
           headerShown: false,
           tabBarIcon: () => null,
-          tabBarButton: (props) => (
-            <CustomScanButton {...props} onPress={() => {
-              // Jika ingin sekadar memanggil API/Kamera tanpa pindah tab, pakai fungsi di sini
-              // Karena user ingin membuka kamera, kita akan siapkan router.push('/camera') di masa depan.
-              // Untuk saat ini kita arahkan ke screen scan yang akan kita buat
-              router.push('/(tabs)/scan');
-            }} />
-          ),
+          tabBarButton: (props) => <CustomScanButton {...props} />,
         }}
       />
 
@@ -169,7 +157,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Pengaturan',
+          title: 'Setelan',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon name={focused ? 'cog' : 'cog-outline'} focused={focused} color={color} />
@@ -215,33 +203,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabLabel: {
-    fontFamily: fonts.medium,
-    fontSize: Typography.sizes.xs,
-  },
-  tabItem: {
-    paddingTop: 2,
-  },
-  badge: {
-    backgroundColor: Colors.danger,
-    fontFamily: fonts.bold,
     fontSize: 12,
-    minWidth: 18,
-    height: 18,
-    borderRadius: Spacing.radius.full,
   },
   scanButton: {
-    top: -6,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   scanButtonInner: {
-    width: 60,
-    height: 60,
-    borderRadius: Spacing.radius.full,
-    backgroundColor: Colors.primary,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: palet.mint,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: Colors.white,
+  },
+  tabItem: {
+    padding: 0,
   },
 });

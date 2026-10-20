@@ -5,11 +5,11 @@
  * brand); warna, font, dan sudutnya mengikuti karir-mwt.
  */
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from '../common/Icon';
 import BottomSheet from '../common/BottomSheet';
 import Avatar from '../common/Avatar';
-import { LinearGradient } from 'expo-linear-gradient';
+import Button from '../common/Button';
 import Colors, { brand, palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
@@ -66,33 +66,17 @@ export default function BirthdayBanner() {
 
   return (
     <>
-      <TouchableOpacity style={styles.banner} activeOpacity={0.9} onPress={() => setSheetTerbuka(true)}>
-        <LinearGradient
-          colors={[palet.hijau, palet.teal, palet.navy]}
-          locations={[0, 0.25, 0.7]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.bannerIsi}
-        >
-          <View style={styles.bannerIcon}>
-            <Icon name="gift" size={18} color={Colors.white} />
-          </View>
-
-          <View style={gs.flex1}>
-            <Text style={styles.bannerTitle} numberOfLines={1}>
-              Karyawan Berulang Tahun
+      <View style={styles.banner}>
+        <View style={styles.kartu}>
+          <View style={styles.teks}>
+            <Text style={styles.bannerTitle} numberOfLines={2}>
+              Hari ini {birthdays.length} karyawan berulang tahun 🎉
             </Text>
-            <Text style={styles.bannerSubtitle} numberOfLines={1}>
-              Hari ini ada{' '}
-              <Text style={styles.bannerCount}>{birthdays.length}</Text> karyawan berulang tahun 🎉
-            </Text>
+            <Button label="Lihat" onPress={() => setSheetTerbuka(true)} />
           </View>
-
-          <View style={styles.bannerTombol}>
-            <Text style={styles.bannerTombolText}>Lihat</Text>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
+        </View>
+        <Image source={require('../../../assets/images/maskot-ulang-tahun.png')} style={styles.maskot} resizeMode="contain" />
+      </View>
 
       <BottomSheet
         visible={sheetTerbuka}
@@ -111,51 +95,36 @@ export default function BirthdayBanner() {
 }
 
 const styles = StyleSheet.create({
+  // Maskot menonjol di atas kartu, jadi pembungkus diberi jarak atas & tidak memotong.
   banner: {
     marginHorizontal: Spacing.screenPadding,
+    marginTop: 40,
     marginBottom: Spacing.lg,
+  },
+  kartu: {
+    minHeight: 112,
+    justifyContent: 'center',
+    backgroundColor: palet.krem,
     borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
-    overflow: 'hidden',
+    padding: Spacing.lg,
   },
-  bannerIsi: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  teks: {
+    alignItems: 'flex-start',
     gap: Spacing.md,
-    padding: Spacing.md,
+    paddingRight: 118,
   },
-  bannerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: Spacing.radius.full,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  maskot: {
+    position: 'absolute',
+    right: Spacing.sm,
+    bottom: 0,
+    width: 110,
+    height: 150,
   },
   bannerTitle: {
     fontFamily: fonts.bold,
     fontSize: 12,
-    color: Colors.white,
-  },
-  bannerSubtitle: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-  },
-  bannerCount: {
-    fontFamily: fonts.bold,
-    color: palet.mint,
-  },
-  bannerTombol: {
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.full,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-  },
-  bannerTombolText: {
-    fontFamily: fonts.semibold,
-    fontSize: 12,
-    color: palet.navy,
+    color: Colors.ink,
   },
 
   daftar: {

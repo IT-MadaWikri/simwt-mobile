@@ -19,32 +19,43 @@
  * halaman yang lebih terang dari kartunya, supaya kartu terasa "mengambang".
  */
 
-/** Skala hijau brand PT Mada Wikri Tunggal. Identik dengan --color-brand-* di karir-mwt. */
+/** Skala hijau brand. Titik 400 = mint palet (#00FF99); 600+ digelapkan agar teks putih terbaca. */
 export const brand = {
-  50: '#ecfdf3',
-  100: '#d1fadf',
-  200: '#a6f4c5',
-  300: '#6ce9a6',
-  400: '#32d583',
-  500: '#12b76a',
-  600: '#05924e',
-  700: '#065b32',
-  800: '#054a2a',
-  900: '#043d23',
-  950: '#011a0e',
+  50: '#ecfff6',
+  100: '#c9ffe4',
+  200: '#8dffc9',
+  300: '#3dffb0',
+  400: '#00ff99',
+  500: '#00d67f',
+  600: '#00894f',
+  700: '#006b3e',
+  800: '#00552f',
+  900: '#00432a',
+  950: '#00231a',
 } as const;
 
 /**
- * Palet gradasi — empat warna berurutan dari terang ke gelap (mint → hijau →
- * teal → navy). Dipakai HANYA untuk `<LinearGradient>` (header beranda,
- * banner); elemen rata tetap memakai skala `brand`.
+ * Palet — mint, hijau limau, krem, kuning. Dasar `gradasiPalet` (untuk
+ * `<LinearGradient>`: banner, layar login); elemen rata tetap memakai skala `brand`.
  */
 export const palet = {
-  mint: '#DDF4E7',
-  hijau: '#67C090',
-  teal: '#26667F',
-  navy: '#124170',
+  mint: '#00FF99',
+  limau: '#B8FFA3',
+  krem: '#FFFBA6',
+  kuning: '#FFE600',
 } as const;
+
+/** Aksen kuning dari palet — untuk sorotan kecil, bukan latar luas. */
+export const aksen = {
+  krem: palet.krem,
+  kuning: palet.kuning,
+} as const;
+
+/** Gradasi gabungan seluruh palet (mint → hijau limau → krem → kuning). Dipakai untuk `<LinearGradient>`. */
+export const gradasiPalet = [palet.mint, palet.limau, palet.krem, palet.kuning] as const;
+
+/** `gradasiPalet` dicampur ±50% putih — latar luas yang tidak terlalu kontras (mis. header beranda). */
+export const gradasiLembut = ['#80FFCC', '#DBFFD1', '#FFFDD2', '#FFF280'] as const;
 
 /** Skala netral Tailwind `slate`. */
 export const slate = {
@@ -65,7 +76,7 @@ export const Colors = {
   slate,
 
   /** Warna teks utama karir-mwt (--color-ink) — hijau sangat gelap, bukan hitam. */
-  ink: '#0f1b14',
+  ink: '#0c1b1a',
 
   // ── Brand (alias yang dipakai di seluruh aplikasi) ──────────────────
   primary: brand[600],
@@ -76,8 +87,8 @@ export const Colors = {
   primaryGradientStart: brand[700],
   primaryGradientEnd: brand[500],
 
-  secondary: '#0f1b14',
-  accent: brand[400],
+  secondary: '#0c1b1a',
+  accent: aksen.kuning,
 
   // ── Status ──────────────────────────────────────────────────────────
   danger: '#ef4444',
@@ -92,7 +103,7 @@ export const Colors = {
   white: '#ffffff',
   black: '#000000',
   /** Latar halaman bersuasana brand — `.section-bg` di karir-mwt. */
-  background: '#f3faf7',
+  background: '#f4fbf7',
   /** Latar putih polos, dipakai kalau konten sudah penuh kartu. */
   backgroundPlain: '#ffffff',
   card: '#ffffff',
@@ -103,7 +114,7 @@ export const Colors = {
   //   textTertiary  — caption/meta: waktu, keterangan kecil, placeholder.
   // Jangan menulis hex/warna lain untuk teks biasa; pakai token ini
   // (atau gs.title / gs.body / gs.bodySm / gs.caption di GlobalStyles).
-  textPrimary: '#0f1b14',
+  textPrimary: '#0c1b1a',
   textSecondary: slate[600],
   textTertiary: slate[400],
   textOnBrand: '#ffffff',
@@ -130,9 +141,9 @@ export const Colors = {
 
   // ── Varian tema (dipakai komponen bawaan Expo) ──────────────────────
   light: {
-    text: '#0f1b14',
+    text: '#0c1b1a',
     textSecondary: slate[600],
-    background: '#f3faf7',
+    background: '#f4fbf7',
     card: '#ffffff',
     tint: brand[600],
     tabIconDefault: slate[400],
@@ -140,7 +151,7 @@ export const Colors = {
     border: slate[200],
   },
   dark: {
-    text: '#e8f5ee',
+    text: '#e6faf7',
     textSecondary: slate[400],
     background: brand[950],
     card: brand[900],

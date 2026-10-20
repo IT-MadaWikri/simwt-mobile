@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../src/components/common/Icon';
 import Button from '../src/components/common/Button';
 import TombolKembali from '../src/components/common/TombolKembali';
-import Colors, { palet } from '../constants/Colors';
+import Colors, { gradasiPalet } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import { gs, inputReset } from '../constants/GlobalStyles';
 import { useLupaPassword } from '../src/hooks/useLupaPassword';
@@ -31,7 +31,7 @@ export default function LupaPasswordScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <LinearGradient colors={[palet.mint, Colors.white]} locations={[0, 0.45]} style={gs.flex1}>
+    <LinearGradient colors={[...gradasiPalet, Colors.white]} locations={[0, 0.12, 0.24, 0.36, 0.6]} style={gs.flex1}>
       <KeyboardAvoidingView style={gs.flex1} behavior="padding">
         <StatusBar style="dark" />
         <View style={[styles.atas, { paddingTop: insets.top + Spacing.md }]}>
