@@ -1,50 +1,28 @@
 /**
- * Layanan Autentikasi
- * Mengelola proses login, logout, dan pengambilan profil.
+ * Setelan — avatar & identitas di tengah, kartu ajakan biometrik, lalu menu
+ * dalam kelompok kartu putih. Logika biometrik & keluar ada di sini; tampilan
+ * barisnya di `profil/BarisSetelan`.
  */
-// File profile.tsx code block starts here:
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Platform,
-} from 'react-native';
-import Icon from '../../src/components/common/Icon'
-import Avatar from '../../src/components/common/Avatar';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import KartuPromo from '../../src/components/common/KartuPromo';
+import BarisSetelan from '../../src/components/profil/BarisSetelan';
+import Avatar from '../../src/components/common/Avatar';
 import { biometric } from '../../src/utils/biometric';
-import Colors, { brand, slate, gradasiPalet } from '../../constants/Colors';
+import Colors, { gradasiLembut } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { authService } from '../../src/services/authService';
 import { fonts } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import Button from '../../src/components/common/Button';
 
-interface MenuItem {
-  icon: string;
-  label: string;
-  subtitle?: string;
-  color?: string;
-  onPress?: () => void;
-  danger?: boolean;
-  isToggle?: boolean;
-  toggleValue?: boolean;
-  onToggle?: (val: boolean) => void;
-}
-
-/**
- * Komponen ProfileScreen
- * Halaman utama untuk melihat informasi profil pengguna dan menu pengaturan.
- */
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [loadingLogout, setLoadingLogout] = useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [namaBiometrik, setNamaBiometrik] = useState('Sidik Jari');
@@ -61,10 +39,11 @@ export default function ProfileScreen() {
   /**
    * Menyalakan/mematikan masuk cepat.
    *
-   * Menyalakan dari sini TIDAK bisa langsung menyimpan kredensial: aplikasi
-   * sudah tidak memegang kata sandi setelah pengguna masuk. Karena itu jalur
-   * "nyalakan" hanya mengarahkan — penyimpanannya terjadi di layar login,
-   * tepat setelah masuk manual berhasil.
+   * Aplikasi tidak memegang kata sandi setelah pengguna masuk, jadi menyalakan
+   * dari sini berarti: pindai biometrik (memastikan pemegang perangkat) →
+   * minta kata sandi sekali → verifikasi lewat login ke server (sekaligus
+   * memperbarui sesi) → baru simpan terenkripsi. Kata sandi salah = tidak ada
+   * yang tersimpan.
    */
   const toggleBiometric = async (value: boolean) => {
     if (!value) {
@@ -85,13 +64,28 @@ export default function ProfileScreen() {
       return;
     }
 
-    // Toggle sengaja dibiarkan mati — jangan tampilkan "aktif" padahal
-    // kredensialnya belum ada; tombol di layar login akan gagal senyap.
-    setIsBiometricEnabled(false);
-    dialog.alert(
-      `Aktifkan Masuk dengan ${namaBiometrik}`,
-      `Keluar lalu masuk sekali lagi dengan kata sandi. Setelah berhasil, akan muncul tawaran untuk mengaktifkan ${namaBiometrik.toLowerCase()}.`
-    );
+    if (!user?.username) {
+      dialog.alert('Gagal', 'Data akun belum dimuat. Coba lagi sebentar lagi.', 'danger');
+      return;
+    }
+    if (!(await biometric.konfirmasi(`Pindai ${namaBiometrik.toLowerCase()} untuk melanjutkan`))) return;
+
+    const sandi = await dialog.prompt({
+      title: `Aktifkan Masuk dengan ${namaBiometrik}`,
+      message: 'Masukkan kata sandi akun Anda sekali. Disimpan terenkripsi di perangkat ini saja.',
+      confirmText: 'Aktifkan',
+      isian: { placeholder: 'Kata sandi', rahasia: true },
+    });
+    if (!sandi) return;
+
+    try {
+      await login(user.username, sandi);
+      await biometric.nyalakan({ username: user.username, password: sandi });
+      setIsBiometricEnabled(true);
+      dialog.alert('Berhasil', `Masuk dengan ${namaBiometrik.toLowerCase()} sudah aktif.`, 'success');
+    } catch (e: any) {
+      dialog.alert('Gagal Mengaktifkan', e?.message || 'Kata sandi salah atau koneksi bermasalah.', 'danger');
+    }
   };
 
   /**
@@ -117,155 +111,117 @@ export default function ProfileScreen() {
     }
   };
 
-  const menuItems: MenuItem[][] = [
-    [
-      {
-        icon: 'fingerprint',
-        label: `Masuk dengan ${namaBiometrik}`,
-        subtitle: isBiometricEnabled
-          ? 'Aktif — kredensial tersimpan terenkripsi di perangkat'
-          : 'Masuk tanpa mengetik kata sandi',
-        isToggle: true,
-        toggleValue: isBiometricEnabled,
-        onToggle: toggleBiometric,
-      },
-      { 
-        icon: 'shield-lock-outline', 
-        label: 'Keamanan Akun', 
-        subtitle: 'Password & Autentikasi',
-        onPress: () => dialog.alert('Keamanan Akun', 'Fitur ganti password sedang dikembangkan.')
-      },
-      { 
-        icon: 'bell-outline', 
-        label: 'Pengaturan Notifikasi', 
-        subtitle: 'Atur pemberitahuan',
-        onPress: () => dialog.alert('Segera Hadir', 'Fitur pengaturan notifikasi sedang dalam pengembangan.')
-      },
-    ],
-    [
-      { 
-        icon: 'translate', 
-        label: 'Bahasa', 
-        subtitle: 'Indonesia',
-        onPress: () => dialog.alert('Bahasa', 'Pilihan bahasa saat ini hanya Bahasa Indonesia.')
-      },
-      { 
-        icon: 'human-capacity-increase', 
-        label: 'Aksesibilitas', 
-        subtitle: 'Ukuran teks & tema',
-        onPress: () => dialog.alert('Aksesibilitas', 'Pengaturan aksesibilitas sedang dalam pengembangan.')
-      },
-    ],
-    [
-      { 
-        icon: 'information-outline', 
-        label: 'Tentang Aplikasi', 
-        subtitle: 'Versi 1.0.0 (SIMWT)',
-        onPress: () => dialog.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.')
-      },
-      { 
-        icon: 'help-circle-outline', 
-        label: 'Pusat Bantuan', 
-        subtitle: 'FAQ & Hubungi Kami',
-        onPress: () => dialog.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')
-      },
-    ],
-  ];
+  const nama = user?.nama_lengkap || user?.name || user?.username || 'Pengguna';
 
   return (
     <View style={styles.container}>
-      {/* Banner atas: gradasi palet */}
+      {/* Latar atas: gradasi lembut yang memudar ke warna halaman. */}
       <LinearGradient
-        colors={[...gradasiPalet]}
+        colors={[...gradasiLembut]}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
-        style={styles.greenBanner}
+        style={styles.latarAtas}
+      />
+      <LinearGradient
+        colors={['rgba(244,251,247,0)', Colors.background]}
+        pointerEvents="none"
+        style={styles.latarAtas}
       />
 
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent} 
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + Spacing.md }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Floating Profile Card */}
-        <TouchableOpacity 
-          style={styles.profileCard} 
-          activeOpacity={0.8}
-          onPress={() => router.push('/(tabs)/edit-profile')}
-        >
-          <View style={styles.profileCardInner}>
-            <View style={styles.avatarContainer}>
-              <Avatar nama={user?.nama_lengkap || user?.name || user?.username} ukuran={64} />
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.name}>{user?.nama_lengkap || user?.name || user?.username || 'Pengguna'}</Text>
-              <Text style={styles.emailText}>{user?.email || 'email@mwtpart.co.id'}</Text>
-              <Text style={styles.phoneText}>{user?.phone || '+6281234567890'}</Text> 
-            </View>
-            <View style={styles.editIconBtn}>
-              <Icon name="pencil" size={20} color={Colors.textSecondary} />
-            </View>
-          </View>
-        </TouchableOpacity>
+        <Text style={styles.judulHalaman}>Setelan</Text>
 
-        {/* Menu Sections */}
+        <View style={styles.identitas}>
+          <Avatar nama={nama} foto={user?.avatar} ukuran={88} style={styles.avatar} />
+          {/* Sapaan besar di beranda juga pengecualian 12px; nama di sini 20. */}
+          <Text style={styles.nama} numberOfLines={1}>{nama}</Text>
+          <Text style={styles.email} numberOfLines={1}>{user?.email || 'email@mwtpart.co.id'}</Text>
+        </View>
+
         <View style={styles.menuContainer}>
-          {menuItems.map((section, sectionIndex) => (
-          <View key={sectionIndex} style={styles.menuSection}>
-            {section.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.menuItem,
-                  index === section.length - 1 && styles.lastMenuItem,
-                ]}
-                onPress={item.onPress || (() => {})}
-                activeOpacity={0.7}
-              >
-                <View style={styles.menuIconBg}>
-                  <Icon
-                    name={item.icon as any}
-                    size={22}
-                    color={Colors.primary}
-                  />
-                </View>
-                <View style={styles.menuContent}>
-                  <Text style={styles.menuLabel}>{item.label}</Text>
-                  {item.subtitle ? (
-                    <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-                  ) : null}
-                </View>
-                {item.isToggle ? (
-                  <Switch
-                    value={item.toggleValue}
-                    onValueChange={item.onToggle}
-                    trackColor={{ false: Colors.border, true: brand[600] }}
-                    thumbColor={Platform.OS === 'android' ? (item.toggleValue ? Colors.white : slate[50]) : ''}
-                  />
-                ) : (
-                  <Icon name="chevron-right" size={22} color={Colors.textTertiary} />
-                )}
-              </TouchableOpacity>
-            ))}
+          {!isBiometricEnabled ? (
+            <KartuPromo
+              ikon="fingerprint"
+              label={`Aktifkan ${namaBiometrik}`}
+              onPress={() => toggleBiometric(true)}
+            />
+          ) : null}
+
+          <View style={styles.kelompok}>
+            <BarisSetelan
+              ikon="account-cog-outline"
+              label="Kelola profil"
+              onPress={() => router.push('/(tabs)/edit-profile')}
+              terakhir={!isBiometricEnabled}
+            />
+            {/* Belum aktif → kartu ajakan di atas; sudah aktif → sakelar ini, untuk mematikannya. */}
+            {isBiometricEnabled ? (
+              <BarisSetelan
+                ikon="fingerprint"
+                label={`Masuk dengan ${namaBiometrik}`}
+                sakelar={{ aktif: true, onUbah: toggleBiometric }}
+                terakhir
+              />
+            ) : null}
           </View>
-        ))}
 
-        {/* Tombol Logout Terpisah (Gojek Style Logout Button) */}
-        <Button
-          variant="dangerOutline"
-          icon="logout"
-          label="Keluar dari Aplikasi"
-          onPress={handleLogout}
-          loading={loadingLogout}
-          block
-          style={{ marginTop: Spacing.md }}
-        />
-      </View>
+          <View style={styles.kelompok}>
+            <BarisSetelan
+              ikon="shield-lock-outline"
+              label="Keamanan akun"
+              onPress={() => dialog.alert('Keamanan Akun', 'Fitur ganti password sedang dikembangkan.')}
+            />
+            <BarisSetelan
+              ikon="bell-outline"
+              label="Pengaturan notifikasi"
+              onPress={() => dialog.alert('Segera Hadir', 'Fitur pengaturan notifikasi sedang dalam pengembangan.')}
+            />
+            <BarisSetelan
+              ikon="translate"
+              label="Bahasa"
+              nilai="Indonesia"
+              onPress={() => dialog.alert('Bahasa', 'Pilihan bahasa saat ini hanya Bahasa Indonesia.')}
+            />
+            <BarisSetelan
+              ikon="human-capacity-increase"
+              label="Aksesibilitas"
+              onPress={() => dialog.alert('Aksesibilitas', 'Pengaturan aksesibilitas sedang dalam pengembangan.')}
+              terakhir
+            />
+          </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>SIMWT Mobile by IT Mada Wikri Tunggal</Text>
-        <Text style={styles.footerText}>Versi 1.0.0</Text>
-      </View>
+          <View style={styles.kelompok}>
+            <BarisSetelan
+              ikon="help-circle-outline"
+              label="Pusat bantuan"
+              onPress={() => dialog.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')}
+            />
+            <BarisSetelan
+              ikon="information-outline"
+              label="Tentang aplikasi"
+              nilai="v1.0.0"
+              onPress={() => dialog.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.')}
+              terakhir
+            />
+          </View>
+
+          <Button
+            variant="dangerOutline"
+            icon="logout"
+            label="Keluar dari Aplikasi"
+            onPress={handleLogout}
+            loading={loadingLogout}
+            block
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>SIMWT Mobile by IT Mada Wikri Tunggal</Text>
+          <Text style={styles.footerText}>Versi 1.0.0</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -274,103 +230,61 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background, // Latar belakang abu muda khas Gojek
+    backgroundColor: Colors.background,
   },
-  greenBanner: {
+  latarAtas: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 180,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    height: 260,
   },
   scrollContent: {
-    paddingTop: 80, // Jarak agar card turun sedikit
     paddingBottom: Spacing.xxxl * 2,
   },
-  profileCard: {
-    marginHorizontal: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.xl,
-    ...Spacing.curve,
-    padding: Spacing.lg,
+  judulHalaman: {
+    textAlign: 'center',
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.lg,
+  },
+  identitas: {
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.xl,
   },
-  profileCardInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  avatar: {
+    borderWidth: 3,
+    borderColor: Colors.white,
   },
-  avatarContainer: {
-    marginRight: Spacing.md,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 12,
-    fontFamily: fonts.extrabold,
+  nama: {
+    marginTop: Spacing.md,
+    fontFamily: fonts.bold,
+    fontSize: 20,
     color: Colors.textPrimary,
-    marginBottom: 2,
   },
-  emailText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginBottom: 2,
-  },
-  phoneText: {
+  email: {
+    marginTop: 2,
+    fontFamily: fonts.regular,
     fontSize: 12,
     color: Colors.textTertiary,
-  },
-  editIconBtn: {
-    padding: Spacing.sm,
   },
   menuContainer: {
     paddingHorizontal: Spacing.lg,
   },
-  menuSection: {
+  kelompok: {
     backgroundColor: Colors.white,
     borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.borderSubtle,
+    overflow: 'hidden',
     marginBottom: Spacing.lg,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderSubtle,
-  },
-  lastMenuItem: {
-    borderBottomWidth: 0,
-  },
-  menuIconBg: {
-    width: 44,
-    height: 44,
-    borderRadius: 16, // Squircle icon
-    backgroundColor: brand[50], // Hijau muda transparan
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  menuContent: {
-    flex: 1,
-  },
-  menuLabel: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-    color: Colors.textPrimary,
-  },
-  menuSubtitle: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
-    fontFamily: fonts.medium,
   },
   footer: {
     alignItems: 'center',
-    paddingBottom: 40,
-    paddingTop: 10,
+    paddingTop: Spacing.xl,
   },
   footerText: {
     fontSize: 12,

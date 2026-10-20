@@ -72,20 +72,6 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
         <LencanaAngka jumlah={service.lencana} ukuran={18} style={styles.lencanaAngka} />
       );
     }
-    if (service.id === 'database-aset') {
-      return (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>Baru</Text>
-        </View>
-      );
-    }
-    if (service.id === 'tiket-masalah') {
-      return (
-        <View style={[styles.badge, { backgroundColor: Colors.danger }]}>
-          <Text style={styles.badgeText}>Hot</Text>
-        </View>
-      );
-    }
     return null;
   };
 
@@ -184,7 +170,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: Spacing.radius.sm,
   },
-  // Lencana angka ditaruh di pojok kanan atas, bukan kiri seperti "Baru"/"Hot".
+  // Lencana angka ditaruh di pojok kanan atas, bukan kiri seperti "Soon".
   lencanaAngka: {
     position: 'absolute',
     top: -6,

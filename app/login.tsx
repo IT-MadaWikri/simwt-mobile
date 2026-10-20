@@ -29,6 +29,7 @@ import Typography, { fonts } from '../constants/Typography';
 import { gs, inputReset } from '../constants/GlobalStyles';
 import { useAuth } from '../src/contexts/AuthContext';
 import { biometric } from '../src/utils/biometric';
+import { jalankanSetelahTransisi } from '../src/utils/useSetelahTransisi';
 import { dialog } from '../src/components/common/AppDialog';
 import Button from '../src/components/common/Button';
 
@@ -109,10 +110,16 @@ export default function LoginScreen() {
   const tawarkanBiometrik = async (namaPengguna: string, sandi: string) => {
     if (!(await biometric.didukung()) || (await biometric.siapDipakai())) return;
 
+    // Berhasil masuk memicu perpindahan ke beranda (redirect di _layout). Modal yang
+    // dibuka di tengah transisi itu di Android bisa tidak pernah tampil, jadi tunggu dulu.
+    await new Promise<void>((selesai) => {
+      jalankanSetelahTransisi(() => setTimeout(selesai, 300));
+    });
+
     const jenis = await biometric.namaJenis();
     const setuju = await dialog.confirm({
       title: `Aktifkan Masuk dengan ${jenis}?`,
-      message: `Lain kali cukup memindai ${jenis.toLowerCase()} tanpa mengetik kata sandi. Bisa dimatikan kapan saja lewat halaman Profil.`,
+      message: `Lain kali cukup memindai ${jenis.toLowerCase()} tanpa mengetik kata sandi. Bisa dimatikan kapan saja lewat halaman Setelan.`,
       confirmText: 'Aktifkan',
       cancelText: 'Nanti Saja',
     });
@@ -259,25 +266,18 @@ export default function LoginScreen() {
             <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>Lupa Password?</Text>
           </TouchableOpacity>
 
-          <Button label="Masuk" iconRight="arrow-right" onPress={handleLogin} loading={mengirim} block />
-
-          {biometrikSiap && (
-            <>
-              <View style={[gs.row, gs.gapMd, { marginVertical: Spacing.lg }]}>
-                <View style={styles.garis} />
-                <Text style={gs.caption}>atau</Text>
-                <View style={styles.garis} />
-              </View>
-
+          <View style={[gs.row, gs.gapSm]}>
+            <Button label="Masuk" iconRight="arrow-right" onPress={handleLogin} loading={mengirim} style={gs.flex1} />
+            {biometrikSiap && (
               <Button
                 variant="outline"
                 icon="fingerprint"
-                label={`Masuk dengan ${namaBiometrik}`}
                 onPress={masukBiometrik}
-                block
+                disabled={mengirim}
+                accessibilityLabel={`Masuk dengan ${namaBiometrik}`}
               />
-            </>
-          )}
+            )}
+          </View>
         </Animated.View>
 
         <View style={[gs.center, styles.kaki]}>
@@ -367,12 +367,6 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.md,
     padding: Spacing.xs,
   },
-  garis: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.borderSubtle,
-  },
-
   kaki: {
     marginTop: Spacing.xxl,
   },

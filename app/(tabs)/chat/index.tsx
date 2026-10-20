@@ -9,6 +9,7 @@
 import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useCallback, useState } from 'react';
 import AppBar from '../../../src/components/common/AppBar';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
@@ -160,9 +161,7 @@ export default function DaftarChatScreen() {
         contentContainerStyle={{ paddingBottom: Spacing.xxxl }}
         ItemSeparatorComponent={() => <View style={styles.pemisah} />}
         ListEmptyComponent={
-          <Text style={[gs.emptyText, { marginTop: Spacing.xxl }]}>
-            Belum ada percakapan. Mulai lewat tombol Chat Baru.
-          </Text>
+          <KeadaanKosong pose="sapa" judul="Belum ada percakapan" teks="Mulai lewat tombol Chat Baru." />
         }
       />
 

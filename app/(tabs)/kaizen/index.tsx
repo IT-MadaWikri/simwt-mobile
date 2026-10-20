@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
 import Icon from '../../../src/components/common/Icon';
 import RekapBulan from '../../../src/components/kaizen/RekapBulan';
+import BannerAksi from '../../../src/components/common/BannerAksi';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
 import { Skeleton, SkeletonBaris } from '../../../src/components/common/Skeleton';
@@ -93,6 +94,27 @@ export default function MenuKaizenScreen() {
             <ServiceIcon key={m.id} service={m} />
           ))}
         </View>
+
+        {(bisaApprove && menunggu > 0) || jumlahDraf > 0 ? (
+        <View style={styles.bagian}>
+          {bisaApprove && menunggu > 0 ? (
+            <BannerAksi
+              tokoh="putra"
+              warna="krem"
+              judul={`${menunggu} Kaizen menunggu keputusanmu`}
+              teks="Tinjau dan setujui pengajuan tim."
+              onPress={() => router.push('/(tabs)/activity?jenis=kaizen' as any)}
+            />
+          ) : null}
+          {jumlahDraf > 0 ? (
+            <BannerAksi
+              judul={`${jumlahDraf} draf belum selesai`}
+              teks="Lanjutkan Kaizen yang sudah kamu simpan."
+              onPress={() => router.push('/kaizen/draf' as any)}
+            />
+          ) : null}
+        </View>
+        ) : null}
 
         {profil === null ? (
           <View style={styles.bagian}>

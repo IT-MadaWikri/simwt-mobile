@@ -7,6 +7,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -47,11 +48,7 @@ export default function DrafKaizenScreen() {
         contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
         ListEmptyComponent={
           daftar ? (
-            <View style={gs.centerFill}>
-              <Icon name="file-document" size={44} color={Colors.textTertiary} />
-              <Text style={gs.emptyTitle}>Belum ada draf</Text>
-              <Text style={gs.emptyText}>Tekan "Simpan draf" di halaman Buat Kaizen untuk menyimpan isian yang belum selesai.</Text>
-            </View>
+            <KeadaanKosong pose="ide" judul="Belum ada draf" teks={'Tekan "Simpan draf" di halaman Buat Kaizen untuk menyimpan isian yang belum selesai.'} />
           ) : null
         }
         renderItem={({ item }) => {

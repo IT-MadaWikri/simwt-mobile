@@ -25,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from '../../../src/components/common/Icon';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import Button from '../../../src/components/common/Button';
 import RekapBulan from '../../../src/components/kaizen/RekapBulan';
 import FieldTanggal from '../../../src/components/common/FieldTanggal';
@@ -208,21 +209,13 @@ export default function KaizenSaya() {
   };
 
   const kosong = (
-    <View style={styles.kosong}>
-      <View style={styles.kosongIkon}>
-        <Icon name={error ? 'alert-circle-outline' : 'lightbulb-on-outline'} size={36} color={error ? Colors.danger : brand[600]} />
-      </View>
-      <Text style={gs.emptyTitle}>{error ? 'Gagal memuat' : adaFilter ? 'Tidak ditemukan' : 'Belum ada Kaizen'}</Text>
-      <Text style={[gs.emptyText, gs.textCenter]}>
-        {error ||
-          (adaFilter
-            ? 'Coba kata kunci, status, atau tanggal lain.'
-            : 'Punya ide perbaikan? Ajukan Kaizen pertamamu sekarang.')}
-      </Text>
-      {error ? (
-        <Button label="Coba lagi" onPress={cobaLagi} style={{ marginTop: Spacing.lg }} />
-      ) : null}
-    </View>
+    <KeadaanKosong
+      pose={error || adaFilter ? 'mikir' : 'ide'}
+      judul={error ? 'Gagal memuat' : adaFilter ? 'Tidak ditemukan' : 'Belum ada Kaizen'}
+      teks={error || (adaFilter ? 'Coba kata kunci, status, atau tanggal lain.' : 'Punya ide perbaikan? Ajukan Kaizen pertamamu sekarang.')}
+    >
+      {error ? <Button label="Coba lagi" onPress={cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
+    </KeadaanKosong>
   );
 
   return (
@@ -802,20 +795,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.bold,
     letterSpacing: 0.4,
-  },
-  kosong: {
-    alignItems: 'center',
-    paddingTop: Spacing.xxxl,
-    paddingHorizontal: Spacing.xl,
-  },
-  kosongIkon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: brand[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
   },
   barBawah: {
     flexDirection: 'row',

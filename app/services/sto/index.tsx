@@ -18,6 +18,7 @@ import { gs } from '../../../constants/GlobalStyles';
 import { stoService, StoLembar, StoPeriode } from '../../../src/services/stoService';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
 import AppBar from '../../../src/components/common/AppBar';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
 /** Rupa lencana per status periode. */
@@ -117,28 +118,11 @@ export default function StoScreen() {
         }
       >
         {galat ? (
-          <View style={[gs.card, gs.center]}>
-            <Icon
-              name="alert-circle-outline"
-              size={44}
-              color={Colors.textTertiary}
-            />
-            <Text style={gs.emptyTitle}>Gagal memuat</Text>
-            <Text style={gs.emptyText}>{galat}</Text>
+          <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={galat}>
             <Button label="Coba Lagi" onPress={muat} style={{ marginTop: Spacing.lg }} />
-          </View>
+          </KeadaanKosong>
         ) : periode.length === 0 ? (
-          <View style={[gs.card, gs.center]}>
-            <Icon
-              name="clipboard-text-off-outline"
-              size={44}
-              color={Colors.textTertiary}
-            />
-            <Text style={gs.emptyTitle}>Belum ada periode</Text>
-            <Text style={gs.emptyText}>
-              Belum ada dokumen Stok Opname untuk plant Anda.
-            </Text>
-          </View>
+          <KeadaanKosong pose="persilakan" judul="Belum ada periode" teks="Belum ada dokumen Stok Opname untuk plant Anda." />
         ) : (
           <>
             <Text style={gs.sectionEyebrow}>Periode</Text>

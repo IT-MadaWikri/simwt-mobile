@@ -17,6 +17,7 @@ import { gs } from '../../constants/GlobalStyles';
 import { fonts } from '../../constants/Typography';
 import { API_CONFIG } from '../../constants/Api';
 import AppBar from '../../src/components/common/AppBar';
+import KeadaanKosong from '../../src/components/common/KeadaanKosong';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
   notifikasiService,
@@ -258,19 +259,11 @@ export default function NotifikasiScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <View style={styles.kosong}>
-            <View style={styles.kosongIkon}>
-              <Icon
-                name={galat ? 'alert-circle-outline' : 'bell-off-outline'}
-                size={36}
-                color={galat ? Colors.danger : brand[600]}
-              />
-            </View>
-            <Text style={gs.emptyTitle}>{galat ? 'Gagal memuat' : 'Belum ada notifikasi'}</Text>
-            <Text style={[gs.emptyText, gs.textCenter]}>
-              {galat ?? 'Pemberitahuan untuk Anda akan tampil di sini.'}
-            </Text>
-          </View>
+          <KeadaanKosong
+            pose={galat ? 'mikir' : 'salam'}
+            judul={galat ? 'Gagal memuat' : 'Belum ada notifikasi'}
+            teks={galat ?? 'Pemberitahuan untuk Anda akan tampil di sini.'}
+          />
         }
         renderItem={({ item }) => {
           const rupa = rupaNotifikasi(item.tipe);
@@ -389,19 +382,5 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: Colors.border,
     marginLeft: 42 + Spacing.md,
-  },
-  kosong: {
-    alignItems: 'center',
-    paddingTop: Spacing.xxxl,
-    paddingHorizontal: Spacing.xl,
-  },
-  kosongIkon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: brand[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
   },
 });

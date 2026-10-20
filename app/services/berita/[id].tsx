@@ -8,6 +8,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import RenderHTML from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BarisBerita from '../../../src/components/berita/BarisBerita';
+import BagikanSosmed from '../../../src/components/berita/BagikanSosmed';
 import AppBar from '../../../src/components/common/AppBar';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Button from '../../../src/components/common/Button';
@@ -123,6 +124,11 @@ export default function BeritaDetailScreen() {
           tagsStyles={tagsStyles}
           // Font Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
           systemFonts={[fonts.regular, fonts.bold]}
+        />
+
+        <BagikanSosmed
+          teks={teksBagikanBerita(berita)}
+          onGagal={(nama) => dialog.alert('Gagal Membuka', `${nama} tidak bisa dibuka di perangkat ini.`, 'danger')}
         />
 
         {berita.terkait.length > 0 ? (

@@ -8,6 +8,7 @@ import Spacing from '../../../constants/Spacing';
 import { Employee, karyawanService } from '../../../src/services/karyawanService';
 import { fonts, judulAppBar } from '../../../constants/Typography';
 import AppBar from '../../../src/components/common/AppBar';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { inputReset } from '../../../constants/GlobalStyles';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 
@@ -132,11 +133,7 @@ export default function HumanCapitalScreen() {
             contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Icon name="account-search-outline" size={64} color={Colors.textTertiary} />
-                <Text style={styles.emptyTitle}>Tidak Ditemukan</Text>
-                <Text style={styles.emptySubtitle}>Tidak ada karyawan yang cocok dengan pencarian Anda.</Text>
-              </View>
+              <KeadaanKosong pose="mikir" judul="Tidak Ditemukan" teks="Tidak ada karyawan yang cocok dengan pencarian Anda." />
             }
           />
         )}
@@ -254,22 +251,5 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     color: Colors.textSecondary,
     fontSize: 12,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: Spacing.xxxl,
-  },
-  emptyTitle: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-    color: Colors.textPrimary,
-    marginTop: Spacing.md,
-  },
-  emptySubtitle: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
   },
 });

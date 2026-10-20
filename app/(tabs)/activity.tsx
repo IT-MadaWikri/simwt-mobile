@@ -20,6 +20,7 @@ import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } fr
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Icon from '../../src/components/common/Icon';
+import KeadaanKosong from '../../src/components/common/KeadaanKosong';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
@@ -188,19 +189,11 @@ export default function ApprovalCenterScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <View style={styles.kosong}>
-            <View style={styles.kosongIkon}>
-              <Icon
-                name={galat ? 'alert-circle-outline' : 'check-circle-outline'}
-                size={36}
-                color={galat ? Colors.danger : brand[600]}
-              />
-            </View>
-            <Text style={gs.emptyTitle}>{galat ? 'Gagal memuat' : 'Semua beres'}</Text>
-            <Text style={[gs.emptyText, gs.textCenter]}>
-              {galat ?? 'Tidak ada pengajuan yang menunggu keputusan Anda.'}
-            </Text>
-          </View>
+          <KeadaanKosong
+            pose={galat ? 'mikir' : 'jempol'}
+            judul={galat ? 'Gagal memuat' : 'Semua beres'}
+            teks={galat ?? 'Tidak ada pengajuan yang menunggu keputusan Anda.'}
+          />
         }
         renderItem={({ item }) => {
           const rupa = RUPA[item.jenis];
@@ -316,19 +309,5 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 12,
     fontFamily: fonts.semibold,
-  },
-  kosong: {
-    alignItems: 'center',
-    paddingTop: Spacing.xxxl,
-    paddingHorizontal: Spacing.xl,
-  },
-  kosongIkon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: brand[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
   },
 });
