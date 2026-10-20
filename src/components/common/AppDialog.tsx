@@ -44,6 +44,8 @@ interface KonfigIsian {
   /** Tombol utama mati sampai isian tidak kosong. Default: true. */
   wajib?: boolean;
   maxLength?: number;
+  /** Sembunyikan ketikan (kata sandi). */
+  rahasia?: boolean;
 }
 
 interface DialogRequest {
@@ -202,6 +204,8 @@ export function DialogHost() {
               onChangeText={setTeks}
               multiline={req.isian.multiline}
               maxLength={req.isian.maxLength}
+              secureTextEntry={req.isian.rahasia}
+              autoCapitalize={req.isian.rahasia ? 'none' : undefined}
               autoFocus
             />
           ) : null}

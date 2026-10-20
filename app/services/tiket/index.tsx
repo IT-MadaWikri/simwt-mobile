@@ -9,6 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
+import BannerMaskot from '../../../src/components/common/BannerMaskot';
+import BannerAksi from '../../../src/components/common/BannerAksi';
 import { SkeletonBaris } from '../../../src/components/common/Skeleton';
 import KartuTiket from '../../../src/components/tiket/KartuTiket';
 import Colors from '../../../constants/Colors';
@@ -74,6 +76,22 @@ export default function MenuTiketScreen() {
             <ServiceIcon key={m.id} service={m} />
           ))}
         </View>
+
+        <BannerMaskot
+          pose="mikir"
+          warna="krem"
+          judul="Ada kendala di"
+          sorot="pekerjaanmu?"
+          teks="Laporkan lewat tiket, tim terkait akan menindaklanjuti."
+          label="Buat Tiket"
+          onPress={() => router.push('/services/tiket/buat' as any)}
+        />
+        <BannerAksi
+          tokoh="putra"
+          judul="Scan QR aset"
+          teks="Lihat riwayat perbaikan langsung dari label aset."
+          onPress={() => router.push('/(tabs)/scan' as any)}
+        />
 
         <View style={styles.bagian}>
           <SectionHeader title="Tiket Terbaru" actionText="Lihat Semua" onAction={() => router.push('/services/tiket/saya')} />

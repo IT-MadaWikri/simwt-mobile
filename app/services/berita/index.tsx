@@ -6,6 +6,7 @@ import { ActivityIndicator, FlatList, RefreshControl, Share, StyleSheet, Text, V
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
@@ -56,7 +57,7 @@ export default function DaftarBeritaScreen() {
         refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} />}
         onEndReached={h.muatBerikutnya}
         onEndReachedThreshold={0.4}
-        ListEmptyComponent={<Text style={[gs.emptyTitle, styles.kosong]}>Belum ada berita.</Text>}
+        ListEmptyComponent={<KeadaanKosong pose="persilakan" judul="Belum ada berita" teks="Berita terbaru perusahaan akan tampil di sini." />}
         ListFooterComponent={h.memuatLebih ? <ActivityIndicator style={styles.footer} color={Colors.primary} /> : null}
         renderItem={({ item }) => (
           <BarisBerita
@@ -75,10 +76,6 @@ const styles = StyleSheet.create({
   isi: {
     paddingHorizontal: Spacing.screenPadding,
     paddingBottom: Spacing.xxxl,
-  },
-  kosong: {
-    textAlign: 'center',
-    marginTop: Spacing.xxxl,
   },
   footer: {
     paddingVertical: Spacing.lg,

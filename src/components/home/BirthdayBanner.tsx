@@ -9,7 +9,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from '../common/Icon';
 import BottomSheet from '../common/BottomSheet';
 import Avatar from '../common/Avatar';
-import Button from '../common/Button';
+import PolaMemphis from '../common/PolaMemphis';
 import Colors, { brand, palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
@@ -66,17 +66,18 @@ export default function BirthdayBanner() {
 
   return (
     <>
-      <View style={styles.banner}>
+      <TouchableOpacity style={styles.banner} activeOpacity={0.85} onPress={() => setSheetTerbuka(true)} accessibilityRole="button">
         <View style={styles.kartu}>
+          <PolaMemphis variasi={2} />
           <View style={styles.teks}>
             <Text style={styles.bannerTitle} numberOfLines={2}>
               Hari ini {birthdays.length} karyawan berulang tahun 🎉
             </Text>
-            <Button label="Lihat" onPress={() => setSheetTerbuka(true)} />
+            <Text style={styles.petunjuk}>Ketuk untuk melihat daftarnya</Text>
           </View>
         </View>
         <Image source={require('../../../assets/images/maskot-ulang-tahun.png')} style={styles.maskot} resizeMode="contain" />
-      </View>
+      </TouchableOpacity>
 
       <BottomSheet
         visible={sheetTerbuka}
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   // Maskot menonjol di atas kartu, jadi pembungkus diberi jarak atas & tidak memotong.
   banner: {
     marginHorizontal: Spacing.screenPadding,
-    marginTop: 40,
+    marginTop: Spacing.xxl - Spacing.xs,
     marginBottom: Spacing.lg,
   },
   kartu: {
@@ -107,6 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: palet.krem,
     borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
+    overflow: 'hidden',
     padding: Spacing.lg,
   },
   teks: {
@@ -120,6 +122,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 110,
     height: 150,
+  },
+  petunjuk: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: Colors.textSecondary,
   },
   bannerTitle: {
     fontFamily: fonts.bold,

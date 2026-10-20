@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
 import Button from '../../../src/components/common/Button';
 import AppBar from '../../../src/components/common/AppBar';
+import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { SkeletonBaris } from '../../../src/components/common/Skeleton';
 import KartuTiket from '../../../src/components/tiket/KartuTiket';
 import SheetFilterTiket from '../../../src/components/tiket/SheetFilterTiket';
@@ -92,19 +93,13 @@ export default function TiketSayaScreen() {
           }
           ListFooterComponent={t.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
           ListEmptyComponent={
-            <View style={[gs.center, { marginTop: Spacing.xxxl, paddingHorizontal: Spacing.xl }]}>
-              <Icon
-                name={t.error ? 'alert-circle-outline' : 'ticket-confirmation-outline'}
-                size={44}
-                color={Colors.textTertiary}
-              />
-              <Text style={gs.emptyTitle}>{t.error ? 'Gagal memuat' : t.adaFilter ? 'Tidak ditemukan' : 'Belum ada tiket'}</Text>
-              <Text style={gs.emptyText}>
-                {t.error ??
-                  (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Tiket yang kamu ajukan akan tampil di sini.')}
-              </Text>
+            <KeadaanKosong
+              pose={t.error || t.adaFilter ? 'mikir' : 'persilakan'}
+              judul={t.error ? 'Gagal memuat' : t.adaFilter ? 'Tidak ditemukan' : 'Belum ada tiket'}
+              teks={t.error ?? (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Tiket yang kamu ajukan akan tampil di sini.')}
+            >
               {t.error ? <Button label="Coba Lagi" onPress={t.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
-            </View>
+            </KeadaanKosong>
           }
           renderItem={({ item }) => (
             <KartuTiket

@@ -59,21 +59,33 @@ export const biometric = {
     }
   },
 
-  /** Nama jenis biometrik untuk ditampilkan ("Sidik Jari" / "Face ID"). */
+  /** Nama jenis biometrik untuk ditampilkan ("Sidik Jari" / "Face ID" / "Sidik Jari / Wajah"). */
   async namaJenis(): Promise<string> {
     if (Platform.OS === 'web') return 'Biometrik';
     try {
       const jenis = await LocalAuthentication.supportedAuthenticationTypesAsync();
-      if (jenis.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-        return Platform.OS === 'ios' ? 'Face ID' : 'Pengenalan Wajah';
-      }
-      if (jenis.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-        return 'Sidik Jari';
-      }
+      const wajah = jenis.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
+      const jari = jenis.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
+      // Banyak HP Android punya keduanya; menyebut salah satu saja menyesatkan.
+      if (wajah && jari) return 'Sidik Jari / Wajah';
+      if (wajah) return Platform.OS === 'ios' ? 'Face ID' : 'Pengenalan Wajah';
+      if (jari) return 'Sidik Jari';
       return 'Biometrik';
     } catch {
       return 'Biometrik';
     }
+  },
+
+  /** Minta pemindaian biometrik sekali untuk memastikan pemegang perangkat. `true` bila lolos. */
+  async konfirmasi(pesan: string): Promise<boolean> {
+    if (Platform.OS === 'web') return false;
+    const hasil = await LocalAuthentication.authenticateAsync({
+      promptMessage: pesan,
+      cancelLabel: 'Batal',
+      disableDeviceFallback: false,
+      fallbackLabel: 'Gunakan PIN Perangkat',
+    });
+    return hasil.success;
   },
 
   /** Setelan pengguna: fitur ini dinyalakan atau tidak. */

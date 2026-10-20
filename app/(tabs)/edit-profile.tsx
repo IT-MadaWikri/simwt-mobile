@@ -1,281 +1,133 @@
+/**
+ * Edit Pengguna — isian & urutannya sama dengan halaman Edit Pengguna di web
+ * (`sim-mwt/resources/views/pengguna/edit.blade.php`): Informasi Kepegawaian
+ * (NIK, Nama, Jabatan, Plant), Departemen (+ Sub), Informasi Kontak, Keamanan.
+ * Tata letaknya sama dengan Buat Tiket/Kaizen: bagian berjudul di atas latar
+ * putih, kolom `FieldTeks`, footer tetap berisi tombol simpan.
+ *
+ * Jabatan, plant, dan departemen terkunci: di web hanya admin (izin menu
+ * pengguna) yang boleh mengubahnya, dan API tidak menyediakan daftar pilihannya
+ * untuk akun biasa. Belum ada endpoint ubah profil, jadi "Simpan" baru memberi
+ * tahu hal itu (bukan diam seperti tombol mati).
+ */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Switch } from 'react-native';
-import Icon from '../../src/components/common/Icon';
-import { Tabs, useRouter } from 'expo-router';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand, slate } from '../../constants/Colors';
-import Spacing from '../../constants/Spacing';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { fonts } from '../../constants/Typography';
-import { inputReset } from '../../constants/GlobalStyles';
 import AppBar from '../../src/components/common/AppBar';
+import Avatar from '../../src/components/common/Avatar';
+import Button from '../../src/components/common/Button';
+import FieldTeks from '../../src/components/common/FieldTeks';
+import Icon from '../../src/components/common/Icon';
+import { dialog } from '../../src/components/common/AppDialog';
+import Colors, { brand } from '../../constants/Colors';
+import Spacing from '../../constants/Spacing';
+import { fonts } from '../../constants/Typography';
+import { gs } from '../../constants/GlobalStyles';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 export default function EditProfileScreen() {
   const { user } = useAuth();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
-  
-  // Dummy states
-  const [nik, setNik] = useState('2862.230628.CKR');
-  const [nama, setNama] = useState(user?.name || '');
-  const [departemen, setDepartemen] = useState('IT');
-  const [jabatan, setJabatan] = useState('KEPALA BAGIAN');
+
+  const [nik, setNik] = useState(user?.nik || '');
+  const [nama, setNama] = useState(user?.nama_lengkap || user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [whatsapp, setWhatsapp] = useState('081223155139');
+  const [whatsapp, setWhatsapp] = useState(user?.phone || '');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [useFingerprint, setUseFingerprint] = useState(false);
 
-  const renderInput = (label: string, value: string, onChange: (t: string) => void, required = false, isSecure = false) => (
-    <View style={styles.inputWrapper}>
-      <Text style={styles.inputLabel}>
-        {label} {required && <Text style={{color: Colors.danger}}>*</Text>}
-      </Text>
-      <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={onChange}
-        secureTextEntry={isSecure}
-        placeholderTextColor={Colors.placeholder}
-        placeholder={label}
-      />
-    </View>
-  );
+  const plant = user?.plant ? `Plant ${user.plant}` : '';
+
+  const simpan = () =>
+    dialog.alert('Belum Tersedia', 'Perubahan profil belum bisa disimpan dari aplikasi. Hubungi tim IT untuk mengubah data.');
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={[gs.screen, { backgroundColor: Colors.white }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
-      <AppBar
-        judul="Edit Pengguna"
-        kanan={
-          <TouchableOpacity style={{ marginRight: Spacing.screenPadding }}>
-            <Text style={{ color: Colors.white, fontFamily: fonts.bold, fontSize: 12 }}>SIMPAN</Text>
-          </TouchableOpacity>
-        }
-      />
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxxl }]} showsVerticalScrollIndicator={false}>
-        
-        {/* INFORMASI KEPEGAWAIAN */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Icon name="account-tie-outline" size={20} color={brand[600]} />
-            <Text style={styles.sectionTitle}>INFORMASI KEPEGAWAIAN</Text>
-          </View>
-          <View style={styles.sectionBody}>
-            {renderInput('NIK', nik, setNik, true)}
-            {renderInput('NAMA LENGKAP', nama, setNama, true)}
-            {renderInput('DEPARTEMEN (OPSIONAL)', departemen, setDepartemen)}
-            {renderInput('JABATAN (OPSIONAL)', jabatan, setJabatan)}
-          </View>
+      <AppBar judul="Edit Pengguna" />
+
+      <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={styles.identitas}>
+          <Avatar nama={nama} foto={user?.avatar} ukuran={72} />
         </View>
 
-        {/* INFORMASI KONTAK */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Icon name="email-outline" size={20} color={brand[600]} />
-            <Text style={styles.sectionTitle}>INFORMASI KONTAK</Text>
-          </View>
-          <View style={styles.sectionBody}>
-            {renderInput('EMAIL (OPSIONAL)', email, setEmail)}
-            {renderInput('NO. WHATSAPP (OPSIONAL)', whatsapp, setWhatsapp)}
-          </View>
+        <Text style={styles.judulBagian}>Informasi Kepegawaian</Text>
+        <View style={styles.bagian}>
+          <FieldTeks label="NIK" wajib nilai={nik} onUbah={setNik} autoCapitalize="characters" placeholder="Ketik NIK" />
+          <FieldTeks label="Nama Lengkap" wajib nilai={nama} onUbah={setNama} autoCapitalize="words" placeholder="Ketik nama" />
+          <FieldTeks label="Jabatan" wajib nilai="" onUbah={() => {}} editable={false} placeholder="Diatur oleh admin" />
+          <FieldTeks label="Plant / Lokasi" nilai={plant} onUbah={() => {}} editable={false} placeholder="Diatur oleh admin" />
         </View>
 
-        {/* KEAMANAN */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Icon name="shield-lock-outline" size={20} color={brand[600]} />
-            <Text style={styles.sectionTitle}>KEAMANAN</Text>
-          </View>
-          <Text style={styles.helperText}>Kosongkan password jika tidak ingin mengubah password pengguna.</Text>
-          <View style={styles.sectionBody}>
-            {renderInput('PASSWORD (OPSIONAL)', password, setPassword, false, true)}
-            {renderInput('ULANGI PASSWORD (OPSIONAL)', passwordConfirm, setPasswordConfirm, false, true)}
-            
-            {/* Fingerprint Toggle */}
-            <View style={styles.switchContainer}>
-              <View style={styles.switchLabelContainer}>
-                <Icon name="fingerprint" size={20} color={Colors.textPrimary} style={{ marginRight: 8 }} />
-                <Text style={styles.switchLabel}>Gunakan Fingerprint untuk Login</Text>
-              </View>
-              <Switch
-                value={useFingerprint}
-                onValueChange={setUseFingerprint}
-                trackColor={{ false: Colors.border, true: brand[600] }}
-                thumbColor={Platform.OS === 'android' ? (useFingerprint ? Colors.white : slate[50]) : ''}
-              />
-            </View>
-          </View>
+        <Text style={styles.judulBagian}>Departemen</Text>
+        <View style={styles.bagian}>
+          <FieldTeks label="Departemen" wajib nilai={user?.department || ''} onUbah={() => {}} editable={false} placeholder="Diatur oleh admin" />
+          <FieldTeks label="Sub Departemen" nilai="" onUbah={() => {}} editable={false} placeholder="Diatur oleh admin" />
+          <Text style={styles.ket}>Jabatan, plant, dan departemen hanya bisa diubah oleh admin SIMWT.</Text>
         </View>
 
-        {/* DATABASE KARYAWAN INFO */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoHeader}>
+        <Text style={styles.judulBagian}>Informasi Kontak</Text>
+        <View style={styles.bagian}>
+          <FieldTeks label="Email" nilai={email} onUbah={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="nama@email.com" />
+          <FieldTeks label="No. WhatsApp" nilai={whatsapp} onUbah={setWhatsapp} keyboardType="phone-pad" placeholder="08xxxxxxxxxx" />
+        </View>
+
+        <Text style={styles.judulBagian}>Keamanan</Text>
+        <View style={styles.bagian}>
+          <Text style={[styles.ket, styles.ketAtas]}>Kosongkan password jika tidak ingin mengubah password.</Text>
+          <FieldTeks label="Password" nilai={password} onUbah={setPassword} rahasia autoCapitalize="none" placeholder="Password baru" />
+          <FieldTeks label="Ulangi Password" nilai={passwordConfirm} onUbah={setPasswordConfirm} rahasia autoCapitalize="none" placeholder="Ulangi password" />
+        </View>
+
+        {nik ? (
+          <View style={styles.info}>
             <Icon name="check-circle" size={18} color={brand[600]} />
-            <Text style={styles.infoTitle}>Akun tersambung dengan data karyawan</Text>
+            <Text style={[styles.teksInfo, gs.flex1]}>Akun tersambung dengan data karyawan (NIK {nik}).</Text>
           </View>
-          <View style={styles.infoList}>
-            <Text style={styles.infoListItem}><Text style={{fontFamily: fonts.bold}}>NIK:</Text> {nik}</Text>
-            <Text style={styles.infoListItem}><Text style={{fontFamily: fonts.bold}}>Nama:</Text> {nama}</Text>
-            <Text style={styles.infoListItem}><Text style={{fontFamily: fonts.bold}}>Jabatan:</Text> {jabatan}</Text>
-          </View>
-        </View>
-
+        ) : null}
       </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+        <Button label="Simpan" icon="check" onPress={simpan} style={gs.flex1} />
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background, // Background ala Gojek
-  },
-  scrollContent: {
-    padding: Spacing.lg,
-    paddingBottom: 100, // Space for footer action
-  },
-  sectionCard: {
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.xl,
-    ...Spacing.curve,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.background,
-    paddingBottom: Spacing.md,
-  },
-  sectionTitle: {
+  isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
+  identitas: { alignItems: 'center', marginBottom: Spacing.xl },
+  judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.extrabold,
-    color: Colors.textPrimary,
-    marginLeft: 8,
-  },
-  sectionBody: {
-    marginTop: Spacing.sm,
-  },
-  inputWrapper: {
-    marginBottom: Spacing.md,
-  },
-  inputLabel: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-    color: Colors.textSecondary,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
-    borderRadius: Spacing.radius.lg,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 12,
-    color: Colors.textPrimary,
-    backgroundColor: slate[50],
-    ...inputReset,
-  },
-  helperText: {
-    fontSize: 12,
-    color: Colors.textTertiary,
-    marginBottom: Spacing.md,
-    fontStyle: 'italic',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    marginTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: Colors.background,
-    paddingTop: 16,
-  },
-  switchLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  switchLabel: {
-    fontSize: 12,
-    color: Colors.textPrimary,
     fontFamily: fonts.semibold,
-  },
-  infoCard: {
-    backgroundColor: brand[50],
-    borderRadius: Spacing.radius.xl,
-    ...Spacing.curve,
-    padding: Spacing.lg,
-    borderWidth: 1,
-    borderColor: brand[100],
-    marginBottom: Spacing.xl,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    color: Colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginBottom: Spacing.sm,
   },
-  infoTitle: {
-    fontSize: 12,
-    fontFamily: fonts.extrabold,
-    color: brand[600],
-    marginLeft: 8,
-  },
-  infoList: {
-    marginTop: 8,
-  },
-  infoListItem: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginBottom: 4,
-    marginLeft: 26,
-  },
-  footerAction: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.white,
-    padding: Spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderSubtle,
-  },
-  btnCancel: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
-    marginRight: Spacing.md,
-  },
-  btnCancelText: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-    color: Colors.textSecondary,
-  },
-  btnSave: {
+  bagian: { marginBottom: Spacing.lg },
+  ket: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  ketAtas: { marginBottom: Spacing.md },
+  info: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: brand[600],
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 24,
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
+    backgroundColor: brand[50],
   },
-  btnSaveText: {
-    fontSize: 12,
-    fontFamily: fonts.extrabold,
-    color: Colors.white,
-    marginLeft: 6,
+  teksInfo: { fontSize: 12, fontFamily: fonts.regular, color: brand[700] },
+  footer: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderSubtle,
   },
 });
