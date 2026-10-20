@@ -14,11 +14,12 @@ const WARNA = {
   biru: warna('#4a98ff'),
   pink: warna('#ff5d9a'),
   hijau: warna('#34c96b'),
+  cyan: warna('#14b8d4'),
 };
 
 /**
  * SIMWT Mobile — layanan di grid beranda.
- * Hanya modul yang dipakai saat ini (7). Layanan tanpa layar khusus dibuka
+ * Hanya modul yang dipakai saat ini (8). Layanan tanpa layar khusus dibuka
  * lewat halaman generik `app/services/[id].tsx` (aksinya diatur di sana).
  */
 
@@ -100,6 +101,15 @@ export const SERVICES: ServiceItem[] = [
     iconColor: WARNA.hijau.ikon,
     route: '/services/layanan-hrd',
     description: 'Data karyawan, rekrutmen & layanan HRD',
+  },
+  {
+    id: 'kegiatan',
+    name: 'Kegiatan',
+    icon: 'calendar-clock-outline',
+    backgroundColor: WARNA.cyan.latar,
+    iconColor: WARNA.cyan.ikon,
+    route: '/services/kegiatan',
+    description: 'Booking ruangan meeting & kegiatan kantor',
   },
 ];
 
