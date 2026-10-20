@@ -13,15 +13,16 @@
  * ditekan.
  */
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
-import { fonts, judulAppBar } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
 import AppBar from '../../src/components/common/AppBar';
+import ServiceIcon from '../../src/components/common/ServiceIcon';
+import SectionHeader from '../../src/components/common/SectionHeader';
 import { SERVICES, ServiceItem } from '../../constants/Services';
 
 interface AksiLayanan {
@@ -34,7 +35,6 @@ interface AksiLayanan {
 
 export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const service = SERVICES.find((s) => s.id === id);
@@ -81,52 +81,33 @@ export default function ServiceDetailScreen() {
           </View>
         )}
 
-        <Text style={gs.sectionTitle}>Menu {judul}</Text>
-
-        {aksi.map((item) => {
-          const aktif = !!item.route;
-
-          return (
-            <TouchableOpacity
+        {/* Bentuk yang sama dengan menu Kaizen & Tiket: grid ikon. Aksi tanpa `route` tampil "Soon" dan tidak bisa diketuk. */}
+        <SectionHeader title={`Menu ${judul}`} />
+        <View style={styles.grid}>
+          {aksi.map((item) => (
+            <ServiceIcon
               key={item.label}
-              style={[gs.card, gs.row, gs.gapMd, { marginBottom: Spacing.sm }, !aktif && { opacity: 0.55 }]}
-              activeOpacity={aktif ? 0.7 : 1}
-              // Tanpa `route`, tombol benar-benar mati — jangan biarkan
-              // pengguna menekan sesuatu yang diam saja.
-              disabled={!aktif}
-              onPress={() => item.route && router.push(item.route as any)}
-            >
-              <View style={[gs.iconTile, { backgroundColor: service.backgroundColor }]}>
-                <Icon
-                  name={item.icon as any}
-                  size={20}
-                  color={service.iconColor}
-                />
-              </View>
-
-              <View style={gs.flex1}>
-                <Text style={gs.title}>{item.label}</Text>
-                <Text style={gs.caption}>{item.subtitle}</Text>
-              </View>
-
-              {aktif ? (
-                <Icon
-                  name="chevron-right"
-                  size={22}
-                  color={Colors.textTertiary}
-                />
-              ) : (
-                <View style={[gs.badge, gs.badgeMuted]}>
-                  <Text style={[gs.badgeText, gs.badgeTextMuted]}>Belum ada</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+              service={{
+                id: `${service.id}-${item.label}`,
+                name: item.label,
+                icon: item.icon,
+                backgroundColor: service.backgroundColor,
+                iconColor: service.iconColor,
+                route: item.route ?? '',
+                description: item.subtitle,
+                segera: !item.route,
+              }}
+            />
+          ))}
+        </View>
       </ScrollView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
+});
 
 /**
  * Daftar aksi per layanan.
@@ -175,6 +156,9 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
     ],
     'skill-assessment': [
       { icon: 'star-circle-outline', label: 'Penilaian Skill', subtitle: 'Hasil & jadwal assessment' },
+    ],
+    kegiatan: [
+      { icon: 'door-open', label: 'Booking\nRuangan', subtitle: 'Booking ruangan meeting untuk tanggal & jam tertentu', route: '/services/booking-ruangan' },
     ],
     'layanan-it': [
       { icon: 'plus-circle-outline', label: 'Buat Request', subtitle: 'Request akun, sistem, atau bantuan IT' },
