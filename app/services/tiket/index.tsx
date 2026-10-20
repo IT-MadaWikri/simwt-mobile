@@ -17,7 +17,7 @@ import { gs } from '../../../constants/GlobalStyles';
 import { ServiceItem } from '../../../constants/Services';
 import { useTiketSaya } from '../../../src/hooks/useTiketSaya';
 
-const WARNA = { backgroundColor: Colors.serviceRed, iconColor: Colors.dangerDark };
+const WARNA = { backgroundColor: Colors.serviceRed, iconColor: '#ff6a5c' };
 
 const MENU: ServiceItem[] = [
   {
