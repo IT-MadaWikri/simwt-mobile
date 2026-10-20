@@ -20,7 +20,7 @@ import {
   Newspaper, Paperclip, PartyPopper, Pencil, Percent, Plus, Rocket, RotateCcw, RotateCcwClock,
   ScanBarcode, ScanQrCode, Save, Search, Send, Settings, Shapes, Share2, ShieldCheck, Sparkles, Star,
   Ticket, TicketCheck, Trash, User, UserCog, UserRound, UserSearch, Users, UserX,
-  Video, Wrench, X,
+  Video, Wrench, X, Cloud, CloudFog, CloudLightning, CloudRain, CloudSun, Snowflake, Sun,
   type LucideIcon,
   type LucideProps,
 } from 'lucide-react-native';
@@ -150,6 +150,13 @@ const ICONS: Record<string, LucideIcon> = {
   'translate': Languages,
   'video-outline': Video,
   'view-dashboard-outline': LayoutDashboard,
+  'weather-sunny': Sun,
+  'weather-partly-cloudy': CloudSun,
+  'weather-cloudy': Cloud,
+  'weather-rainy': CloudRain,
+  'weather-lightning': CloudLightning,
+  'weather-fog': CloudFog,
+  'weather-snowy': Snowflake,
 };
 
 interface IconProps extends LucideProps {

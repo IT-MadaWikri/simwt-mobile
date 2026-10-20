@@ -22,7 +22,7 @@ const TOMBOL_LAINNYA: ServiceItem = {
   name: 'Lainnya',
   icon: 'layout-grid-circles',
   backgroundColor: brand[50],
-  iconColor: brand[700],
+  iconColor: '#1fc2a8',
   route: '',
   description: 'Layanan lainnya',
 };

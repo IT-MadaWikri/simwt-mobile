@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from '../src/components/common/Icon';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { palet } from '../constants/Colors';
+import Colors, { gradasiLembut } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import Typography, { fonts } from '../constants/Typography';
 import { gs, inputReset } from '../constants/GlobalStyles';
@@ -54,10 +54,6 @@ export default function LoginScreen() {
   // Maskot menyesuaikan tinggi layar, dengan batas supaya tetap pas di layar kecil.
   const tinggiMaskot = Math.min(230, Math.max(150, height * 0.26));
 
-  // Gradasi berhenti di bawah logo, ke mana pun blok konten bergeser karena dipusatkan:
-  // batas = posisi blok + posisi & tinggi kepala di dalamnya.
-  const [yBlok, setYBlok] = useState(0);
-  const [batasKepala, setBatasKepala] = useState(0);
   const masuk = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -183,17 +179,22 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Gradasi mint ke putih dari puncak layar sampai bawah logo. */}
-        <LinearGradient
-          colors={[palet.mint, Colors.white]}
-          style={[styles.gradasi, { height: yBlok + batasKepala }]}
-        />
+        {/* Gradasi palet lembut ke putih, setengah tinggi layar dari puncak. */}
+        <View style={[styles.gradasi, { height: height * 0.5 }]} pointerEvents="none">
+          <LinearGradient
+            colors={[...gradasiLembut, Colors.white]} locations={[0, 0.2, 0.4, 0.6, 1]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          {/* Pudar vertikal ke putih di tepi bawah, supaya tidak ada garis potong (gradasi diagonal). */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0)', Colors.white]}
+            style={styles.pudarBawah}
+          />
+        </View>
 
-        <View onLayout={(e) => setYBlok(e.nativeEvent.layout.y)}>
-        <View
-          style={styles.kepala}
-          onLayout={(e) => setBatasKepala(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}
-        >
+        <View>
+        <View style={styles.kepala}>
           <View style={styles.panggung}>
             <View style={[styles.sorot, { width: tinggiMaskot * 0.95, height: tinggiMaskot * 0.95 }]} />
             <Image
@@ -302,6 +303,13 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },
+  pudarBawah: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '45%',
   },
   kepala: {
     paddingHorizontal: Spacing.screenPadding + Spacing.xs,

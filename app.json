@@ -45,6 +45,12 @@
         }
       ],
       "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Izinkan SIMWT memakai lokasi untuk menampilkan cuaca di beranda."
+        }
+      ],
       "expo-sharing",
       "expo-asset"
     ],

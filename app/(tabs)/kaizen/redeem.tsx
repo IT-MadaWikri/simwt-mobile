@@ -7,11 +7,12 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
 import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
-import Colors, { brand, slate } from '../../../constants/Colors';
+import Colors, { brand, slate, gradasiPalet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
@@ -80,15 +81,20 @@ export default function RedeemPoin() {
     >
       {error ? <Text style={[styles.isi, { color: Colors.danger, marginBottom: Spacing.sm }]}>{error}</Text> : null}
 
-      <View style={styles.kartuPoin}>
+      <LinearGradient
+        colors={[...gradasiPalet]}
+        start={{ x: 0, y: 0.5 }}
+        end={{ x: 1, y: 0.5 }}
+        style={styles.kartuPoin}
+      >
         <View style={styles.ikonPoin}>
-          <Icon name="star-circle-outline" size={20} color={Colors.white} />
+          <Icon name="star-circle-outline" size={20} color={Colors.ink} />
         </View>
         <View>
           <Text style={styles.labelPoin}>Poin Kaizen kamu</Text>
           <Text style={styles.nilaiPoin}>{angka(poin)} poin</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <Text style={styles.judul}>Pilih gift</Text>
       {data && data.gifts.length === 0 ? <Text style={styles.kosong}>Belum ada gift untuk plant kamu.</Text> : null}
@@ -146,7 +152,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    backgroundColor: Colors.primary,
     borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
     padding: Spacing.md,
@@ -155,12 +160,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  labelPoin: { fontSize: 12, fontFamily: fonts.regular, color: 'rgba(255,255,255,0.85)' },
-  nilaiPoin: { fontSize: 12, fontFamily: fonts.bold, color: Colors.white },
+  labelPoin: { fontSize: 12, fontFamily: fonts.regular, color: Colors.ink },
+  nilaiPoin: { fontSize: 12, fontFamily: fonts.bold, color: Colors.ink },
   judul: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,

@@ -21,7 +21,7 @@ import { judulAppBar } from '../../../constants/Typography';
 
 export const gayaAppBar = {
   headerShown: true,
-  headerStyle: { backgroundColor: Colors.primary },
+  headerStyle: { backgroundColor: '#31AAA9' },
   headerTintColor: Colors.white,
   headerTitleStyle: { ...judulAppBar, color: Colors.white },
   headerShadowVisible: false,

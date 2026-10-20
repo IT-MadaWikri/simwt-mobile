@@ -16,8 +16,9 @@ import {
 import Icon from '../../src/components/common/Icon'
 import Avatar from '../../src/components/common/Avatar';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { biometric } from '../../src/utils/biometric';
-import Colors, { brand, slate } from '../../constants/Colors';
+import Colors, { brand, slate, gradasiPalet } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/authService';
@@ -173,8 +174,13 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Background Hijau (Top Banner) */}
-      <View style={styles.greenBanner} />
+      {/* Banner atas: gradasi palet */}
+      <LinearGradient
+        colors={[...gradasiPalet]}
+        start={{ x: 0, y: 0.5 }}
+        end={{ x: 1, y: 0.5 }}
+        style={styles.greenBanner}
+      />
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent} 
@@ -275,8 +281,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 180, // Tinggi banner hijau
-    backgroundColor: brand[600], // Hijau solid Gojek
+    height: 180,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
   },
