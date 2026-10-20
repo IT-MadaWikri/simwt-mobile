@@ -27,7 +27,7 @@ import { drafKaizen } from '../../../src/utils/drafKaizen';
 import { BULAN, urlFoto, warnaStatus } from '../../../src/utils/kaizen';
 
 // Bentuk yang sama dengan grid layanan di beranda, jadi memakai ServiceIcon.
-const WARNA = { backgroundColor: Colors.serviceAmber, iconColor: '#b45309' };
+const WARNA = { backgroundColor: Colors.serviceAmber, iconColor: '#ff9a2e' };
 const angka = (n: number) => n.toLocaleString('id-ID');
 
 export default function MenuKaizenScreen() {
