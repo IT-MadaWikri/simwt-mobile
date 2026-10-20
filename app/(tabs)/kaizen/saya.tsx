@@ -6,6 +6,7 @@
  * "Buat Kaizen". Isinya hanya Kaizen milik akun yang login (dibatasi server,
  * `GET /kaizen/list`). Urutan dipilih dari ikon di app bar.
  */
+import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -402,9 +403,7 @@ export default function KaizenSaya() {
                 </View>
                 <Text style={[styles.labelUbin, gs.flex1]}>{m.label}</Text>
                 {'jumlah' in m ? (
-                  <View style={styles.jumlahUbin}>
-                    <Text style={styles.teksJumlah}>{m.jumlah}</Text>
-                  </View>
+                  <LencanaAngka jumlah={m.jumlah ?? 0} ukuran={24} warna={Colors.white} teks={Colors.textPrimary} style={styles.jumlahUbin} />
                 ) : null}
               </LinearGradient>
             </TouchableOpacity>
@@ -989,18 +988,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   jumlahUbin: {
-    minWidth: 24,
-    height: 24,
     marginRight: Spacing.xs,
-    paddingHorizontal: 6,
-    borderRadius: 12,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  teksJumlah: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.bold,
-    color: Colors.textPrimary,
   },
 });

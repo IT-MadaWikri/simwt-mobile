@@ -6,6 +6,7 @@
  * Kontak lain adalah sesama pengguna; sebelum server chat (WebSocket) hidup,
  * percakapannya tersimpan lokal dan pesan keluar berstatus jam pasir.
  */
+import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useCallback, useState } from 'react';
 import AppBar from '../../../src/components/common/AppBar';
 import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
@@ -126,9 +127,7 @@ export default function DaftarChatScreen() {
               {item.cuplikan}
             </Text>
             {item.belumDibaca > 0 && (
-              <View style={styles.unread}>
-                <Text style={styles.unreadTeks}>{item.belumDibaca}</Text>
-              </View>
+              <LencanaAngka jumlah={item.belumDibaca} warna={brand[500]} style={styles.unread} />
             )}
           </View>
         </View>
@@ -226,19 +225,7 @@ const styles = {
     marginLeft: Spacing.screenPadding + AVATAR + Spacing.md,
   },
   unread: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: brand[500],
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    paddingHorizontal: 5,
     marginLeft: Spacing.sm,
-  },
-  unreadTeks: {
-    fontFamily: fonts.semibold,
-    fontSize: 12,
-    color: Colors.white,
   },
   fab: {
     position: 'absolute' as const,

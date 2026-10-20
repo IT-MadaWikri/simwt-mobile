@@ -7,6 +7,7 @@
  *   2. Manfaat: minimal satu, ditambah/diubah lewat bottom sheet.
  * Semuanya dikirim sekali ke `POST /kaizen/buat` (multipart).
  */
+import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -691,9 +692,7 @@ export default function BuatKaizenScreen() {
                   <Icon name={l.ikon} size={16} color={Colors.white} />
                 </View>
                 <Text style={[styles.judulManfaat, gs.flex1]} numberOfLines={1}>{kategoriNama(kategori)}</Text>
-                <View style={styles.jumlahManfaat}>
-                  <Text style={styles.teksJumlahManfaat}>{butir.length}</Text>
-                </View>
+                <LencanaAngka jumlah={butir.length} ukuran={24} warna={brand[50]} teks={brand[700]} />
                 <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
               </TouchableOpacity>
             );
@@ -1192,20 +1191,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     marginTop: Spacing.xs,
-  },
-  jumlahManfaat: {
-    minWidth: 24,
-    height: 24,
-    paddingHorizontal: 6,
-    borderRadius: 12,
-    backgroundColor: brand[50],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  teksJumlahManfaat: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.bold,
-    color: brand[700],
   },
   logoManfaat: {
     width: 36,

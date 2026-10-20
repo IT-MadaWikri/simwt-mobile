@@ -5,6 +5,7 @@
  * Gojek; yang berubah hanya font, radius, dan warna lencana agar mengikuti
  * karir-mwt.
  */
+import LencanaAngka from './LencanaAngka';
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Icon from './Icon';
@@ -68,9 +69,7 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
     }
     if (service.lencana) {
       return (
-        <View style={[styles.badge, styles.lencanaAngka]}>
-          <Text style={styles.badgeText}>{service.lencana > 99 ? '99+' : service.lencana}</Text>
-        </View>
+        <LencanaAngka jumlah={service.lencana} ukuran={18} style={styles.lencanaAngka} />
       );
     }
     if (service.id === 'database-aset') {
@@ -187,12 +186,10 @@ const styles = StyleSheet.create({
   },
   // Lencana angka ditaruh di pojok kanan atas, bukan kiri seperti "Baru"/"Hot".
   lencanaAngka: {
-    left: undefined,
+    position: 'absolute',
+    top: -6,
     right: -8,
-    minWidth: 18,
-    alignItems: 'center',
-    backgroundColor: Colors.danger,
-    borderRadius: 9,
+    zIndex: 1,
   },
   badgeText: {
     fontFamily: fonts.bold,

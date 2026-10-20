@@ -9,6 +9,7 @@
  *   - bila DITERIMA dan berwenang: tombol Setujui / Tolak di bawah.
  * Hak akses dihitung server (`izin`), bukan ditebak dari nama peran.
  */
+import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -349,9 +350,7 @@ export default function KaizenDetailScreen() {
                   <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
                 </View>
                 <Text style={[styles.nama, gs.flex1]} numberOfLines={1}>{kat || 'Manfaat'}</Text>
-                <View style={styles.jumlahManfaat}>
-                  <Text style={styles.teksJumlahManfaat}>{butir.length}</Text>
-                </View>
+                <LencanaAngka jumlah={butir.length} ukuran={24} warna={brand[50]} teks={brand[700]} />
                 <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
               </TouchableOpacity>
             );
@@ -661,20 +660,6 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
-  },
-  jumlahManfaat: {
-    minWidth: 24,
-    height: 24,
-    paddingHorizontal: 6,
-    borderRadius: 12,
-    backgroundColor: brand[50],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  teksJumlahManfaat: {
-    fontSize: ukuranIsi,
-    fontFamily: fonts.bold,
-    color: brand[700],
   },
   // Tiap manfaat satu kartu sendiri, supaya batas antar-manfaat jelas saat ada lebih dari satu.
   opsiBagikan: {

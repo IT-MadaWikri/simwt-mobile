@@ -61,9 +61,9 @@ export default function SheetAset({ visible, q, onChangeQ, hasil, memuat, gagal,
               }}
             >
               <View style={gs.flex1}>
-                <Text style={styles.nama} numberOfLines={2}>{a.asset_name}</Text>
+                <Text style={styles.nama} numberOfLines={2}>{a.alias || a.asset_name}</Text>
                 <Text style={styles.sub} numberOfLines={1}>
-                  {[a.asset_number, a.alias, a.asset_pic].filter(Boolean).join(' · ')}
+                  {[a.asset_number, a.alias ? a.asset_name : null, a.asset_pic].filter(Boolean).join(' · ')}
                 </Text>
               </View>
             </TouchableOpacity>
