@@ -1,72 +1,67 @@
 /**
- * NewsCarousel — banner berita/promo yang digeser mendatar.
- *
- * Kartunya memakai gradien brand (bukan warna rata seperti sebelumnya) agar
- * senada dengan tombol utama dan layar muat di karir-mwt.
+ * NewsCarousel — blok "Berita Terbaru" di beranda: daftar vertikal beberapa berita teratas.
+ * Data datang dari layar (hook `useDaftarBerita`); komponen ini hanya menampilkan.
  */
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import Colors, { brand } from '../../../constants/Colors';
+import { View, Text, StyleSheet } from 'react-native';
+import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
-import { gs } from '../../../constants/GlobalStyles';
+import { Berita } from '../../types/berita';
+import BarisBerita from '../berita/BarisBerita';
+import Button from '../common/Button';
 import SectionHeader from '../common/SectionHeader';
+import { SkeletonDaftar } from '../common/Skeleton';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH * 0.75;
-
-interface NewsItem {
-  id: number;
-  title: string;
-  excerpt: string;
-  colors: readonly [string, string];
-  icon: string;
+interface NewsCarouselProps {
+  berita: Berita[];
+  memuat: boolean;
+  error: string | null;
+  onCobaLagi: () => void;
+  onLihatSemua: () => void;
+  onBuka: (id: number) => void;
+  onSuka: (id: number) => void;
+  onBagikan: (berita: Berita) => void;
 }
 
-const MOCK_NEWS: NewsItem[] = [
-  {
-    id: 1,
-    title: 'Selamat Datang di SIMWT',
-    excerpt: 'Akses semua layanan MWT Part dalam satu aplikasi',
-    colors: [brand[700], brand[500]],
-    icon: '🚀',
-  },
-  {
-    id: 2,
-    title: 'Update Sistem Audit',
-    excerpt: 'Fitur audit baru telah tersedia untuk semua departemen',
-    colors: [brand[800], brand[600]],
-    icon: '📋',
-  },
-  {
-    id: 3,
-    title: 'Program Kaizen',
-    excerpt: 'Kirimkan ide improvement Anda melalui menu Kaizen',
-    colors: [brand[600], brand[400]],
-    icon: '💡',
-  },
-];
-
-export default function NewsCarousel() {
+export default function NewsCarousel({
+  berita,
+  memuat,
+  error,
+  onCobaLagi,
+  onLihatSemua,
+  onBuka,
+  onSuka,
+  onBagikan,
+}: NewsCarouselProps) {
   return (
     <View style={styles.section}>
-      <SectionHeader title="Berita Terbaru" onAction={() => {}} />
+      <SectionHeader title="Berita Terbaru" onAction={onLihatSemua} />
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        decelerationRate="fast"
-        snapToInterval={CARD_WIDTH + Spacing.md}
-      >
-        {MOCK_NEWS.map((news) => (
-          <View key={news.id} style={[styles.card, { backgroundColor: news.colors[0] }]}>
-            <Text style={styles.cardIcon}>{news.icon}</Text>
-            <Text style={styles.cardTitle}>{news.title}</Text>
-            <Text style={styles.cardExcerpt}>{news.excerpt}</Text>
+      <View style={styles.daftar}>
+        {memuat ? (
+          <SkeletonDaftar jumlah={3} />
+        ) : error && berita.length === 0 ? (
+          <View style={styles.kosong}>
+            <Text style={styles.teksKosong}>{error}</Text>
+            <Button label="Coba lagi" variant="outline" onPress={onCobaLagi} />
           </View>
-        ))}
-      </ScrollView>
+        ) : berita.length === 0 ? (
+          <View style={styles.kosong}>
+            <Text style={styles.teksKosong}>Belum ada berita.</Text>
+          </View>
+        ) : (
+          berita.map((b) => (
+            <BarisBerita
+              key={b.id}
+              berita={b}
+              onPress={() => onBuka(b.id)}
+              onSuka={() => onSuka(b.id)}
+              onBagikan={() => onBagikan(b)}
+            />
+          ))
+        )}
+      </View>
     </View>
   );
 }
@@ -75,31 +70,18 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: Spacing.lg,
   },
-  scrollContent: {
+  daftar: {
     paddingHorizontal: Spacing.screenPadding,
+  },
+  kosong: {
+    alignItems: 'center',
     gap: Spacing.md,
+    paddingVertical: Spacing.xl,
   },
-  card: {
-    width: CARD_WIDTH,
-    borderRadius: Spacing.radius.xl,
-    padding: Spacing.xl,
-    minHeight: 130,
-    justifyContent: 'flex-end',
-  },
-  cardIcon: {
-    fontSize: 12,
-    marginBottom: Spacing.sm,
-  },
-  cardTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 12,
-    color: Colors.white,
-    marginBottom: 2,
-  },
-  cardExcerpt: {
+  teksKosong: {
     fontFamily: fonts.regular,
     fontSize: 12,
-    lineHeight: 18,
-    color: 'rgba(255,255,255,0.85)',
+    color: Colors.textSecondary,
+    textAlign: 'center',
   },
 });
