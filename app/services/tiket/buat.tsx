@@ -7,7 +7,7 @@
  */
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
@@ -33,7 +33,11 @@ const MAKS_DETAIL = 5000;
 export default function BuatTiketScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const t = useBuatTiket();
+  // Dibuka dari hasil pindai QR aset: aset langsung terisi.
+  const { asetNomor, asetNama, asetAlias } = useLocalSearchParams<{ asetNomor?: string; asetNama?: string; asetAlias?: string }>();
+  const t = useBuatTiket(
+    asetNomor ? { asset_number: asetNomor, asset_name: asetNama || asetNomor, alias: asetAlias || null, asset_pic: null } : null
+  );
   const [sheet, setSheet] = useState<Sheet>(null);
   const cariAset = useCariAset(sheet === 'aset');
   // Galat per field baru tampil setelah percobaan kirim pertama.
@@ -45,7 +49,9 @@ export default function BuatTiketScreen() {
     const nomor = await t.kirim();
     if (nomor) {
       await dialog.alert('Tiket Terkirim', `Tiket #${nomor} sudah masuk antrean penanganan.`, 'success');
-      router.back();
+      // Dari hasil pindai QR: kembali ke beranda, bukan ke layar scan.
+      if (asetNomor) router.replace('/(tabs)');
+      else router.back();
     }
   };
 
@@ -93,19 +99,22 @@ export default function BuatTiketScreen() {
       <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text style={styles.judulBagian}>Aset</Text>
         <View style={styles.bagian}>
-          <FieldPilihan
-            label="Aset"
-            placeholder="Cari aset (opsional)"
-            nilai={form.aset ? `${form.aset.asset_name} · ${form.aset.asset_number}` : null}
-            onPress={() => setSheet('aset')}
-          />
           {form.aset ? (
-            <TouchableOpacity onPress={() => t.ubah('aset', null)} hitSlop={8} style={styles.lepasAset}>
-              <Icon name="close-circle" size={14} color={Colors.textTertiary} />
-              <Text style={styles.ket}>Lepas aset</Text>
-            </TouchableOpacity>
+            <View style={styles.kartuAset}>
+              <View style={gs.flex1}>
+                <Text style={styles.namaAset} numberOfLines={2}>{form.aset.alias || form.aset.asset_name}</Text>
+                {form.aset.alias ? <Text style={styles.nomorAset} numberOfLines={1}>{form.aset.asset_name}</Text> : null}
+                <Text style={styles.nomorAset}>{form.aset.asset_number}</Text>
+              </View>
+              <TouchableOpacity onPress={() => t.ubah('aset', null)} hitSlop={8} accessibilityLabel="Lepas aset">
+                <Icon name="close-circle" size={18} color={Colors.textTertiary} />
+              </TouchableOpacity>
+            </View>
           ) : (
-            <Text style={styles.ketAset}>Pilih bila masalahnya terkait aset tertentu.</Text>
+            <>
+              <FieldPilihan label="Aset" placeholder="Cari aset (opsional)" nilai={null} onPress={() => setSheet('aset')} />
+              <Text style={styles.ketAset}>Pilih bila masalahnya terkait aset tertentu.</Text>
+            </>
           )}
         </View>
 
@@ -308,7 +317,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  lepasAset: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
+  kartuAset: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.borderSubtle,
+  },
+  namaAset: { fontSize: 12, fontFamily: fonts.bold, color: Colors.textPrimary },
+  nomorAset: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
   ketAset: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
   ket: { marginTop: Spacing.sm, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
   footer: {

@@ -2,6 +2,7 @@
  * HomeHeader — bagian atas beranda: logo, notifikasi + avatar, sapaan besar,
  * lalu search bar.
  */
+import LencanaAngka from '../common/LencanaAngka';
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
@@ -72,11 +73,7 @@ export default function HomeHeader({
           >
             <Icon name="bell-outline" size={24} color={Colors.ink} />
             {belumDibaca > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {belumDibaca > 99 ? "99+" : belumDibaca}
-                </Text>
-              </View>
+              <LencanaAngka jumlah={belumDibaca} ukuran={18} tepi={Colors.white} style={styles.badge} />
             )}
           </TouchableOpacity>
 
@@ -189,20 +186,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     right: 0,
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 4,
-    borderRadius: 9,
-    backgroundColor: Colors.danger,
-    borderWidth: 1.5,
-    borderColor: Colors.white,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  badgeText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontFamily: fonts.bold,
-    lineHeight: 12,
   },
 });

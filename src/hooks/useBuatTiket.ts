@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { tiketService } from '../services/tiketService';
 import { FotoKaizen } from '../components/kaizen/EditorFoto';
-import { FormTiket, MasterBuatTiket, OpsiPilihan } from '../types/tiket';
+import { AsetRingkas, FormTiket, MasterBuatTiket, OpsiPilihan } from '../types/tiket';
 
 const FORM_KOSONG: FormTiket = {
   aset: null,
@@ -27,11 +27,12 @@ const FORM_KOSONG: FormTiket = {
 
 export type SumberFoto = 'kamera' | 'galeri';
 
-export function useBuatTiket() {
+/** `asetAwal`: aset yang sudah terpilih sejak form dibuka (mis. dari hasil pindai QR). */
+export function useBuatTiket(asetAwal: AsetRingkas | null = null) {
   const [master, setMaster] = useState<MasterBuatTiket | null>(null);
   const [memuat, setMemuat] = useState(true);
   const [errorMuat, setErrorMuat] = useState<string | null>(null);
-  const [form, setForm] = useState<FormTiket>(FORM_KOSONG);
+  const [form, setForm] = useState<FormTiket>({ ...FORM_KOSONG, aset: asetAwal });
   const [mengirim, setMengirim] = useState(false);
   const [galatServer, setGalatServer] = useState<string | null>(null);
 

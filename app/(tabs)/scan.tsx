@@ -8,7 +8,7 @@
  *   - tombol kembali bulat di pojok kiri atas, di dalam safe area
  *   - tombol senter untuk gudang yang gelap
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,8 +19,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
+import SheetAsetScan from '../../src/components/aset/SheetAsetScan';
+import { useAsetScan } from '../../src/hooks/useAsetScan';
 import Button from '../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../constants/Colors';
@@ -37,7 +39,18 @@ export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [senter, setSenter] = useState(false);
+  const [buka, setBuka] = useState(false);
+  const [nomor, setNomor] = useState('');
+  const { data, memuat, error, muat } = useAsetScan();
   const router = useRouter();
+
+  // Layar kembali fokus (mis. dari halaman detail): siap memindai lagi.
+  useFocusEffect(
+    useCallback(() => {
+      setBuka(false);
+      setScanned(false);
+    }, [])
+  );
   const insets = useSafeAreaInsets();
 
   // Garis pemindai naik-turun di dalam kotak.
@@ -131,11 +144,16 @@ export default function ScanScreen() {
       }
     }
 
-    router.push({ pathname: '/scan-result', params: { nomor: nomorAset } });
+    // Pemindaian tetap terkunci selama sheet terbuka; dibuka lagi oleh
+    // `tutupSheet` atau saat layar ini kembali fokus dari halaman detail.
+    setNomor(nomorAset);
+    muat(nomorAset);
+    setBuka(true);
+  };
 
-    // Aktifkan lagi setelah beberapa detik supaya pengguna yang menekan
-    // "kembali" bisa langsung memindai lagi tanpa membuka ulang layar.
-    setTimeout(() => setScanned(false), 3000);
+  const tutupSheet = () => {
+    setBuka(false);
+    setScanned(false);
   };
 
   return (
@@ -196,6 +214,29 @@ export default function ScanScreen() {
         {/* Penyeimbang agar judul benar-benar di tengah. */}
         <View style={{ width: 40 }} />
       </View>
+
+      <SheetAsetScan
+        visible={buka}
+        data={data}
+        memuat={memuat}
+        error={error}
+        onLihatDetail={() => {
+          setBuka(false);
+          router.push({ pathname: '/scan-result', params: { nomor } });
+        }}
+        onBuatTiket={() => {
+          setBuka(false);
+          router.push({
+            pathname: '/services/tiket/buat',
+            params: {
+              asetNomor: nomor,
+              asetNama: data?.dataAsset.asset_name ?? '',
+              asetAlias: data?.dataAsset.alias ?? '',
+            },
+          });
+        }}
+        onClose={tutupSheet}
+      />
     </View>
   );
 }
