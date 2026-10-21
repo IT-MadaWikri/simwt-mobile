@@ -14,22 +14,26 @@ import LencanaAngka from '../common/LencanaAngka';
 
 interface BarAtasBerandaProps {
   belumDibaca: number;
+  /** Sembunyikan logo (di atas latar bergambar header); aksi tetap di kanan. */
+  tanpaLogo?: boolean;
 }
 
-export default function BarAtasBeranda({ belumDibaca }: BarAtasBerandaProps) {
+export default function BarAtasBeranda({ belumDibaca, tanpaLogo = false }: BarAtasBerandaProps) {
   const { user } = useAuth();
   const router = useRouter();
   const nama = user?.nama_lengkap || user?.name || user?.username || 'Pengguna';
 
   return (
     <View style={styles.baris}>
-      <Image
-        source={require('../../../assets/images/logo-simwt-mobile.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      {!tanpaLogo && (
+        <Image
+          source={require('../../../assets/images/logo-simwt-mobile.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      )}
 
-      <View style={styles.aksi}>
+      <View style={[styles.aksi, { marginLeft: 'auto' }]}>
         <TouchableOpacity
           style={styles.bell}
           activeOpacity={0.8}

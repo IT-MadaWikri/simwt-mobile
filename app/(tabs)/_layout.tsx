@@ -64,8 +64,8 @@ export default function TabLayout() {
       // Kembali ke tab yang terakhir dibuka (mis. Menu Kaizen), bukan selalu ke beranda.
       backBehavior="history"
       screenOptions={{
-        // Ikon & teks aktif: teal #31AAA9.
-        tabBarActiveTintColor: '#31AAA9',
+        // Ikon & teks aktif: hijau primer.
+        tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textTertiary,
         tabBarStyle: {
           backgroundColor: Colors.white,

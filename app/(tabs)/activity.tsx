@@ -134,15 +134,7 @@ export default function ApprovalCenterScreen() {
   };
 
   const Chip = ({ nilai, label, jumlah }: { nilai: Saring; label: string; jumlah: number }) => (
-    <TouchableOpacity
-      style={[gs.badge, saring === nilai ? gs.badgeBrand : gs.badgeMuted]}
-      onPress={() => setSaring(nilai)}
-      activeOpacity={0.8}
-    >
-      <Text style={[gs.badgeText, saring === nilai ? gs.badgeTextBrand : gs.badgeTextMuted]}>
-        {label} {jumlah > 0 ? `(${jumlah})` : ''}
-      </Text>
-    </TouchableOpacity>
+    <ChipSaring label={label} jumlah={jumlah} aktif={saring === nilai} onPress={() => setSaring(nilai)} />
   );
 
   if (memuat) {
@@ -156,8 +148,8 @@ export default function ApprovalCenterScreen() {
   return (
     <View style={[gs.screen, { backgroundColor: slate[100] }]}>
       {/* Penyaring */}
-      <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
-        <View style={[gs.row, gs.gapSm, { marginBottom: Spacing.sm }]}>
+      <View style={[gs.containerX, { paddingVertical: Spacing.md }]}>
+        <View style={[gs.row, gs.gapSm]}>
           <Chip nilai="semua" label="Semua" jumlah={ringkasan.total} />
           {bisaKaizen ? <Chip nilai="kaizen" label="Kaizen" jumlah={ringkasan.kaizen} /> : null}
           <Chip nilai="tiket" label="Tiket" jumlah={ringkasan.tiket} />
@@ -253,7 +245,71 @@ export default function ApprovalCenterScreen() {
   );
 }
 
+/** Chip penyaring: aktif = hijau penuh, nonaktif = putih berbingkai; angka antrean di pil kecil. */
+function ChipSaring({ label, jumlah, aktif, onPress }: { label: string; jumlah: number; aktif: boolean; onPress: () => void }) {
+  return (
+    <TouchableOpacity
+      style={[styles.chip, aktif && styles.chipAktif]}
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityState={{ selected: aktif }}
+    >
+      <Text style={[styles.chipTeks, aktif && styles.chipTeksAktif]}>{label}</Text>
+      {jumlah > 0 ? (
+        <View style={[styles.chipJumlah, aktif && styles.chipJumlahAktif]}>
+          <Text style={[styles.chipJumlahTeks, aktif && styles.chipJumlahTeksAktif]}>{jumlah}</Text>
+        </View>
+      ) : null}
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.borderSubtle,
+  },
+  chipAktif: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  chipTeks: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+    color: Colors.textSecondary,
+  },
+  chipTeksAktif: {
+    color: Colors.white,
+  },
+  chipJumlah: {
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    borderRadius: 9,
+    backgroundColor: slate[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipJumlahAktif: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+  },
+  chipJumlahTeks: {
+    fontSize: 10,
+    fontFamily: fonts.bold,
+    color: Colors.textSecondary,
+  },
+  chipJumlahTeksAktif: {
+    color: Colors.white,
+  },
   baris: {
     flexDirection: 'row',
     alignItems: 'center',
