@@ -6,12 +6,13 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { asetService } from '../services/asetService';
-import { AsetRingkasan, KategoriAset } from '../types/aset';
+import { AsetRingkasan, KategoriAset, StatusAset } from '../types/aset';
 
 const BATAS_SEGARKAN = 15000;
 const PER_HALAMAN = 20;
 
-export function useDaftarAset() {
+/** `status` tetap selama layar hidup (datang dari kartu ringkasan); undefined = semua aset. */
+export function useDaftarAset(status?: StatusAset) {
   const [aset, setAset] = useState<AsetRingkasan[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -29,7 +30,7 @@ export function useDaftarAset() {
   const muat = useCallback(async (kata: string, kategori: number | null, halaman: number) => {
     const id = ++permintaan.current;
     try {
-      const hasil = await asetService.daftar({ search: kata.trim(), kategori, page: halaman, perHalaman: PER_HALAMAN });
+      const hasil = await asetService.daftar({ search: kata.trim(), kategori, status, page: halaman, perHalaman: PER_HALAMAN });
       if (id !== permintaan.current) return;
       setAset((lama) => (halaman === 1 ? hasil.data : [...lama, ...hasil.data]));
       setPage(hasil.current_page);
@@ -46,7 +47,7 @@ export function useDaftarAset() {
         setMemuatLebih(false);
       }
     }
-  }, []);
+  }, [status]);
 
   // Muat awal dan tiap kata kunci/kategori berubah (ditunda supaya tidak menembak server per ketukan).
   useEffect(() => {

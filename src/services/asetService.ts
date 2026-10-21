@@ -1,7 +1,7 @@
 /** Aset — klien endpoint `/api/aset/*` di api-simwt. */
 import api from './api';
 import { statusAman } from '../adapters/tiket';
-import { AsetTiketAktif, DetailAset, HalamanAset } from '../types/aset';
+import { AsetTiketAktif, DetailAset, HalamanAset, RingkasanAsetData, StatusAset } from '../types/aset';
 
 export const asetService = {
   /** Detail satu aset menurut nomornya (hasil pindai QR). Melempar Error berpesan Indonesia. */
@@ -30,10 +30,20 @@ export const asetService = {
     }
   },
 
-  /** Satu halaman aset di departemen pengguna; pencarian dan paginasi diproses server. */
-  async daftar({ search, kategori, page, perHalaman }: { search?: string; kategori?: number | null; page?: number; perHalaman?: number } = {}): Promise<HalamanAset> {
+  /** Angka ringkasan menu Aset (total, aktif, maintenance, …) untuk departemen pengguna. */
+  async ringkasan(): Promise<RingkasanAsetData> {
     try {
-      const halaman = (await api.get('/aset/daftar', { params: { search: search || undefined, kategori: kategori || undefined, page, per_page: perHalaman } })).data?.data;
+      return (await api.get('/aset/ringkasan')).data.data;
+    } catch (err: any) {
+      if (err.response?.status === 403) throw new Error('Anda tidak punya akses ke data aset.');
+      throw new Error(err.isNetworkError ? err.message : 'Gagal mengambil ringkasan aset.');
+    }
+  },
+
+  /** Satu halaman aset di departemen pengguna; pencarian dan paginasi diproses server. */
+  async daftar({ search, kategori, status, page, perHalaman }: { search?: string; kategori?: number | null; status?: StatusAset; page?: number; perHalaman?: number } = {}): Promise<HalamanAset> {
+    try {
+      const halaman = (await api.get('/aset/daftar', { params: { search: search || undefined, kategori: kategori || undefined, status, page, per_page: perHalaman } })).data?.data;
       return {
         data: halaman?.data ?? [],
         current_page: halaman?.current_page ?? 1,

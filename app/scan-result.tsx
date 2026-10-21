@@ -260,10 +260,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    padding: Spacing.sm,
-    backgroundColor: Colors.background,
-    borderRadius: Spacing.radius.md,
-    ...Spacing.curve,
+    paddingVertical: Spacing.sm,
   },
   lingkar: {
     width: 28,

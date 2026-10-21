@@ -1,7 +1,7 @@
 /** Daftar Aset — aset di departemen pengguna, dengan pencarian, filter kategori, dan paginasi gulir. */
 import React from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
 import Icon from '../../../src/components/common/Icon';
@@ -14,18 +14,23 @@ import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useDaftarAset } from '../../../src/hooks/useDaftarAset';
+import { StatusAset } from '../../../src/types/aset';
+
+const JUDUL: Record<StatusAset, string> = { maintenance: 'Aset Maintenance', tidak_aktif: 'Aset Tidak Aktif' };
 
 export default function DaftarAsetScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { status: statusParam } = useLocalSearchParams<{ status?: string }>();
+  const status = statusParam === 'maintenance' || statusParam === 'tidak_aktif' ? statusParam : undefined;
   const {
     aset, total, kataKunci, setKataKunci, kategoriId, setKategoriId, opsiKategori, filterTerbuka, setFilterTerbuka,
     memuat, memuatLebih, menyegarkan, error, segarkan, muatLebihBanyak,
-  } = useDaftarAset();
+  } = useDaftarAset(status);
 
   return (
     <>
-      <AppBar judul="Daftar Aset" />
+      <AppBar judul={status ? JUDUL[status] : 'Daftar Aset'} />
       <View style={[gs.screen, { backgroundColor: Colors.white }]}>
         <View style={styles.barisCari}>
           <View style={[gs.searchBar, gs.flex1, styles.kotakCari]}>
@@ -70,7 +75,7 @@ export default function DaftarAsetScreen() {
               <KeadaanKosong
                 pose="mikir"
                 judul="Aset tidak ditemukan"
-                teks={kataKunci || kategoriId ? 'Tidak ada aset yang cocok dengan pencarian atau filtermu.' : 'Belum ada aset di departemenmu.'}
+                teks={kataKunci || kategoriId ? 'Tidak ada aset yang cocok dengan pencarian atau filtermu.' : status ? 'Tidak ada aset dengan status ini.' : 'Belum ada aset di departemenmu.'}
               />
             }
             ListFooterComponent={memuatLebih ? <ActivityIndicator style={{ marginVertical: Spacing.lg }} color={Colors.primary} /> : null}
@@ -79,7 +84,7 @@ export default function DaftarAsetScreen() {
                 nama={item.alias || item.asset_name}
                 nomor={item.asset_number}
                 keterangan={[item.kategori, item.asset_pic].filter(Boolean).join(' · ')}
-                kondisi={item.asset_condition}
+                lokasi={[item.plant, item.departemen].filter(Boolean).join(' · ')}
                 onPress={() => router.push({ pathname: '/scan-result', params: { nomor: item.asset_number } })}
               />
             )}

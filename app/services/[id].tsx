@@ -25,8 +25,10 @@ import ServiceIcon from '../../src/components/common/ServiceIcon';
 import SectionHeader from '../../src/components/common/SectionHeader';
 import BannerMaskot from '../../src/components/common/BannerMaskot';
 import BarisAsetTiketAktif from '../../src/components/aset/BarisAsetTiketAktif';
+import RingkasanAset from '../../src/components/aset/RingkasanAset';
 import { SkeletonBaris } from '../../src/components/common/Skeleton';
 import { useAsetTiketAktif } from '../../src/hooks/useAsetTiketAktif';
+import { useRingkasanAset } from '../../src/hooks/useRingkasanAset';
 import { SERVICES, ServiceItem } from '../../constants/Services';
 
 interface AksiLayanan {
@@ -43,12 +45,16 @@ export default function ServiceDetailScreen() {
   const router = useRouter();
   const tiketAktif = useAsetTiketAktif();
   const { muat: muatTiketAktif } = tiketAktif;
+  const { ringkasan, muat: muatRingkasan } = useRingkasanAset();
   const untukAset = id === 'database-aset';
   // Segar tiap layar kembali fokus (mis. setelah melapor tiket dari detail aset).
   useFocusEffect(
     useCallback(() => {
-      if (untukAset) muatTiketAktif();
-    }, [untukAset, muatTiketAktif])
+      if (untukAset) {
+        muatTiketAktif();
+        muatRingkasan();
+      }
+    }, [untukAset, muatTiketAktif, muatRingkasan])
   );
 
   const service = SERVICES.find((s) => s.id === id);
@@ -97,6 +103,14 @@ export default function ServiceDetailScreen() {
         )}
 
         {/* Bentuk yang sama dengan menu Kaizen & Tiket: grid ikon. Aksi tanpa `route` tampil "Soon" dan tidak bisa diketuk. */}
+        {untukAset ? (
+          <RingkasanAset
+            ringkasan={ringkasan}
+            onBukaMaintenance={() => router.push({ pathname: '/services/aset/daftar', params: { status: 'maintenance' } })}
+            onBukaTidakAktif={() => router.push({ pathname: '/services/aset/daftar', params: { status: 'tidak_aktif' } })}
+          />
+        ) : null}
+
         <SectionHeader title={`Menu ${judul}`} />
         <View style={styles.grid}>
           {aksi.map((item) => (
