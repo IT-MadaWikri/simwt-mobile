@@ -51,6 +51,21 @@ export interface AsetTiketAktif {
   tanggal_diajukan: string | null;
 }
 
+/** Angka ringkasan menu Aset (`GET /aset/ringkasan`), definisi sama dengan dashboard IT di web. */
+export interface RingkasanAsetData {
+  total: number;
+  /** Aset baru bulan ini dikurangi bulan lalu. */
+  selisih_bulan_lalu: number;
+  aktif: number;
+  persen_aktif: number;
+  tidak_aktif: number;
+  maintenance: number;
+  baru_bulan_ini: number;
+  perlu_peremajaan: number;
+  /** Jumlah aset per kategori IT, termasuk yang kosong. */
+  distribusi: { label: string; jumlah: number }[];
+}
+
 /** Satu baris pada daftar aset (`GET /aset/daftar`). */
 export interface AsetRingkasan {
   asset_number: string;
@@ -59,7 +74,12 @@ export interface AsetRingkasan {
   asset_pic: string | null;
   asset_condition: string | null;
   kategori: string | null;
+  plant: string | null;
+  departemen: string | null;
 }
+
+/** Saringan status pada daftar aset, sama dengan definisi di ringkasan. */
+export type StatusAset = 'maintenance' | 'tidak_aktif';
 
 /** Opsi filter kategori: kategori yang dipakai aset di lingkup pengguna, beserta jumlahnya. */
 export interface KategoriAset {

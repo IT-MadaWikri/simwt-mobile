@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
-import Colors, { brand, slate } from '../../../constants/Colors';
+import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 
@@ -11,12 +11,12 @@ interface BarisAsetProps {
   nomor: string;
   /** Keterangan di bawah nomor (kategori · PIC); string kosong = tidak tampil. */
   keterangan: string;
-  /** Kondisi aset ("Baik", "Rusak", …); tidak tampil bila kosong. */
-  kondisi?: string | null;
+  /** Plant · departemen pemilik; string kosong = tidak tampil. */
+  lokasi: string;
   onPress: () => void;
 }
 
-export default function BarisAset({ nama, nomor, keterangan, kondisi, onPress }: BarisAsetProps) {
+export default function BarisAset({ nama, nomor, keterangan, lokasi, onPress }: BarisAsetProps) {
   return (
     <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={onPress}>
       <View style={styles.logo}>
@@ -27,13 +27,8 @@ export default function BarisAset({ nama, nomor, keterangan, kondisi, onPress }:
         <Text style={styles.judul} numberOfLines={1}>{nama}</Text>
         <Text style={styles.sub} numberOfLines={1}>{nomor}</Text>
         {keterangan ? <Text style={styles.sub} numberOfLines={1}>{keterangan}</Text> : null}
+        {lokasi ? <Text style={styles.sub} numberOfLines={1}>{lokasi}</Text> : null}
       </View>
-
-      {kondisi ? (
-        <View style={styles.kondisi}>
-          <Text style={styles.teksKondisi}>{kondisi}</Text>
-        </View>
-      ) : null}
 
       <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
     </TouchableOpacity>
@@ -61,12 +56,4 @@ const styles = StyleSheet.create({
   isi: { flex: 1, gap: 2 },
   judul: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
   sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  kondisi: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-    backgroundColor: brand[50],
-  },
-  teksKondisi: { fontFamily: fonts.semibold, fontSize: 10, color: brand[700] },
 });
