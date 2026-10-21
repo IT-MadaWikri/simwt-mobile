@@ -1,3 +1,5 @@
+import type { StatusTiket } from './tiket';
+
 /** Detail aset dari `GET /aset/{nomor}` (relasi Eloquent sudah snake_case). */
 export interface DataAset {
   asset_name?: string;
@@ -33,4 +35,43 @@ export interface DetailAset {
 export interface BarisInfoAset {
   label: string;
   nilai: string;
+}
+
+/** Satu baris "aset dengan tiket aktif" dari `GET /aset/tiket-aktif`. */
+export interface AsetTiketAktif {
+  asset_number: string;
+  asset_name: string;
+  alias: string | null;
+  asset_pic: string | null;
+  jumlah_tiket: number;
+  /** Tiket aktif terbaru pada aset ini. */
+  no_ticket: string;
+  judul_masalah: string;
+  status_pengajuan: StatusTiket;
+  tanggal_diajukan: string | null;
+}
+
+/** Satu baris pada daftar aset (`GET /aset/daftar`). */
+export interface AsetRingkasan {
+  asset_number: string;
+  asset_name: string;
+  alias: string | null;
+  asset_pic: string | null;
+  asset_condition: string | null;
+  kategori: string | null;
+}
+
+/** Opsi filter kategori: kategori yang dipakai aset di lingkup pengguna, beserta jumlahnya. */
+export interface KategoriAset {
+  id: number;
+  nama: string;
+  jumlah: number;
+}
+
+export interface HalamanAset {
+  data: AsetRingkasan[];
+  current_page: number;
+  last_page: number;
+  total: number;
+  kategori: KategoriAset[];
 }

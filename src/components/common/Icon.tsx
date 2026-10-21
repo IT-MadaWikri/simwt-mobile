@@ -7,7 +7,7 @@
  */
 import React from 'react';
 import {
-  Accessibility, ArrowDownWideNarrow, ArrowLeft, ArrowRight, ArrowUpNarrowWide, BadgeCheck, Barcode, Bell, BellOff, Bot,
+  Accessibility, ArrowDownWideNarrow, ArrowLeft, ArrowRight, ArrowUpNarrowWide, BadgeCheck, Barcode, Bell, BellOff, Bot, Box,
   Briefcase, BriefcaseBusiness, Building, BuildingComplex, Cake, Calendar,
   CalendarCheck, CalendarClock, Camera, CameraOff, ChartColumn, ChartLine, Check,
   CheckCheck, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CirclePlus,
@@ -140,6 +140,7 @@ const ICONS: Record<string, LucideIcon> = {
   'plus': Plus,
   'plus-circle-outline': CirclePlus,
   'progress-wrench': Wrench,
+  box: Box,
   'qrcode-scan': ScanQrCode,
   'robot-outline': Bot,
   'rocket-launch-outline': Rocket,

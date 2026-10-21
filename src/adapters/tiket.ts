@@ -15,6 +15,9 @@ export const STATUS_TIKET: Record<StatusTiket, { label: string; keterangan: stri
   CANCEL: { label: 'Dibatalkan', keterangan: 'Dibatalkan', ikon: 'close' },
 };
 
+/** Tiket yang belum selesai ditangani (sama dengan daftar aset bertiket aktif di api-simwt). */
+export const tiketAktif = (status: StatusTiket) => ['PENDING', 'NEED_APPROVAL', 'PROSES', 'RESOLVED'].includes(status);
+
 /** Pesan ringkas untuk dibagikan (WhatsApp dll), sama gayanya dengan `teksBagikanKaizen`. */
 export const teksBagikanTiket = (t: DetailTiket) =>
   [

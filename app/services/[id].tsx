@@ -12,9 +12,9 @@
  * ditandai jelas sebagai belum tersedia, ditampilkan redup, dan tidak bisa
  * ditekan.
  */
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
@@ -23,6 +23,10 @@ import { gs } from '../../constants/GlobalStyles';
 import AppBar from '../../src/components/common/AppBar';
 import ServiceIcon from '../../src/components/common/ServiceIcon';
 import SectionHeader from '../../src/components/common/SectionHeader';
+import BannerMaskot from '../../src/components/common/BannerMaskot';
+import BarisAsetTiketAktif from '../../src/components/aset/BarisAsetTiketAktif';
+import { SkeletonBaris } from '../../src/components/common/Skeleton';
+import { useAsetTiketAktif } from '../../src/hooks/useAsetTiketAktif';
 import { SERVICES, ServiceItem } from '../../constants/Services';
 
 interface AksiLayanan {
@@ -36,6 +40,16 @@ interface AksiLayanan {
 export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const tiketAktif = useAsetTiketAktif();
+  const { muat: muatTiketAktif } = tiketAktif;
+  const untukAset = id === 'database-aset';
+  // Segar tiap layar kembali fokus (mis. setelah melapor tiket dari detail aset).
+  useFocusEffect(
+    useCallback(() => {
+      if (untukAset) muatTiketAktif();
+    }, [untukAset, muatTiketAktif])
+  );
 
   const service = SERVICES.find((s) => s.id === id);
 
@@ -56,6 +70,7 @@ export default function ServiceDetailScreen() {
   const judul = service.name.replace('\n', ' ');
   const aksi = aksiUntuk(service);
   const adaYangAktif = aksi.some((item) => !!item.route);
+  const aksiUtama = aksi.find((item) => !!item.route);
 
   return (
     <>
@@ -64,10 +79,10 @@ export default function ServiceDetailScreen() {
       <ScrollView
         style={[gs.screen, { backgroundColor: Colors.white }]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+        contentContainerStyle={{ paddingTop: Spacing.lg, paddingBottom: insets.bottom + Spacing.xxl }}
       >
         {!adaYangAktif && (
-          <View style={[gs.cardBrand, gs.center, { marginTop: Spacing.lg }]}>
+          <View style={[gs.cardBrand, gs.center, { marginHorizontal: Spacing.lg, marginBottom: Spacing.lg }]}>
             <Icon
               name="rocket-launch-outline"
               size={40}
@@ -100,6 +115,45 @@ export default function ServiceDetailScreen() {
             />
           ))}
         </View>
+
+        {aksiUtama ? (
+          <BannerMaskot
+            style={{ marginTop: Spacing.xl }}
+            pose="persilakan"
+            judul="Semua kebutuhan"
+            sorot={judul}
+            teks="Pilih salah satu menu di atas untuk memulai."
+            label={aksiUtama.label.replace('\n', ' ')}
+            onPress={() => router.push(aksiUtama.route as any)}
+          />
+        ) : null}
+
+        {untukAset ? (
+          <View style={styles.bagian}>
+            <SectionHeader title="Aset Sedang Diperbaiki" />
+            {tiketAktif.aset === null ? (
+              <SkeletonBaris jumlah={3} />
+            ) : tiketAktif.error ? (
+              <Text style={[gs.emptyText, gs.containerX]}>{tiketAktif.error}</Text>
+            ) : tiketAktif.aset.length === 0 ? (
+              <Text style={[gs.emptyText, gs.containerX]}>Tidak ada aset yang sedang diperbaiki.</Text>
+            ) : (
+              tiketAktif.aset.map((a, i) => (
+                <View key={a.asset_number}>
+                  {i > 0 ? <View style={styles.pemisah} /> : null}
+                  <BarisAsetTiketAktif
+                    nama={a.alias || a.asset_name}
+                    nomor={a.asset_number}
+                    judulTiket={a.judul_masalah}
+                    status={a.status_pengajuan}
+                    jumlahTiket={a.jumlah_tiket}
+                    onPress={() => router.push({ pathname: '/scan-result', params: { nomor: a.asset_number } })}
+                  />
+                </View>
+              ))
+            )}
+          </View>
+        ) : null}
       </ScrollView>
     </>
   );
@@ -107,6 +161,8 @@ export default function ServiceDetailScreen() {
 
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
+  bagian: { marginTop: Spacing.xl },
+  pemisah: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginHorizontal: Spacing.screenPadding },
 });
 
 /**
@@ -137,6 +193,12 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
         label: 'Scan QR Aset',
         subtitle: 'Pindai label untuk melihat detail aset',
         route: '/(tabs)/scan',
+      },
+      {
+        icon: 'box',
+        label: 'Daftar Aset',
+        subtitle: 'Aset di departemen kamu',
+        route: '/services/aset/daftar',
       },
       { icon: 'plus-circle-outline', label: 'Tambah Aset', subtitle: 'Registrasi aset baru' },
       { icon: 'magnify', label: 'Cari Aset', subtitle: 'Cari berdasarkan kode atau nama' },

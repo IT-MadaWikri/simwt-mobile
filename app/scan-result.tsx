@@ -18,7 +18,7 @@ import Spacing from '../constants/Spacing';
 import { fonts, ukuranIsi } from '../constants/Typography';
 import { gs } from '../constants/GlobalStyles';
 import { useAsetScan } from '../src/hooks/useAsetScan';
-import { statusAman } from '../src/adapters/tiket';
+import { statusAman, tiketAktif } from '../src/adapters/tiket';
 import { adaptasiExtraData } from '../src/adapters/aset';
 import { urlFoto } from '../src/utils/kaizen';
 
@@ -103,6 +103,9 @@ export default function ScanResultScreen() {
     { ikon: 'history', label: 'Diperbarui', nilai: formatTanggal(aset.updated_at) },
   ];
 
+  // Selama masih ada tiket aktif pada aset ini, tombol lapor disembunyikan (masalahnya sudah dilaporkan).
+  const adaTiketAktif = riwayat.some((t) => tiketAktif(statusAman(t.status_pengajuan)));
+
   const laporkan = () =>
     router.push({
       pathname: '/services/tiket/buat',
@@ -111,7 +114,7 @@ export default function ScanResultScreen() {
 
   return (
     <View style={[gs.screen, { backgroundColor: Colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={adaTiketAktif ? { paddingBottom: insets.bottom } : undefined}>
         <GaleriAset foto={foto} />
 
         {/* Identitas */}
@@ -220,9 +223,11 @@ export default function ScanResultScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-        <Button icon="ticket-outline" label="Laporkan Masalah Aset" onPress={laporkan} block />
-      </View>
+      {adaTiketAktif ? null : (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <Button icon="ticket-outline" label="Laporkan Masalah Aset" onPress={laporkan} block />
+        </View>
+      )}
     </View>
   );
 }
