@@ -21,7 +21,7 @@ import { judulAppBar } from '../../../constants/Typography';
 
 export const gayaAppBar = {
   headerShown: true,
-  headerStyle: { backgroundColor: '#31AAA9' },
+  headerStyle: { backgroundColor: Colors.primary },
   headerTintColor: Colors.white,
   headerTitleStyle: { ...judulAppBar, color: Colors.white },
   headerShadowVisible: false,
@@ -41,15 +41,23 @@ interface AppBarProps {
   kanan?: React.ReactNode;
   /** Sembunyikan tombol kembali (halaman akar). */
   tanpaKembali?: boolean;
+  /** Header menimpa konten (tanpa judul, tombol kembali gelap) — untuk layar yang diawali gambar penuh. */
+  transparan?: boolean;
 }
 
-export default function AppBar({ judul, kanan, tanpaKembali }: AppBarProps) {
+export default function AppBar({ judul, kanan, tanpaKembali, transparan }: AppBarProps) {
   return (
     <Stack.Screen
       options={{
         ...(tanpaKembali ? gayaAppBar : opsiAppBar),
         title: judul,
         headerRight: kanan ? () => kanan : undefined,
+        ...(transparan && {
+          headerTransparent: true,
+          headerStyle: { backgroundColor: 'transparent' },
+          headerTitle: '',
+          headerLeft: tanpaKembali ? undefined : () => <TombolKembali warna={Colors.textPrimary} />,
+        }),
       }}
     />
   );

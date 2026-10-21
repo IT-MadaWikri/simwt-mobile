@@ -3,10 +3,11 @@
  * beranda. Isinya dua menu (Tiket Saya, Buat Tiket) dan tiga tiket terbaru.
  */
 import React, { useCallback, useRef } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { Animated, View, Text, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
+import BannerParalaks from '../../../src/components/common/BannerParalaks';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
 import BannerMaskot from '../../../src/components/common/BannerMaskot';
@@ -43,6 +44,7 @@ const MENU: ServiceItem[] = [
 export default function MenuTiketScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const scrollY = useRef(new Animated.Value(0)).current;
   const { tiket, memuat, menyegarkan, error, muatUlang, segarkan } = useTiketSaya({ perHalaman: 3 });
 
   // Segar tiap kembali ke menu (mis. setelah membuat tiket); muat pertama ditangani hook.
@@ -61,15 +63,18 @@ export default function MenuTiketScreen() {
 
   return (
     <>
-      <AppBar judul="Tiket Masalah" />
-      <ScrollView
+      <AppBar judul="Tiket Masalah" transparan />
+      <Animated.ScrollView
         style={[gs.screen, { backgroundColor: Colors.white }]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: Spacing.lg, paddingBottom: insets.bottom + Spacing.xxl }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
         refreshControl={
           <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
         }
       >
+        <BannerParalaks sumber={require('../../../assets/images/banner-tiket.png')} scrollY={scrollY}>
         <SectionHeader title="Menu Tiket" />
         <View style={styles.grid}>
           {MENU.map((m) => (
@@ -119,7 +124,8 @@ export default function MenuTiketScreen() {
             ))
           )}
         </View>
-      </ScrollView>
+        </BannerParalaks>
+      </Animated.ScrollView>
     </>
   );
 }

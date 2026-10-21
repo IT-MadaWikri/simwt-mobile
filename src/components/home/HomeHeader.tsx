@@ -3,9 +3,9 @@
  * lalu search bar.
  */
 import { LinearGradient } from "expo-linear-gradient";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, ImageBackground, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Colors, { gradasiLembut } from "../../../constants/Colors";
+import Colors from "../../../constants/Colors";
 import Spacing from "../../../constants/Spacing";
 import Typography, { fonts } from "../../../constants/Typography";
 import { useAuth } from "../../contexts/AuthContext";
@@ -40,10 +40,9 @@ export default function HomeHeader({
 
   return (
     <Animated.View style={{ transform: [{ translateY: geser }] }}>
-    <LinearGradient
-      colors={[...gradasiLembut]}
-      start={{ x: 0, y: 0.5 }}
-      end={{ x: 1, y: 0.5 }}
+    <ImageBackground
+      source={require('../../../assets/images/latar-beranda.png')}
+      resizeMode="cover"
       style={[styles.container, { paddingTop: insets.top + Spacing.md }]}
     >
       {/* Tepi bawah memudar ke putih (tanpa garis potong tegas); di belakang isi agar teks & search bar tidak ikut pudar. */}
@@ -53,7 +52,7 @@ export default function HomeHeader({
         style={styles.pudar}
       />
 
-      <BarAtasBeranda belumDibaca={belumDibaca} />
+      <BarAtasBeranda belumDibaca={belumDibaca} tanpaLogo />
 
       <View>
         <Text style={styles.title} numberOfLines={1}>
@@ -78,7 +77,7 @@ export default function HomeHeader({
         style={styles.searchBar}
         inputStyle={styles.text}
       />
-    </LinearGradient>
+    </ImageBackground>
     </Animated.View>
   );
 }

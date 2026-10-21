@@ -4,11 +4,12 @@
  * Kaizen terbaru. "Kaizen Saya" ada di `saya.tsx`, jadi tombol kembali di sana
  * otomatis mundur ke menu ini (satu tumpukan), bukan melompat ke beranda.
  */
-import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, RefreshControl, StyleSheet } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { Animated, View, Text, TouchableOpacity, Image, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
+import BannerParalaks from '../../../src/components/common/BannerParalaks';
 import Icon from '../../../src/components/common/Icon';
 import RekapBulan from '../../../src/components/kaizen/RekapBulan';
 import BannerAksi from '../../../src/components/common/BannerAksi';
@@ -34,6 +35,7 @@ const angka = (n: number) => n.toLocaleString('id-ID');
 export default function MenuKaizenScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const scrollY = useRef(new Animated.Value(0)).current;
   const { user } = useAuth();
 
   // Menu & antrean approval hanya untuk user yang punya permission approve_kaizen (aturan yang sama dengan server).
@@ -81,13 +83,16 @@ export default function MenuKaizenScreen() {
 
   return (
     <>
-      <AppBar judul="Kaizen" />
-      <ScrollView
+      <AppBar judul="Kaizen" transparan />
+      <Animated.ScrollView
         style={[gs.screen, { backgroundColor: Colors.white }]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: Spacing.lg, paddingBottom: insets.bottom + Spacing.xxl }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
         refreshControl={<RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
       >
+        <BannerParalaks sumber={require('../../../assets/images/banner-kaizen.png')} scrollY={scrollY}>
         <SectionHeader title="Menu Kaizen" />
         <View style={styles.grid}>
           {menu.map((m) => (
@@ -232,7 +237,8 @@ export default function MenuKaizenScreen() {
             )}
         </View>
 
-      </ScrollView>
+        </BannerParalaks>
+      </Animated.ScrollView>
     </>
   );
 }
