@@ -101,13 +101,7 @@ function RootLayoutNav() {
         />
         <Stack.Screen
           name="scan-result"
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            animationDuration: 280,
-            ...opsiAppBar,
-            title: 'Detail Aset',
-          }}
+          options={{ ...opsiAppBar, title: 'Detail Aset' }}
         />
         <Stack.Screen
           name="modal"
