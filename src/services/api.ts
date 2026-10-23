@@ -56,9 +56,8 @@ api.interceptors.response.use(
     if (!error.response) {
       const timeout = error.code === 'ECONNABORTED';
       error.message = timeout
-        ? 'Server terlalu lama merespons. Periksa koneksi Anda, lalu coba lagi.'
-        : `Tidak dapat terhubung ke server (${API_CONFIG.BASE_URL}). ` +
-          'Pastikan Anda berada di jaringan yang benar.';
+        ? 'Server terlalu lama merespons.'
+        : 'Tidak dapat terhubung ke server.';
       error.isNetworkError = true;
       // Beri tahu UI (alert global); permintaan yang sengaja dibatalkan bukan masalah jaringan.
       if (!axios.isCancel(error)) laporkanMasalahJaringan(timeout ? 'timeout' : 'offline');

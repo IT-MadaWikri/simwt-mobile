@@ -16,11 +16,11 @@ const JEDA_MS = 20000;
 const PESAN: Record<JenisMasalahJaringan, { judul: string; isi: string }> = {
   timeout: {
     judul: 'Koneksi Lambat',
-    isi: 'Server terlalu lama merespons. Periksa koneksi internet Anda, lalu coba lagi.',
+    isi: 'Server terlalu lama merespons.',
   },
   offline: {
     judul: 'Jaringan Bermasalah',
-    isi: 'Tidak dapat terhubung ke server. Pastikan internet atau Wi-Fi Anda aktif dan stabil, lalu coba lagi.',
+    isi: 'Tidak dapat terhubung ke server.',
   },
 };
 
