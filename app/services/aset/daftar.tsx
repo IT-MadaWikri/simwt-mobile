@@ -85,6 +85,7 @@ export default function DaftarAsetScreen() {
                 nomor={item.asset_number}
                 keterangan={[item.kategori, item.asset_pic].filter(Boolean).join(' · ')}
                 lokasi={[item.plant, item.departemen].filter(Boolean).join(' · ')}
+                ikon={item.ikon ?? undefined}
                 onPress={() => router.push({ pathname: '/scan-result', params: { nomor: item.asset_number } })}
               />
             )}
