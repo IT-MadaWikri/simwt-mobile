@@ -100,3 +100,61 @@ export type GalatRequestAkun = Partial<
     string
   >
 >;
+
+/** Request Pembuatan Sistem (Form-IT-04): persetujuan empat tingkat di web. */
+export type StatusRequestSistem =
+  | 'pending_kabag'
+  | 'pending_manager_plant'
+  | 'pending_it'
+  | 'pending_manager_it'
+  | 'disetujui'
+  | 'ditolak';
+
+export interface RequestSistemRingkas {
+  id: number;
+  nomorDokumen: string;
+  namaAplikasi: string;
+  status: StatusRequestSistem;
+  statusLabel: string;
+  departemen: string | null;
+  plant: string | null;
+  /** Terisi hanya bila ditolak. */
+  catatanPenolakan: string | null;
+  diajukanAt: string | null;
+}
+
+export interface LangkahRequestSistem {
+  aksiLabel: string;
+  catatan: string | null;
+  oleh: string | null;
+  waktu: string | null;
+}
+
+export interface RequestSistemDetail extends RequestSistemRingkas {
+  namaUser: string;
+  tujuan: string[];
+  manfaat: string[];
+  deskripsi: string | null;
+  /** Keterangan hasil pemeriksaan Tim IT, bila sudah ada. */
+  keteranganIt: string | null;
+  histori: LangkahRequestSistem[];
+}
+
+export interface HasilLacakRequestSistem extends RequestSistemRingkas {
+  namaUser: string;
+  nikTersamar: string;
+  milikSaya: boolean;
+}
+
+export interface FormRequestSistem {
+  idPlant: number | null;
+  idDepartemen: number | null;
+  subDepartemen: number | null;
+  namaAplikasi: string;
+  /** Minimal 3 butir terisi (aturan web). */
+  tujuan: string[];
+  manfaat: string[];
+  deskripsi: string;
+}
+
+export type GalatRequestSistem = Partial<Record<'plant' | 'departemen' | 'sub' | 'namaAplikasi' | 'tujuan' | 'manfaat', string>>;

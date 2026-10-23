@@ -234,7 +234,7 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
     ],
     'layanan-it': [
       { icon: 'account-cog-outline', label: 'Request\nAkun', subtitle: 'Akun baru atau perubahan akses sistem', route: '/services/layanan-it/request-akun' },
-      { icon: 'plus-circle-outline', label: 'Request\nSistem', subtitle: 'Pengajuan pembuatan aplikasi baru' },
+      { icon: 'application-outline', label: 'Request\nSistem', subtitle: 'Pengajuan pembuatan aplikasi baru', route: '/services/layanan-it/request-sistem' },
       { icon: 'history', label: 'Histori\nRequest', subtitle: 'Status request yang Anda ajukan', route: '/services/layanan-it/histori' },
       { icon: 'magnify', label: 'Lacak\nRequest', subtitle: 'Cek status lewat nomor dokumen', route: '/services/layanan-it/lacak' },
     ],

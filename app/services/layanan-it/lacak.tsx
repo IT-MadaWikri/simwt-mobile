@@ -1,9 +1,9 @@
 /**
- * Lacak Request — cek status Request Akun lewat nomor dokumen (sama dengan "Lacak" di portal Layanan IT web).
+ * Lacak Request — cek status Request Akun atau Request Sistem lewat nomor dokumen (sama dengan "Lacak" di portal Layanan IT web).
  * Hasilnya ringkasan dengan NIK tersamar; bila milik sendiri, tombol membuka detail lengkap.
  */
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
@@ -13,7 +13,7 @@ import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import { useLacakRequestAkun } from '../../../src/hooks/useLacakRequestAkun';
+import { useLacakRequest } from '../../../src/hooks/useLacakRequest';
 import { LABEL_METODE, formatWaktuRequest } from '../../../src/adapters/requestAkun';
 
 function Baris({ label, nilai }: { label: string; nilai: string | null }) {
@@ -28,11 +28,15 @@ function Baris({ label, nilai }: { label: string; nilai: string | null }) {
 
 export default function LacakRequestScreen() {
   const router = useRouter();
-  const l = useLacakRequestAkun();
+  const l = useLacakRequest();
   const h = l.hasil;
 
   return (
-    <KeyboardAvoidingView style={[gs.screen, { backgroundColor: Colors.white }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={[gs.screen, { backgroundColor: Colors.white }]}
+      // Android edge-to-edge: `adjustResize` tidak lagi mengecilkan jendela, jadi tanpa padding keyboard menutupi isi.
+      behavior="padding"
+    >
       <AppBar judul="Lacak Request" />
       <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled">
         <FieldTeks
@@ -42,14 +46,14 @@ export default function LacakRequestScreen() {
           onUbah={l.setNomor}
           galat={l.error ?? undefined}
           autoCapitalize="characters"
-          placeholder="001/MWT-IT/P1/F-PPPA/10/2026"
+          placeholder="Nomor dokumen request"
         />
         <Button label="Lacak" icon="magnify" onPress={l.lacak} loading={l.mencari} block />
 
         {h ? (
           <View style={styles.hasil}>
             <LencanaStatusRequestAkun status={h.status} label={h.statusLabel} />
-            <Text style={styles.judul}>{h.jenisPermintaan}</Text>
+            <Text style={styles.judul}>{h.judul}</Text>
             <Baris label="Sistem" nilai={h.sistem} />
             <Baris label="Pemohon" nilai={`${h.namaUser} (${h.nikTersamar})`} />
             <Baris label="Tujuan approval" nilai={[h.departemen, h.plant].filter(Boolean).join(' · ') || null} />
@@ -66,7 +70,7 @@ export default function LacakRequestScreen() {
                 variant="outline"
                 label="Lihat Detail"
                 iconRight="chevron-right"
-                onPress={() => router.push(`/services/layanan-it/${h.id}` as any)}
+                onPress={() => router.push((h.jenis === 'sistem' ? `/services/layanan-it/sistem/${h.id}` : `/services/layanan-it/${h.id}`) as any)}
                 block
                 style={{ marginTop: Spacing.sm }}
               />

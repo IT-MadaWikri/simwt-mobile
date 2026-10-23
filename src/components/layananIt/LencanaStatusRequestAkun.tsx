@@ -1,19 +1,21 @@
-/** Lencana status Request Akun (menunggu Kabag / Tim IT, selesai, ditolak) — presentasional. */
+/** Lencana status Request Akun dan Request Pembuatan Sistem (menunggu tahap tertentu, selesai/disetujui, ditolak) — presentasional. */
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
-import { StatusRequestAkun } from '../../types/layananIt';
 
-const WARNA: Record<StatusRequestAkun, { bg: string; fg: string }> = {
+const WARNA: Record<string, { bg: string; fg: string }> = {
   pending_kabag: { bg: '#fffbeb', fg: '#b45309' },
+  pending_manager_plant: { bg: '#f0f9ff', fg: '#0369a1' },
   pending_it: { bg: '#eff6ff', fg: '#1d4ed8' },
+  pending_manager_it: { bg: '#faf5ff', fg: '#7e22ce' },
   selesai: { bg: brand[50], fg: brand[700] },
+  disetujui: { bg: brand[50], fg: brand[700] },
   ditolak: { bg: '#fef2f2', fg: Colors.dangerDark },
 };
 
-export default function LencanaStatusRequestAkun({ status, label }: { status: StatusRequestAkun; label: string }) {
+export default function LencanaStatusRequestAkun({ status, label }: { status: string; label: string }) {
   const { bg, fg } = WARNA[status] ?? WARNA.pending_kabag;
   return (
     <View style={[styles.lencana, { backgroundColor: bg }]}>

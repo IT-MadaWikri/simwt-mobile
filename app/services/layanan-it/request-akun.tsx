@@ -85,7 +85,8 @@ export default function RequestAkunScreen() {
   return (
     <KeyboardAvoidingView
       style={[gs.screen, { backgroundColor: Colors.white }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // Android edge-to-edge: `adjustResize` tidak lagi mengecilkan jendela, jadi tanpa padding keyboard menutupi isi.
+      behavior="padding"
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <AppBar judul="Request Akun" />

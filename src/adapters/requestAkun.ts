@@ -6,12 +6,18 @@
 import {
   DepartemenOpsi,
   FormRequestAkun,
+  FormRequestSistem,
   GalatRequestAkun,
+  GalatRequestSistem,
   HasilLacakRequestAkun,
+  HasilLacakRequestSistem,
   LangkahRequestAkun,
+  LangkahRequestSistem,
   OpsiRequestAkun,
   RequestAkunDetail,
   RequestAkunRingkas,
+  RequestSistemDetail,
+  RequestSistemRingkas,
 } from '../types/layananIt';
 import { LangkahLinimasa } from '../types/tiket';
 
@@ -164,6 +170,99 @@ export const formatWaktuRequest = (iso: string | null) =>
     ? new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : '-';
 
+export const adaptasiRequestSistem = (m: any): RequestSistemRingkas => ({
+  id: Number(m?.id),
+  nomorDokumen: m?.nomor_dokumen ?? '',
+  namaAplikasi: m?.nama_aplikasi ?? '',
+  status: m?.status ?? 'pending_kabag',
+  statusLabel: m?.status_label ?? '',
+  departemen: m?.departemen ?? null,
+  plant: m?.plant ?? null,
+  catatanPenolakan: m?.catatan_penolakan ?? null,
+  diajukanAt: m?.diajukan_at ?? null,
+});
+
+const adaptasiLangkahSistem = (h: any): LangkahRequestSistem => ({
+  aksiLabel: h?.aksi_label ?? '',
+  catatan: h?.catatan ?? null,
+  oleh: h?.oleh ?? null,
+  waktu: h?.waktu ?? null,
+});
+
+export const adaptasiDetailRequestSistem = (m: any): RequestSistemDetail => ({
+  ...adaptasiRequestSistem(m),
+  namaUser: m?.nama_user ?? '',
+  tujuan: (m?.tujuan ?? []).map(String),
+  manfaat: (m?.manfaat ?? []).map(String),
+  deskripsi: m?.deskripsi ?? null,
+  keteranganIt: m?.keterangan_it ?? null,
+  histori: (m?.histori ?? []).map(adaptasiLangkahSistem),
+});
+
+export const adaptasiLacakRequestSistem = (m: any): HasilLacakRequestSistem => ({
+  ...adaptasiRequestSistem(m),
+  namaUser: m?.nama_user ?? '',
+  nikTersamar: m?.nik_tersamar ?? '',
+  milikSaya: !!m?.milik_saya,
+});
+
+/** Tiga butir kosong awal: web mewajibkan minimal tiga tujuan dan tiga manfaat. */
+export const FORM_REQUEST_SISTEM_KOSONG: FormRequestSistem = {
+  idPlant: null,
+  idDepartemen: null,
+  subDepartemen: null,
+  namaAplikasi: '',
+  tujuan: ['', '', ''],
+  manfaat: ['', '', ''],
+  deskripsi: '',
+};
+
+export const MIN_BUTIR = 3;
+
+/**
+ * HTML dari editor (`<html>…</html>`) → HTML polos yang ikut tampil benar di web (TinyMCE); isi tanpa teks
+ * (mis. hanya `<p></p>`) menjadi string kosong supaya deskripsi opsional tidak terkirim sebagai tag kosong.
+ */
+export const rapikanHtmlDeskripsi = (html: string) => {
+  const isi = html.replace(/^\s*<html>/i, '').replace(/<\/html>\s*$/i, '').trim();
+  return isi.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim() === '' ? '' : isi;
+};
+export const butirTerisi = (butir: string[]) => butir.map((b) => b.trim()).filter(Boolean);
+
+/** Galat per field (kosong = aman), sama dengan aturan server. */
+export function galatRequestSistem(f: FormRequestSistem, opsi: OpsiRequestAkun | null): GalatRequestSistem {
+  const g: GalatRequestSistem = {};
+  if (!f.idPlant) g.plant = 'Pilih plant.';
+  if (!f.idDepartemen) g.departemen = 'Pilih departemen tujuan approval.';
+  const dept = opsi?.departemen.find((d) => d.id === f.idDepartemen);
+  if (subUntukPlant(dept, f.idPlant).length > 0 && !f.subDepartemen) g.sub = 'Pilih sub departemen.';
+  if (!f.namaAplikasi.trim()) g.namaAplikasi = 'Nama aplikasi / website wajib diisi.';
+  if (butirTerisi(f.tujuan).length < MIN_BUTIR) g.tujuan = `Isi minimal ${MIN_BUTIR} tujuan.`;
+  if (butirTerisi(f.manfaat).length < MIN_BUTIR) g.manfaat = `Isi minimal ${MIN_BUTIR} manfaat.`;
+  return g;
+}
+
+/** Jejak persetujuan untuk `LinimasaTiket`, ditambah tahap berikutnya (abu-abu) selama masih berjalan. */
+const TAHAP_BERIKUTNYA: Record<string, string> = {
+  pending_kabag: 'Menunggu persetujuan Kepala Bagian',
+  pending_manager_plant: 'Menunggu persetujuan Manager Plant',
+  pending_it: 'Menunggu pemeriksaan Tim IT',
+  pending_manager_it: 'Menunggu persetujuan Manager IT',
+};
+
+export function langkahRequestSistem(d: RequestSistemDetail): LangkahLinimasa[] {
+  const langkah: LangkahLinimasa[] = d.histori.map((h, i) => ({
+    id: `${i}-${h.aksiLabel}`,
+    judul: h.aksiLabel,
+    isi: [h.oleh ? `Oleh ${h.oleh}` : null, h.catatan].filter((x): x is string => !!x),
+    waktu: h.waktu,
+    selesai: true,
+  }));
+  const berikutnya = TAHAP_BERIKUTNYA[d.status];
+  if (berikutnya) langkah.push({ id: 'berikutnya', judul: berikutnya, isi: [], waktu: null, selesai: false });
+  return langkah;
+}
+
 if (__DEV__) {
   // Pemeriksaan kecil aturan kondisional: Gmail wajib alamat email & tanpa username; sistem lain sebaliknya.
   const dasar = { ...FORM_REQUEST_AKUN_KOSONG, idPlant: 1, idDepartemen: 1, jenis: 'Penambahan Akses', keterangan: 'x', alasan: 'x', metode: 'langsung' as const };
@@ -172,4 +271,8 @@ if (__DEV__) {
   const nas = galatRequestAkun({ ...dasar, sistem: 'NAS' }, null);
   console.assert(!!nas.username && !nas.emailDiminta && !nas.webapps, 'galatRequestAkun NAS');
   console.assert(Object.keys(galatRequestAkun({ ...dasar, sistem: 'NAS', username: 'u' }, null)).length === 0, 'galatRequestAkun lengkap');
+  const sistemLengkap = { ...FORM_REQUEST_SISTEM_KOSONG, idPlant: 1, idDepartemen: 1, namaAplikasi: 'x' };
+  console.assert(!!galatRequestSistem({ ...sistemLengkap, tujuan: ['a', ' ', 'c'], manfaat: ['a', 'b', 'c'] }, null).tujuan, 'galatRequestSistem tujuan');
+  console.assert(rapikanHtmlDeskripsi('<html><p></p></html>') === '' && rapikanHtmlDeskripsi('<html><p>a <b>b</b></p></html>') === '<p>a <b>b</b></p>', 'rapikanHtmlDeskripsi');
+  console.assert(Object.keys(galatRequestSistem({ ...sistemLengkap, tujuan: ['a', 'b', 'c'], manfaat: ['a', 'b', 'c'] }, null)).length === 0, 'galatRequestSistem lengkap');
 }
