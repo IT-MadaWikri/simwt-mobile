@@ -5,9 +5,9 @@
  * lagi layar yang menulis `<ActivityIndicator>` sendiri dengan warna dan tata
  * letak berbeda-beda:
  *
- *   <LoadingSpinner fullScreen />     → layar penuh bergaya karir-mwt
- *                                       (LoadingScreen: cincin berputar,
- *                                       latar hijau gelap, garis progres)
+ *   <LoadingSpinner fullScreen />     → layar penuh tanpa animasi
+ *                                       (LoadingScreen: latar putih, huruf S
+ *                                       di tengah, maskot di dasar layar)
  *   <LoadingSpinner message="..." />  → sisipan di dalam halaman
  *
  * Versi sisipan **memenuhi ruang induknya dan memusatkan diri** (`flex: 1`),
@@ -31,10 +31,6 @@ interface LoadingSpinnerProps {
   size?: 'small' | 'large';
   /** Jangan memenuhi ruang induk — untuk sisipan di dalam baris/tombol. */
   inline?: boolean;
-  /** Judul pada versi layar penuh. */
-  title?: string;
-  /** Subjudul pada versi layar penuh. */
-  subtitle?: string;
 }
 
 export default function LoadingSpinner({
@@ -42,11 +38,9 @@ export default function LoadingSpinner({
   message,
   size = 'large',
   inline = false,
-  title,
-  subtitle,
 }: LoadingSpinnerProps) {
   if (fullScreen) {
-    return <LoadingScreen title={title} subtitle={subtitle} />;
+    return <LoadingScreen />;
   }
 
   return (
