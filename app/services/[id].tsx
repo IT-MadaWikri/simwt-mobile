@@ -213,22 +213,6 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
       { icon: 'plus-circle-outline', label: 'Tambah Aset', subtitle: 'Registrasi aset baru' },
       { icon: 'magnify', label: 'Cari Aset', subtitle: 'Cari berdasarkan kode atau nama' },
     ],
-    'control-stock': [
-      {
-        icon: 'clipboard-list-outline',
-        label: 'Stok Opname',
-        subtitle: 'Lihat dokumen dan progres perhitungan',
-        route: '/services/sto',
-      },
-      {
-        icon: 'barcode-scan',
-        label: 'Hitung dengan Scan',
-        subtitle: 'Menunggu alur scan disiapkan di server',
-      },
-    ],
-    'skill-assessment': [
-      { icon: 'star-circle-outline', label: 'Penilaian Skill', subtitle: 'Hasil & jadwal assessment' },
-    ],
     kegiatan: [
       { icon: 'door-open', label: 'Booking\nRuangan', subtitle: 'Booking ruangan meeting untuk tanggal & jam tertentu', route: '/services/booking-ruangan' },
     ],

@@ -245,22 +245,6 @@ const GAMBAR: Record<string, Gambar> = {
     </>
   ),
 
-  // Medali berbintang.
-  'skill-assessment': () => (
-    <>
-      <Defs>
-        {grad('sa', '#b4c0ff', '#4338ca')}
-        {grad('sar', '#ffb4b4', '#e11d48')}
-      </Defs>
-      <Path d="M20 40 L13 60 L22 56 L27 62 L32 44 Z" fill="url(#sar)" />
-      <Path d="M44 40 L51 60 L42 56 L37 62 L32 44 Z" fill="url(#sar)" />
-      <Circle cx={32} cy={27} r={21} fill="url(#sa)" />
-      <Circle cx={32} cy={27} r={15} fill="#fff" opacity={0.25} />
-      <Path d="M32.0 16.5 L34.6 23.4 L42.0 23.8 L36.2 28.4 L38.2 35.5 L32.0 31.4 L25.8 35.5 L27.8 28.4 L22.0 23.8 L29.4 23.4 Z" fill="#fde047" />
-      <Ellipse cx={23} cy={15} rx={5.5} ry={3.2} fill="#fff" opacity={0.55} />
-    </>
-  ),
-
   // Monitor dengan headset bantuan.
   'layanan-it': () => (
     <>
@@ -310,7 +294,6 @@ const GAMBAR: Record<string, Gambar> = {
 
 // Layanan yang berganti id memakai gambar lamanya.
 GAMBAR['layanan-hrd'] = GAMBAR['human-capital'];
-GAMBAR['control-stock'] = GAMBAR['stok-opname'];
 
 export function punyaClay(id: string): boolean {
   return id in GAMBAR;
