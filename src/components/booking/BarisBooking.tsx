@@ -10,10 +10,10 @@ import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 
-const IKON = { offline: 'door-open', online: 'video-outline', luar: 'map-marker-outline' } as const;
+export const IKON = { offline: 'door-open', online: 'video-outline', luar: 'map-marker-outline' } as const;
 
 /** Warna lencana per status (0–6); latar = tint, teks = warna tegas. */
-const WARNA_STATUS: Record<number, { bg: string; fg: string }> = {
+export const WARNA_STATUS: Record<number, { bg: string; fg: string }> = {
   0: { bg: slate[100], fg: slate[600] },
   1: { bg: '#eff6ff', fg: '#1d4ed8' },
   2: { bg: '#fffbeb', fg: '#b45309' },
