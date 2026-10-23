@@ -104,11 +104,7 @@ export default function ServiceDetailScreen() {
 
         {/* Bentuk yang sama dengan menu Kaizen & Tiket: grid ikon. Aksi tanpa `route` tampil "Soon" dan tidak bisa diketuk. */}
         {untukAset ? (
-          <RingkasanAset
-            ringkasan={ringkasan}
-            onBukaMaintenance={() => router.push({ pathname: '/services/aset/daftar', params: { status: 'maintenance' } })}
-            onBukaTidakAktif={() => router.push({ pathname: '/services/aset/daftar', params: { status: 'tidak_aktif' } })}
-          />
+          <RingkasanAset ringkasan={ringkasan} />
         ) : null}
 
         <SectionHeader title={`Menu ${judul}`} />
