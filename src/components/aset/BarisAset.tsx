@@ -13,14 +13,16 @@ interface BarisAsetProps {
   keterangan: string;
   /** Plant · departemen pemilik; string kosong = tidak tampil. */
   lokasi: string;
+  /** Nama ikon kategori aset dari server (diatur di web, Master Data › Kategori Aset). */
+  ikon?: string;
   onPress: () => void;
 }
 
-export default function BarisAset({ nama, nomor, keterangan, lokasi, onPress }: BarisAsetProps) {
+export default function BarisAset({ nama, nomor, keterangan, lokasi, ikon = 'box', onPress }: BarisAsetProps) {
   return (
     <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={onPress}>
       <View style={styles.logo}>
-        <Icon name="box" size={18} color={Colors.textSecondary} />
+        <Icon name={ikon} size={18} color={Colors.textSecondary} />
       </View>
 
       <View style={styles.isi}>

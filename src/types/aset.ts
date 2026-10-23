@@ -74,6 +74,8 @@ export interface AsetRingkasan {
   asset_pic: string | null;
   asset_condition: string | null;
   kategori: string | null;
+  /** Kunci ikon kategori (lihat `common/Icon`); null = ikon kotak. */
+  ikon: string | null;
   plant: string | null;
   departemen: string | null;
 }
