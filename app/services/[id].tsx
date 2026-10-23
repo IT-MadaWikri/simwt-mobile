@@ -233,8 +233,10 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
       { icon: 'door-open', label: 'Booking\nRuangan', subtitle: 'Booking ruangan meeting untuk tanggal & jam tertentu', route: '/services/booking-ruangan' },
     ],
     'layanan-it': [
-      { icon: 'plus-circle-outline', label: 'Buat Request', subtitle: 'Request akun, sistem, atau bantuan IT' },
-      { icon: 'history', label: 'Histori Request', subtitle: 'Status request yang Anda ajukan' },
+      { icon: 'account-cog-outline', label: 'Request\nAkun', subtitle: 'Akun baru atau perubahan akses sistem', route: '/services/layanan-it/request-akun' },
+      { icon: 'plus-circle-outline', label: 'Request\nSistem', subtitle: 'Pengajuan pembuatan aplikasi baru' },
+      { icon: 'history', label: 'Histori\nRequest', subtitle: 'Status request yang Anda ajukan', route: '/services/layanan-it/histori' },
+      { icon: 'magnify', label: 'Lacak\nRequest', subtitle: 'Cek status lewat nomor dokumen', route: '/services/layanan-it/lacak' },
     ],
   };
 

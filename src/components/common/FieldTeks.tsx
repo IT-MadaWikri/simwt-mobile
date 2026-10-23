@@ -10,7 +10,7 @@ import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { inputReset } from '../../../constants/GlobalStyles';
 
 interface FieldTeksProps
-  extends Pick<TextInputProps, 'keyboardType' | 'autoCapitalize' | 'autoComplete' | 'placeholder' | 'editable'> {
+  extends Pick<TextInputProps, 'keyboardType' | 'autoCapitalize' | 'autoComplete' | 'placeholder' | 'editable' | 'multiline'> {
   label: string;
   nilai: string;
   onUbah: (teks: string) => void;
@@ -39,7 +39,7 @@ export default function FieldTeks({
         {wajib ? <Text style={styles.wajib}> *</Text> : <Text style={styles.opsional}> (opsional)</Text>}
       </Text>
       <TextInput
-        style={[styles.input, galat ? styles.inputGalat : null, !editable && styles.inputMati]}
+        style={[styles.input, sisa.multiline && styles.inputBanyakBaris, galat ? styles.inputGalat : null, !editable && styles.inputMati]}
         value={nilai}
         onChangeText={onUbah}
         secureTextEntry={rahasia}
@@ -71,6 +71,8 @@ const styles = StyleSheet.create({
     backgroundColor: slate[50],
     ...inputReset,
   },
+  // Isian panjang (keterangan, alasan): minimal ±3 baris, teks mulai dari atas.
+  inputBanyakBaris: { minHeight: 76, textAlignVertical: 'top' },
   inputGalat: { borderColor: Colors.danger },
   inputMati: { color: Colors.textSecondary, backgroundColor: slate[100] },
   galat: { marginTop: 4, fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
