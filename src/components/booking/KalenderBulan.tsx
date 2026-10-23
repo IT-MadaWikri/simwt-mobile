@@ -1,10 +1,14 @@
 /**
  * KalenderBulan — kalender sebulan: judul bulan + panah geser, baris nama hari,
  * lalu grid tanggal. Tanggal terpilih berupa lingkaran gelap, hari ini diberi
- * warna brand, dan `penanda` memberi titik berwarna di bawah tanggal.
+ * warna brand, dan `penanda` memberi titik berwarna di bawah tanggal. Grid bisa digeser ke kiri/kanan
+ * dengan jari untuk pindah bulan (sama dengan panah).
  * Presentasional: pilihan & bulan yang tampil dipegang pemanggil.
  */
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { memo, useEffect, useMemo, useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -23,9 +27,46 @@ interface KalenderBulanProps {
   onGeser: (delta: number) => void;
 }
 
-export default function KalenderBulan({ tahun, bulan, terpilih, penanda = {}, onPilih, onGeser }: KalenderBulanProps) {
+function KalenderBulan({ tahun, bulan, terpilih, penanda = {}, onPilih, onGeser }: KalenderBulanProps) {
   const hariIni = new Date();
   const sel = selBulan(tahun, bulan);
+  const { width: lebar } = useWindowDimensions();
+
+  // Geser mendatar di thread UI (Reanimated): grid ikut jari; lepas melewati ambang → meluncur keluar dan
+  // `onGeser` dipanggil. Bulan baru masuk dari sisi seberang lewat efek di bawah, setelah isinya benar-benar
+  // dirender, supaya geseran lewat panah pun ikut beranimasi dan tidak ada kilasan bulan lama.
+  const x = useSharedValue(0);
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-12, 12])
+        .failOffsetY([-12, 12])
+        .onUpdate((e) => {
+          x.value = e.translationX * 0.5;
+        })
+        .onEnd((e) => {
+          if (Math.abs(e.translationX) < 60 && Math.abs(e.velocityX) < 500) {
+            x.value = withSpring(0);
+            return;
+          }
+          const arah = e.translationX > 0 ? -1 : 1; // geser ke kanan = bulan lalu
+          x.value = withTiming(-arah * lebar, { duration: 120 }, (selesai) => {
+            if (selesai) runOnJS(onGeser)(arah);
+          });
+        }),
+    [x, lebar, onGeser]
+  );
+  const gayaGrid = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+
+  const indeksBulan = tahun * 12 + bulan;
+  const sebelumnya = useRef(indeksBulan);
+  useEffect(() => {
+    const arah = Math.sign(indeksBulan - sebelumnya.current);
+    sebelumnya.current = indeksBulan;
+    if (arah === 0) return;
+    x.value = arah * lebar;
+    x.value = withTiming(0, { duration: 160 });
+  }, [indeksBulan, lebar, x]);
 
   return (
     <View>
@@ -45,42 +86,49 @@ export default function KalenderBulan({ tahun, bulan, terpilih, penanda = {}, on
         </TouchableOpacity>
       </View>
 
-      <View style={styles.baris}>
-        {SINGKATAN_HARI.map((h) => (
-          <Text key={h} style={styles.namaHari}>{h}</Text>
-        ))}
-      </View>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={gayaGrid}>
+          <View style={styles.baris}>
+            {SINGKATAN_HARI.map((h) => (
+              <Text key={h} style={styles.namaHari}>{h}</Text>
+            ))}
+          </View>
 
-      <View style={styles.grid}>
-        {sel.map((tgl, i) => {
-          if (!tgl) return <View key={i} style={styles.sel} />;
-          const dipilih = sama(tgl, terpilih);
-          const titik = penanda[kunciTanggal(tgl)] ?? [];
-          return (
-            <TouchableOpacity key={i} style={styles.sel} activeOpacity={0.7} onPress={() => onPilih(tgl)}>
-              <View style={[styles.bulat, dipilih && styles.bulatDipilih]}>
-                <Text
-                  style={[
-                    styles.angka,
-                    sama(tgl, hariIni) && !dipilih && styles.angkaHariIni,
-                    dipilih && styles.angkaDipilih,
-                  ]}
-                >
-                  {tgl.getDate()}
-                </Text>
-              </View>
-              <View style={styles.titikBaris}>
-                {titik.slice(0, 3).map((warna, k) => (
-                  <View key={k} style={[styles.titik, { backgroundColor: warna }]} />
-                ))}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+          <View style={styles.grid}>
+            {sel.map((tgl, i) => {
+              if (!tgl) return <View key={i} style={styles.sel} />;
+              const dipilih = sama(tgl, terpilih);
+              const titik = penanda[kunciTanggal(tgl)] ?? [];
+              return (
+                <TouchableOpacity key={i} style={styles.sel} activeOpacity={0.7} onPress={() => onPilih(tgl)}>
+                  <View style={[styles.bulat, dipilih && styles.bulatDipilih]}>
+                    <Text
+                      style={[
+                        styles.angka,
+                        sama(tgl, hariIni) && !dipilih && styles.angkaHariIni,
+                        dipilih && styles.angkaDipilih,
+                      ]}
+                    >
+                      {tgl.getDate()}
+                    </Text>
+                  </View>
+                  <View style={styles.titikBaris}>
+                    {titik.slice(0, 3).map((warna, k) => (
+                      <View key={k} style={[styles.titik, { backgroundColor: warna }]} />
+                    ))}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 }
+
+// Props dari layar stabil (state / useCallback), jadi kalender tidak ikut dirender ulang saat sheet detail dibuka.
+export default memo(KalenderBulan);
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
