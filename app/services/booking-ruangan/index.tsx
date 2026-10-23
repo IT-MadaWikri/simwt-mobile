@@ -17,6 +17,7 @@ import JalurMinggu from '../../../src/components/booking/JalurMinggu';
 import KalenderBulan from '../../../src/components/booking/KalenderBulan';
 import TimelineHari from '../../../src/components/booking/TimelineHari';
 import SheetBooking from '../../../src/components/booking/SheetBooking';
+import SheetBagikanBooking from '../../../src/components/booking/SheetBagikanBooking';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
@@ -25,6 +26,7 @@ import { useKalenderBooking } from '../../../src/hooks/useKalenderBooking';
 import { acaraKalenderBooking, kategoriBooking, rentangJam, teksBagikanBooking, warnaRuangan } from '../../../src/adapters/bookingRuangan';
 import { NAMA_BULAN, NAMA_HARI, kunciTanggal, sama, tambahHari } from '../../../src/utils/kalender';
 import { tambahKeKalenderOs } from '../../../src/utils/kalenderOs';
+import { bagikanUndanganBooking } from '../../../src/services/undanganBookingService';
 import { Booking } from '../../../src/types/booking';
 
 export default function BookingRuanganScreen() {
@@ -33,6 +35,9 @@ export default function BookingRuanganScreen() {
   const k = useKalenderBooking();
   const [dibuka, setDibuka] = useState<Booking | null>(null);
   const [mode, setMode] = useState<'bulan' | 'hari'>('bulan');
+  // Menu Bagikan (pesan / surat PDF): booking yang sedang dibagikan; `membuatSurat` = PDF sedang dibuat.
+  const [dibagikan, setDibagikan] = useState<Booking | null>(null);
+  const [membuatSurat, setMembuatSurat] = useState(false);
 
   const hariIni = new Date();
   const judulDaftar = sama(k.terpilih, hariIni) ? 'Booking Hari Ini' : `Booking ${k.terpilih.getDate()} ${NAMA_BULAN[k.terpilih.getMonth()]}`;
@@ -48,8 +53,24 @@ export default function BookingRuanganScreen() {
     <KeadaanKosong pose="persilakan" judul="Belum ada booking" teks="Ruangan meeting masih kosong pada tanggal ini." style={styles.kosong} />
   ) : null;
 
-  const bagikan = (b: Booking) => Share.share({ message: teksBagikanBooking(b) }).catch(() => {});
+  const bagikanPesan = () => {
+    if (!dibagikan) return;
+    setDibagikan(null);
+    Share.share({ message: teksBagikanBooking(dibagikan) }).catch(() => {});
+  };
 
+  const bagikanSurat = async () => {
+    if (!dibagikan) return;
+    setMembuatSurat(true);
+    try {
+      await bagikanUndanganBooking(dibagikan);
+    } catch (e: any) {
+      dialog.alert('Gagal Membuat PDF', e?.message || 'Surat undangan tidak bisa dibuat. Coba lagi.', 'danger');
+    } finally {
+      setMembuatSurat(false);
+      setDibagikan(null);
+    }
+  };
   const tambahKalender = async (b: Booking) => {
     try {
       if (!(await tambahKeKalenderOs(acaraKalenderBooking(b)))) {
@@ -115,7 +136,7 @@ export default function BookingRuanganScreen() {
                     statusLabel={b.statusLabel}
                     warna={warnaRuangan(b.idRuangan)}
                     onPress={() => setDibuka(b)}
-                    onBagikan={() => bagikan(b)}
+                    onBagikan={() => setDibagikan(b)}
                   />
                 ))}
             </View>
@@ -167,7 +188,15 @@ export default function BookingRuanganScreen() {
         peserta={dibuka?.peserta ?? []}
         onBukaLink={dibuka?.linkMeeting ? () => bukaLink(dibuka.linkMeeting as string) : undefined}
         onTambahKalender={() => dibuka && tambahKalender(dibuka)}
-        onBagikan={() => dibuka && bagikan(dibuka)}
+        onBagikan={() => setDibagikan(dibuka)}
+      />
+
+      <SheetBagikanBooking
+        visible={!!dibagikan}
+        membuatPdf={membuatSurat}
+        onBagikanPesan={bagikanPesan}
+        onBagikanPdf={bagikanSurat}
+        onClose={() => setDibagikan(null)}
       />
     </View>
   );
