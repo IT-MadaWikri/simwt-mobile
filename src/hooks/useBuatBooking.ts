@@ -69,12 +69,10 @@ export function useBuatBooking(tanggalAwal: string) {
     });
   }, []);
 
-  const ubahPeserta = (indeks: number, teks: string) => ubah('peserta', form.peserta.map((p, i) => (i === indeks ? teks : p)));
-  const tambahPeserta = () => ubah('peserta', [...form.peserta, '']);
-  const hapusPeserta = (indeks: number) => {
-    const sisa = form.peserta.filter((_, i) => i !== indeks);
-    ubah('peserta', sisa.length ? sisa : ['']);
+  const tambahPeserta = (nama: string) => {
+    if (!form.peserta.includes(nama)) ubah('peserta', [...form.peserta, nama]);
   };
+  const hapusPeserta = (indeks: number) => ubah('peserta', form.peserta.filter((_, i) => i !== indeks));
 
   const galat = useMemo(() => galatBooking(form), [form]);
 
@@ -108,7 +106,6 @@ export function useBuatBooking(tanggalAwal: string) {
     opsiRuangan,
     opsiDepartemen,
     labelDari,
-    ubahPeserta,
     tambahPeserta,
     hapusPeserta,
     galat,

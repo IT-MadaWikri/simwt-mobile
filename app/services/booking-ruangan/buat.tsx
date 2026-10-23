@@ -11,12 +11,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
+import Avatar from '../../../src/components/common/Avatar';
 import Icon from '../../../src/components/common/Icon';
 import FieldPilihan from '../../../src/components/common/FieldPilihan';
 import FieldTanggal from '../../../src/components/common/FieldTanggal';
 import FieldJam from '../../../src/components/common/FieldJam';
 import FieldTeks from '../../../src/components/common/FieldTeks';
 import SheetPilihan from '../../../src/components/common/SheetPilihan';
+import SheetKaryawan from '../../../src/components/kaizen/SheetKaryawan';
 import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
@@ -27,7 +29,7 @@ import { useBuatBooking } from '../../../src/hooks/useBuatBooking';
 import { kunciTanggal } from '../../../src/utils/kalender';
 import { JenisRapat } from '../../../src/types/booking';
 
-type Sheet = 'plant' | 'ruangan' | 'departemen' | null;
+type Sheet = 'plant' | 'ruangan' | 'departemen' | 'peserta' | null;
 
 const JENIS: { nilai: JenisRapat; label: string }[] = [
   { nilai: 'offline', label: 'Di Ruangan' },
@@ -173,22 +175,23 @@ export default function BuatBookingScreen() {
           {g.waktu ? <Text style={styles.galat}>{g.waktu}</Text> : null}
         </View>
 
-        <Text style={styles.judulBagian}>Peserta</Text>
-        <View style={styles.bagian}>
-          {form.peserta.map((p, i) => (
-            <View key={i} style={styles.barisPeserta}>
-              <View style={gs.flex1}>
-                <FieldTeks label={`Peserta ${i + 1}`} nilai={p} onUbah={(t) => b.ubahPeserta(i, t)} placeholder="Nama peserta" autoCapitalize="words" />
-              </View>
-              {form.peserta.length > 1 || p ? (
-                <TouchableOpacity style={styles.hapus} hitSlop={8} onPress={() => b.hapusPeserta(i)} accessibilityLabel={`Hapus peserta ${i + 1}`}>
-                  <Icon name="close-circle" size={20} color={Colors.textTertiary} />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-          ))}
-          <Button variant="outline" icon="plus" label="Tambah Peserta" onPress={b.tambahPeserta} />
+        <View style={styles.kepalaBagian}>
+          <Text style={[styles.judulBagian, { marginBottom: 0 }]}>Peserta</Text>
+          <Button variant="outline" icon="plus" accessibilityLabel="Tambah peserta" onPress={() => setSheet('peserta')} />
         </View>
+        {form.peserta.length > 0 ? (
+          <View style={[styles.bagian, { gap: Spacing.sm }]}>
+            {form.peserta.map((nama, i) => (
+              <View key={nama} style={styles.kartuPeserta}>
+                <Avatar nama={nama} ukuran={28} />
+                <Text style={styles.namaPeserta} numberOfLines={1}>{nama}</Text>
+                <TouchableOpacity hitSlop={8} onPress={() => b.hapusPeserta(i)} accessibilityLabel={`Hapus peserta ${nama}`}>
+                  <Icon name="close-circle" size={18} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         {b.galatServer ? (
           <View style={styles.galatServer} accessibilityRole="alert">
@@ -205,6 +208,7 @@ export default function BuatBookingScreen() {
       <SheetPilihan visible={sheet === 'plant'} judul="Plant" opsi={b.opsiPlant} terpilih={form.idPlant} onPilih={(id) => b.ubah('idPlant', id)} onClose={() => setSheet(null)} />
       <SheetPilihan visible={sheet === 'ruangan'} judul="Ruangan" opsi={b.opsiRuangan} terpilih={form.idRuangan} onPilih={(id) => b.ubah('idRuangan', id)} onClose={() => setSheet(null)} />
       <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={b.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => b.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
+      <SheetKaryawan visible={sheet === 'peserta'} judul="Tambah Peserta" onClose={() => setSheet(null)} onPilih={(k) => b.tambahPeserta(k.nama)} />
     </KeyboardAvoidingView>
   );
 }
@@ -236,8 +240,19 @@ const styles = StyleSheet.create({
   teksChip: { fontFamily: fonts.medium, fontSize: ukuranIsi, color: Colors.textSecondary },
   teksChipAktif: { fontFamily: fonts.bold, color: brand[700] },
   baris: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.md },
-  barisPeserta: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.sm },
-  hapus: { height: 40, marginBottom: Spacing.md, justifyContent: 'center' },
+  kepalaBagian: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.sm },
+  kartuPeserta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.sm,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: slate[50],
+  },
+  namaPeserta: { flex: 1, fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
   galat: { fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',

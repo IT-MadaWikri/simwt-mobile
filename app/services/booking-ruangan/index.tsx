@@ -22,8 +22,9 @@ import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useKalenderBooking } from '../../../src/hooks/useKalenderBooking';
-import { kategoriBooking, rentangJam, teksBagikanBooking, warnaRuangan } from '../../../src/adapters/bookingRuangan';
+import { acaraKalenderBooking, kategoriBooking, rentangJam, teksBagikanBooking, warnaRuangan } from '../../../src/adapters/bookingRuangan';
 import { NAMA_BULAN, NAMA_HARI, kunciTanggal, sama, tambahHari } from '../../../src/utils/kalender';
+import { tambahKeKalenderOs } from '../../../src/utils/kalenderOs';
 import { Booking } from '../../../src/types/booking';
 
 export default function BookingRuanganScreen() {
@@ -49,6 +50,15 @@ export default function BookingRuanganScreen() {
 
   const bagikan = (b: Booking) => Share.share({ message: teksBagikanBooking(b) }).catch(() => {});
 
+  const tambahKalender = async (b: Booking) => {
+    try {
+      if (!(await tambahKeKalenderOs(acaraKalenderBooking(b)))) {
+        dialog.alert('Izin Ditolak', 'Izinkan akses kalender di pengaturan aplikasi untuk menambahkan jadwal ini.', 'danger');
+      }
+    } catch (e: any) {
+      dialog.alert('Gagal', e?.message || 'Jadwal belum bisa ditambahkan ke kalender.', 'danger');
+    }
+  };
   const bukaLink = (url: string) =>
     Linking.openURL(url).catch(() => dialog.alert('Gagal Membuka', 'Link meeting tidak bisa dibuka di perangkat ini.', 'danger'));
 
@@ -144,22 +154,19 @@ export default function BookingRuanganScreen() {
         visible={!!dibuka}
         onClose={() => setDibuka(null)}
         judul={dibuka?.namaKegiatan ?? ''}
-        rincian={
-          dibuka
-            ? [
-                { label: 'Tanggal', isi: `${NAMA_HARI[dibuka.mulai.getDay()]}, ${dibuka.mulai.getDate()} ${NAMA_BULAN[dibuka.mulai.getMonth()]} ${dibuka.mulai.getFullYear()}` },
-                { label: 'Waktu', isi: rentangJam(dibuka) },
-                { label: 'Jenis rapat', isi: dibuka.jenisLabel },
-                { label: 'Tempat', isi: dibuka.tempat },
-                { label: 'Plant', isi: dibuka.plant },
-                { label: 'Peminjam', isi: dibuka.namaPeminjam },
-                { label: 'Departemen', isi: dibuka.departemen },
-                { label: 'Status', isi: dibuka.statusLabel },
-              ]
-            : []
-        }
+        jenis={dibuka?.jenis ?? 'offline'}
+        jenisLabel={dibuka?.jenisLabel ?? ''}
+        warna={warnaRuangan(dibuka?.idRuangan ?? null)}
+        status={dibuka?.status ?? 0}
+        statusLabel={dibuka?.statusLabel ?? ''}
+        tanggal={dibuka ? `${NAMA_HARI[dibuka.mulai.getDay()]}, ${dibuka.mulai.getDate()} ${NAMA_BULAN[dibuka.mulai.getMonth()]} ${dibuka.mulai.getFullYear()}` : ''}
+        jam={dibuka ? rentangJam(dibuka) : ''}
+        tempat={dibuka && dibuka.tempat !== '-' ? [dibuka.tempat, dibuka.jenis === 'offline' ? dibuka.plant : null].filter(Boolean).join(' · ') : null}
+        peminjam={dibuka?.namaPeminjam ?? ''}
+        departemen={dibuka?.departemen ?? null}
         peserta={dibuka?.peserta ?? []}
         onBukaLink={dibuka?.linkMeeting ? () => bukaLink(dibuka.linkMeeting as string) : undefined}
+        onTambahKalender={() => dibuka && tambahKalender(dibuka)}
         onBagikan={() => dibuka && bagikan(dibuka)}
       />
     </View>

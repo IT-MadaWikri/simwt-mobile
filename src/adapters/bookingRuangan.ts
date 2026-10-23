@@ -6,6 +6,7 @@
 import { slate } from '../../constants/Colors';
 import { Booking, FormBooking, GalatBooking, JenisRapat, MasterBooking } from '../types/booking';
 import { NAMA_BULAN, NAMA_HARI } from '../utils/kalender';
+import type { AcaraKalender } from '../utils/kalenderOs';
 
 const JENIS: JenisRapat[] = ['offline', 'online', 'luar'];
 
@@ -77,7 +78,22 @@ export const teksBagikanBooking = (b: Booking) =>
     .filter((x) => x !== null)
     .join('\n');
 
-export const kunciBulan = (tahun: number, bulan: number) => `${tahun}-${dua(bulan + 1)}`;
+/** Isian acara untuk kalender OS: judul, waktu, lokasi, dan catatan (peminjam, link, peserta). */
+export const acaraKalenderBooking = (b: Booking): AcaraKalender => ({
+  judul: b.namaKegiatan,
+  mulai: b.mulai,
+  selesai: b.selesai,
+  lokasi: b.tempat !== '-' ? [b.tempat, b.jenis === 'offline' ? b.plant : null].filter(Boolean).join(', ') : undefined,
+  catatan: [
+    `Peminjam: ${b.namaPeminjam}${b.departemen ? ` (${b.departemen})` : ''}`,
+    b.linkMeeting ? `Link meeting: ${b.linkMeeting}` : null,
+    b.peserta.length ? `Peserta: ${b.peserta.join(', ')}` : null,
+  ]
+    .filter((x) => x !== null)
+    .join('\n'),
+});
+
+export const kunciBulan =(tahun: number, bulan: number) => `${tahun}-${dua(bulan + 1)}`;
 
 /** Tanggal 'YYYY-MM-DD' + jam 'HH:mm' → 'YYYY-MM-DD HH:mm:00' (waktu lokal, seperti isian di web). */
 export const gabungWaktu = (tanggal: string, jam: string) => `${tanggal} ${jam}:00`;
@@ -94,7 +110,7 @@ export const FORM_BOOKING_KOSONG = (tanggal: string): FormBooking => ({
   tanggal,
   mulai: '09:00',
   selesai: '10:00',
-  peserta: [''],
+  peserta: [],
 });
 
 /** Galat per field (kosong = aman). `sekarang` disuntik supaya mudah diuji. */
