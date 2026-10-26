@@ -187,18 +187,9 @@ const styles = StyleSheet.create({
 function aksiUntuk(service: ServiceItem): AksiLayanan[] {
   const perLayanan: Record<string, AksiLayanan[]> = {
     'layanan-hrd': [
-      {
-        icon: 'account-group',
-        label: 'Data Karyawan',
-        subtitle: 'Direktori seluruh karyawan',
-        route: '/services/hc/data-karyawan',
-      },
-      {
-        icon: 'briefcase-account-outline',
-        label: 'Rekrutment',
-        subtitle: 'Ringkasan lowongan & pelamar',
-        route: '/services/hc/rekrutment',
-      },
+      { icon: 'logout', label: 'Form Keluar\nPabrik', subtitle: 'Ajukan izin keluar pabrik (Form-HRD-17)', route: '/services/layanan-hrd/keluar-pabrik' },
+      { icon: 'history', label: 'Histori\nForm', subtitle: 'Status form yang Anda ajukan', route: '/services/layanan-hrd/histori' },
+      { icon: 'magnify', label: 'Lacak\nForm', subtitle: 'Cek status lewat nomor dokumen', route: '/services/layanan-hrd/lacak' },
     ],
     'database-aset': [
       {
