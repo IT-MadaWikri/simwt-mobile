@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   // Sapaan besar: pengecualian dari aturan 12px, khusus puncak beranda.
   title: {
     fontFamily: fonts.bold,
-    fontSize: 24,
+    fontSize: 18,
     color: Colors.textPrimary,
   },
   cuaca: {
