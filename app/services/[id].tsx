@@ -31,6 +31,9 @@ import { useAsetTiketAktif } from '../../src/hooks/useAsetTiketAktif';
 import { useRingkasanAset } from '../../src/hooks/useRingkasanAset';
 import { SERVICES, ServiceItem } from '../../constants/Services';
 
+/** Layanan yang banner maskot "Semua kebutuhan …"-nya disembunyikan dulu. */
+const TANPA_BANNER = ['layanan-it', 'layanan-hrd', 'kegiatan'];
+
 interface AksiLayanan {
   icon: string;
   label: string;
@@ -126,7 +129,7 @@ export default function ServiceDetailScreen() {
           ))}
         </View>
 
-        {aksiUtama ? (
+        {aksiUtama && !TANPA_BANNER.includes(service.id) ? (
           <BannerMaskot
             style={{ marginTop: Spacing.xl }}
             pose="persilakan"
