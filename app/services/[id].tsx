@@ -189,7 +189,6 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
     'layanan-hrd': [
       { icon: 'logout', label: 'Form Keluar\nPabrik', subtitle: 'Ajukan izin keluar pabrik (Form-HRD-17)', route: '/services/layanan-hrd/keluar-pabrik' },
       { icon: 'history', label: 'Histori\nForm', subtitle: 'Status form yang Anda ajukan', route: '/services/layanan-hrd/histori' },
-      { icon: 'magnify', label: 'Lacak\nForm', subtitle: 'Cek status lewat nomor dokumen', route: '/services/layanan-hrd/lacak' },
     ],
     'database-aset': [
       {
@@ -214,7 +213,6 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
       { icon: 'account-cog-outline', label: 'Request\nAkun', subtitle: 'Akun baru atau perubahan akses sistem', route: '/services/layanan-it/request-akun' },
       { icon: 'plus-circle-outline', label: 'Request\nSistem', subtitle: 'Pengajuan pembuatan aplikasi baru' },
       { icon: 'history', label: 'Histori\nRequest', subtitle: 'Status request yang Anda ajukan', route: '/services/layanan-it/histori' },
-      { icon: 'magnify', label: 'Lacak\nRequest', subtitle: 'Cek status lewat nomor dokumen', route: '/services/layanan-it/lacak' },
     ],
   };
 
