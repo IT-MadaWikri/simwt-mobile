@@ -15,7 +15,7 @@ export interface DataAset {
   asset_purchase_date?: string;
   created_at?: string;
   updated_at?: string;
-  aset_kategori?: { asset_category_name?: string } | null;
+  aset_kategori?: { asset_category_name?: string; /** `MESIN`, `DIES`, … */ kode?: string } | null;
   plant?: { nama?: string } | null;
   departemen_user?: { nama?: string } | null;
   departemen?: { nama?: string } | null;

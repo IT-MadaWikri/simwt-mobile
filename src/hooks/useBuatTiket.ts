@@ -21,14 +21,18 @@ const FORM_KOSONG: FormTiket = {
   idDepartemen: null,
   idSub: null,
   idArea: null,
+  stroke: '',
   detail: '',
   foto: null,
 };
 
 export type SumberFoto = 'kamera' | 'galeri';
 
-/** `asetAwal`: aset yang sudah terpilih sejak form dibuka (mis. dari hasil pindai QR). */
-export function useBuatTiket(asetAwal: AsetRingkas | null = null) {
+/**
+ * `asetAwal`: aset yang sudah terpilih sejak form dibuka (mis. dari hasil pindai QR).
+ * `jenisNama`: nama jenis yang dipilih otomatis ("Mesin"/"Dies"); dikunci bila `asetAwal` ada, seperti di web.
+ */
+export function useBuatTiket(asetAwal: AsetRingkas | null = null, jenisNama = '') {
   const [master, setMaster] = useState<MasterBuatTiket | null>(null);
   const [memuat, setMemuat] = useState(true);
   const [errorMuat, setErrorMuat] = useState<string | null>(null);
@@ -44,19 +48,24 @@ export function useBuatTiket(asetAwal: AsetRingkas | null = null) {
     setMemuat(true);
     setErrorMuat(null);
     try {
-      setMaster(await tiketService.masterBuat());
+      const data = await tiketService.masterBuat();
+      setMaster(data);
+      const awal = jenisNama ? data.jenis.find((j) => j.nama === jenisNama) : undefined;
+      if (awal) setForm((lama) => (lama.idJenis ? lama : { ...lama, idJenis: awal.id }));
     } catch (e: any) {
       setErrorMuat(e?.message || 'Data formulir tidak bisa diambil dari server.');
     } finally {
       setMemuat(false);
     }
-  }, []);
+  }, [jenisNama]);
 
   useEffect(() => {
     muatMaster();
   }, [muatMaster]);
 
   const jenis = master?.jenis.find((j) => j.id === form.idJenis) ?? null;
+  const strokeAktif = jenis?.tipe === 'dies';
+  const jenisTerkunci = !!asetAwal && !!jenisNama && jenis?.nama === jenisNama;
   const departemen = master?.departemen.find((d) => d.id === form.idDepartemen) ?? null;
 
   const opsiJenis: OpsiPilihan[] = useMemo(
@@ -99,14 +108,15 @@ export function useBuatTiket(asetAwal: AsetRingkas | null = null) {
 
   /** Galat per field (kosong = aman); layar menampilkannya setelah percobaan kirim pertama. */
   const galat = useMemo(() => {
-    const g: Partial<Record<'jenis' | 'kategori' | 'departemen' | 'sub' | 'detail', string>> = {};
+    const g: Partial<Record<'jenis' | 'kategori' | 'departemen' | 'sub' | 'detail' | 'stroke', string>> = {};
     if (!form.idJenis) g.jenis = 'Jenis masalah wajib dipilih.';
     if (!form.idKategori) g.kategori = 'Kategori masalah wajib dipilih.';
     if (!form.idDepartemen) g.departemen = 'Departemen wajib dipilih.';
     if (form.idDepartemen && opsiSub.length > 0 && !form.idSub) g.sub = 'Pilih salah satu sub-departemen.';
     if (!form.detail.trim()) g.detail = 'Detail masalah wajib diisi.';
+    if (strokeAktif && form.stroke.trim() && !/^\d+([.,]\d+)?$/.test(form.stroke.trim())) g.stroke = 'Jumlah stroke harus berupa angka.';
     return g;
-  }, [form, opsiSub.length]);
+  }, [form, opsiSub.length, strokeAktif]);
 
   /** Ambil foto dari kamera/galeri lalu buka editor crop. Mengembalikan pesan bila izin ditolak. */
   const ambilFoto = async (sumber: SumberFoto): Promise<string | null> => {
@@ -185,6 +195,8 @@ export function useBuatTiket(asetAwal: AsetRingkas | null = null) {
     opsiDepartemen,
     opsiSub,
     opsiArea,
+    strokeAktif,
+    jenisTerkunci,
     labelDari,
     galat,
     ambilFoto,

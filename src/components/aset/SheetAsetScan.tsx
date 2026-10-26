@@ -20,13 +20,31 @@ interface SheetAsetScanProps {
   error: string;
   onLihatDetail: () => void;
   onBuatTiket: () => void;
+  /** Hanya untuk aset Mesin: laporkan kerusakan dies yang terpasang. */
+  onLaporDies: () => void;
+  /** Hanya untuk aset Mesin dan Dies: catat Pencapaian Produksi. */
+  onProduksi: () => void;
   onClose: () => void;
 }
 
-const MENU = [
-  { id: 'detail', ikon: 'file-document', label: 'Lihat Detail', warna: ['#60a5fa', '#3b82f6'] as const },
-  { id: 'tiket', ikon: 'ticket-outline', label: 'Buat Tiket Masalah', warna: ['#fb923c', '#f97316'] as const },
-];
+type IdMenu = 'detail' | 'tiket' | 'dies' | 'produksi';
+type WarnaMenu = readonly [string, string];
+
+const WARNA_BIRU: WarnaMenu = ['#60a5fa', '#3b82f6'];
+const WARNA_ORANYE: WarnaMenu = ['#fb923c', '#f97316'];
+const WARNA_MERAH: WarnaMenu = ['#f87171', '#ef4444'];
+const WARNA_AZURE: WarnaMenu = ['#38bdf8', '#0ea5e9'];
+
+/** Menu mengikuti kategori aset, sama dengan Menu Scan di web (`aset/scan.blade.php`). */
+function menuUntuk(kode?: string): { id: IdMenu; ikon: string; label: string; warna: WarnaMenu }[] {
+  const mesin = kode === 'MESIN';
+  return [
+    { id: 'detail', ikon: 'file-document', label: 'Lihat Detail', warna: WARNA_BIRU },
+    { id: 'tiket', ikon: 'ticket-outline', label: mesin ? 'Lapor Kerusakan Mesin' : 'Buat Tiket Masalah', warna: WARNA_ORANYE },
+    ...(mesin ? [{ id: 'dies' as const, ikon: 'wrench', label: 'Lapor Kerusakan Dies', warna: WARNA_MERAH }] : []),
+    ...(mesin || kode === 'DIES' ? [{ id: 'produksi' as const, ikon: 'gauge', label: 'Pencapaian Produksi', warna: WARNA_AZURE }] : []),
+  ];
+}
 
 export default function SheetAsetScan({
   visible,
@@ -35,10 +53,14 @@ export default function SheetAsetScan({
   error,
   onLihatDetail,
   onBuatTiket,
+  onLaporDies,
+  onProduksi,
   onClose,
 }: SheetAsetScanProps) {
   const aset = data?.dataAsset;
   const lencana = [aset?.asset_condition, aset?.asset_use].filter(Boolean);
+  const menu = menuUntuk(aset?.aset_kategori?.kode);
+  const aksi: Record<IdMenu, () => void> = { detail: onLihatDetail, tiket: onBuatTiket, dies: onLaporDies, produksi: onProduksi };
   const keterangan = [aset?.aset_kategori?.asset_category_name, aset?.plant?.nama].filter(Boolean).join(' · ');
 
   return (
@@ -75,13 +97,8 @@ export default function SheetAsetScan({
 
         {aset && !memuat ? (
           <View style={styles.menu}>
-            {MENU.map((m) => (
-              <TouchableOpacity
-                key={m.label}
-                style={styles.ubin}
-                activeOpacity={0.85}
-                onPress={m.id === 'detail' ? onLihatDetail : onBuatTiket}
-              >
+            {menu.map((m) => (
+              <TouchableOpacity key={m.id} style={styles.ubin} activeOpacity={0.85} onPress={aksi[m.id]}>
                 <LinearGradient colors={m.warna} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.isiUbin}>
                   <View style={styles.lingkarIkon}>
                     <Icon name={m.ikon} size={18} color={Colors.white} strokeWidth={1.8} />

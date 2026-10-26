@@ -103,6 +103,8 @@ export interface OpsiPilihan {
 export interface JenisTiket {
   id: number;
   nama: string;
+  /** Tipe tiket di server: Mesin dan Dies punya alur khusus, sisanya IT. */
+  tipe: 'it' | 'mesin' | 'dies';
   kategori: { id: number; nama: string }[];
 }
 
@@ -143,6 +145,8 @@ export interface FormTiket {
   idDepartemen: number | null;
   idSub: number | null;
   idArea: number | null;
+  /** Pembacaan counter stroke (hanya tiket Dies); teks supaya bisa dikosongkan. */
+  stroke: string;
   detail: string;
   foto: FotoTiket | null;
 }

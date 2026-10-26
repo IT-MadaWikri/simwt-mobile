@@ -22,14 +22,16 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
 import SheetAsetScan from '../../src/components/aset/SheetAsetScan';
-import { useAsetScan } from '../../src/hooks/useAsetScan';
-import Button from '../../src/components/common/Button';
+import { useAsetScan } from '../../src/hooks/useAsetScan';import Button from '../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import Typography, { fonts, judulAppBar } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
 import LoadingSpinner from '../../src/components/common/LoadingSpinner';
+
+/** Nama jenis tiket yang dikunci oleh kategori aset (kosong = pengguna memilih sendiri). */
+const jenisTiketAset = (kode?: string) => (kode === 'MESIN' ? 'Mesin' : kode === 'DIES' ? 'Dies' : '');
 
 const { width } = Dimensions.get('window');
 /** Jendela pindai: persegi, sekitar 70% lebar layar — sepadan dengan Gojek. */
@@ -232,6 +234,23 @@ export default function ScanScreen() {
               asetNomor: nomor,
               asetNama: data?.dataAsset.asset_name ?? '',
               asetAlias: data?.dataAsset.alias ?? '',
+              // Aset Mesin/Dies mengunci jenis tiketnya, sama dengan web.
+              jenisNama: jenisTiketAset(data?.dataAsset.aset_kategori?.kode),
+            },
+          });
+        }}
+        onLaporDies={() => {
+          setBuka(false);
+          router.push({ pathname: '/services/tiket/buat', params: { jenisNama: 'Dies' } });
+        }}
+        onProduksi={() => {
+          setBuka(false);
+          router.push({
+            pathname: '/services/produksi/pilih',
+            params: {
+              nomor,
+              nama: data?.dataAsset.alias || data?.dataAsset.asset_name || nomor,
+              sebagai: data?.dataAsset.aset_kategori?.kode === 'DIES' ? 'dies' : 'mesin',
             },
           });
         }}
