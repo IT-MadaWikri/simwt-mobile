@@ -5,8 +5,9 @@
  * brand); warna, font, dan sudutnya mengikuti karir-mwt.
  */
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from '../common/Icon';
+import KueUlangTahun from './KueUlangTahun';
 import BottomSheet from '../common/BottomSheet';
 import Avatar from '../common/Avatar';
 import PolaMemphis from '../common/PolaMemphis';
@@ -76,7 +77,9 @@ export default function BirthdayBanner() {
             <Text style={styles.petunjuk}>Ketuk untuk melihat daftarnya</Text>
           </View>
         </View>
-        <Image source={require('../../../assets/images/maskot-ulang-tahun.png')} style={styles.maskot} resizeMode="contain" />
+        <View style={styles.ilustrasi} pointerEvents="none">
+          <KueUlangTahun ukuran={96} />
+        </View>
       </TouchableOpacity>
 
       <BottomSheet
@@ -114,14 +117,15 @@ const styles = StyleSheet.create({
   teks: {
     alignItems: 'flex-start',
     gap: Spacing.md,
-    paddingRight: 118,
+    paddingRight: 104,
   },
-  maskot: {
+  // Kue di dalam kartu, terpusat vertikal di sisi kanan.
+  ilustrasi: {
     position: 'absolute',
-    right: Spacing.sm,
+    right: Spacing.lg,
+    top: 0,
     bottom: 0,
-    width: 110,
-    height: 150,
+    justifyContent: 'center',
   },
   petunjuk: {
     fontFamily: fonts.regular,
