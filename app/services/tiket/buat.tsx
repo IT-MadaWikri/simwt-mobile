@@ -13,6 +13,7 @@ import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
 import FieldPilihan from '../../../src/components/common/FieldPilihan';
+import FieldTeks from '../../../src/components/common/FieldTeks';
 import SheetPilihan from '../../../src/components/common/SheetPilihan';
 import BottomSheet from '../../../src/components/common/BottomSheet';
 import SheetAset from '../../../src/components/tiket/SheetAset';
@@ -34,9 +35,11 @@ export default function BuatTiketScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   // Dibuka dari hasil pindai QR aset: aset langsung terisi.
-  const { asetNomor, asetNama, asetAlias } = useLocalSearchParams<{ asetNomor?: string; asetNama?: string; asetAlias?: string }>();
+  // `jenisNama` ("Mesin"/"Dies") memilih jenis otomatis; dengan aset dari scan, jenisnya terkunci seperti di web.
+  const { asetNomor, asetNama, asetAlias, jenisNama } = useLocalSearchParams<{ asetNomor?: string; asetNama?: string; asetAlias?: string; jenisNama?: string }>();
   const t = useBuatTiket(
-    asetNomor ? { asset_number: asetNomor, asset_name: asetNama || asetNomor, alias: asetAlias || null, asset_pic: null } : null
+    asetNomor ? { asset_number: asetNomor, asset_name: asetNama || asetNomor, alias: asetAlias || null, asset_pic: null } : null,
+    jenisNama || ''
   );
   const [sheet, setSheet] = useState<Sheet>(null);
   const cariAset = useCariAset(sheet === 'aset');
@@ -125,6 +128,7 @@ export default function BuatTiketScreen() {
             wajib
             nilai={t.labelDari(t.opsiJenis, form.idJenis)}
             galat={g.jenis}
+            nonaktif={t.jenisTerkunci}
             onPress={() => setSheet('jenis')}
           />
           <FieldPilihan
@@ -136,6 +140,16 @@ export default function BuatTiketScreen() {
             galat={g.kategori}
             onPress={() => setSheet('kategori')}
           />
+          {t.strokeAktif ? (
+            <FieldTeks
+              label="Jumlah Stroke"
+              nilai={form.stroke}
+              onUbah={(v) => t.ubah('stroke', v)}
+              keyboardType="decimal-pad"
+              placeholder="Pembacaan counter dies saat ini"
+              galat={g.stroke}
+            />
+          ) : null}
         </View>
 
         <Text style={styles.judulBagian}>Lokasi</Text>

@@ -19,6 +19,7 @@ export function buatPayloadTiket(form: FormTiket): FormData {
   data.append('id_departemen', String(form.idDepartemen));
   if (form.idSub) data.append('sub_departemen', String(form.idSub));
   if (form.idArea) data.append('id_departemen_area', String(form.idArea));
+  if (form.stroke.trim()) data.append('jumlah_stroke', form.stroke.trim().replace(',', '.'));
   data.append('detail_masalah', form.detail.trim());
   if (form.foto) data.append('foto_sebelum', form.foto as any);
   return data;

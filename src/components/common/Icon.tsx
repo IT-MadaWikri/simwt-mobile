@@ -21,7 +21,7 @@ import {
   ScanBarcode, ScanQrCode, Save, Search, Send, Settings, Shapes, Share2, ShieldCheck, Sparkles, Star,
   Ticket, TicketCheck, Trash, User, UserCog, UserRound, UserSearch, Users, UserX,
   AppWindow, Cpu, Cctv, Laptop, Monitor, Printer, Projector, Router, Server, Smartphone, Tablet,
-  Video, Wrench, X, Cloud, CloudFog, CloudLightning, CloudRain, CloudSun, Snowflake, Sun,
+  Gauge, Video, Wrench, X, Cloud, CloudFog, CloudLightning, CloudRain, CloudSun, Snowflake, Sun,
   type LucideIcon,
   type LucideProps,
 } from 'lucide-react-native';
@@ -141,6 +141,8 @@ const ICONS: Record<string, LucideIcon> = {
   'plus': Plus,
   'plus-circle-outline': CirclePlus,
   'progress-wrench': Wrench,
+  'wrench': Wrench,
+  'gauge': Gauge,
   box: Box,
   'laptop': Laptop,
   'monitor': Monitor,

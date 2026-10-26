@@ -48,6 +48,11 @@ interface BottomSheetProps {
   subtitle?: string;
   /** Buka langsung di posisi penuh (untuk isi berkolom ketik). */
   penuh?: boolean;
+  /**
+   * Isi yang menempel di bawah judul dan tidak ikut menggulir (mis. kolom cari). Sengaja di luar
+   * kepala: kepala menangkap geseran, sehingga kolom ketik di dalamnya tidak bisa disentuh.
+   */
+  kepalaTetap?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -57,6 +62,7 @@ export default function BottomSheet({
   title,
   subtitle,
   penuh: bukaPenuh = false,
+  kepalaTetap,
   children,
 }: BottomSheetProps) {
   const insets = useSafeAreaInsets();
@@ -68,10 +74,11 @@ export default function BottomSheet({
   const awal = useRef(0);
   const scrollY = useRef(0);
   const [tinggiKepala, setTinggiKepala] = useState(0);
+  const [tinggiTetap, setTinggiTetap] = useState(0);
   const [tinggiIsi, setTinggiIsi] = useState(0);
 
   // Posisi "setengah": hanya isi yang terlihat, sisanya di bawah layar.
-  const isi = tinggiKepala + tinggiIsi;
+  const isi = tinggiKepala + tinggiTetap + tinggiIsi;
   const [wadah, setWadah] = useState(tinggiLayar);
   const [atasKeyboard, setAtasKeyboard] = useState<number | null>(null);
   const tertutupKeyboard = atasKeyboard === null ? 0 : Math.max(0, wadah - atasKeyboard);
@@ -213,6 +220,8 @@ export default function BottomSheet({
             {title ? <Text style={styles.title}>{title}</Text> : null}
             {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
           </View>
+
+          {kepalaTetap ? <View onLayout={(e) => setTinggiTetap(e.nativeEvent.layout.height)}>{kepalaTetap}</View> : null}
 
           <View style={gs.flex1} {...panBadan.panHandlers}>
             <ScrollView
