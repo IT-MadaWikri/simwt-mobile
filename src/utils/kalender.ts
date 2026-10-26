@@ -42,7 +42,16 @@ export function geserBulan(tahun: number, bulan: number, delta: number) {
   return { tahun: d.getFullYear(), bulan: d.getMonth() };
 }
 
+/** Waktu ISO jatuh dalam rentang `dari`–`sampai` (kunci 'YYYY-MM-DD', keduanya inklusif, '' = tanpa batas), zona perangkat. */
+export function dalamRentang(iso: string | null, dari: string, sampai: string): boolean {
+  if (!dari && !sampai) return true;
+  if (!iso) return false;
+  const hari = kunciTanggal(new Date(iso));
+  return (!dari || hari >= dari) && (!sampai || hari <= sampai);
+}
+
 if (__DEV__) {
+  console.assert(dalamRentang('2026-10-15T09:00:00', '2026-10-15', '2026-10-15') && !dalamRentang('2026-10-16T00:00:00', '', '2026-10-15') && dalamRentang(null, '', ''), 'dalamRentang');
   // Pemeriksaan kecil: Okt 2026 mulai Kamis, 31 hari → 4 hari kosong + 31 + 0 = 35 → kelipatan 7.
   const sel = selBulan(2026, 9);
   console.assert(sel.length % 7 === 0 && sel.filter(Boolean).length === 31 && sel[4] !== null && sel[3] === null, 'selBulan');
