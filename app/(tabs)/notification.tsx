@@ -7,7 +7,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -201,7 +200,7 @@ export default function NotifikasiScreen() {
     }
     if (item.tipe.toLowerCase().includes('kaizen') && (await bukaKaizen(item))) return;
     if (!item.tautan) return;
-    // Tautan menunjuk halaman SIMWT web — buka di peramban dalam aplikasi (Custom Tabs / Safari View).
+    // Tautan menunjuk halaman SIMWT web — buka di peramban dalam aplikasi (`app/browser.tsx`, WebView dengan AppBar sendiri).
     // Hanya http(s); skema lain ditolak supaya tautan aneh dari server tidak ikut terbuka.
     if (!/^https?:\/\//i.test(item.tautan)) {
       dialog.alert('Tautan Tidak Valid', item.tautan);
@@ -218,11 +217,7 @@ export default function NotifikasiScreen() {
       });
       if (!lanjut) return;
     }
-    try {
-      await WebBrowser.openBrowserAsync(item.tautan, { toolbarColor: Colors.primary, controlsColor: Colors.white, createTask: false });
-    } catch {
-      dialog.alert('Gagal Membuka', 'Tautan tidak bisa dibuka di peramban.');
-    }
+    router.push({ pathname: '/browser', params: { url: item.tautan } } as any);
   };
 
   if (memuat) {

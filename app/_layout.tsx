@@ -103,6 +103,7 @@ function RootLayoutNav() {
           name="scan-result"
           options={{ ...opsiAppBar, title: 'Detail Aset' }}
         />
+        <Stack.Screen name="browser" options={{ ...opsiAppBar, animation: 'fade' }} />
         <Stack.Screen
           name="modal"
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
