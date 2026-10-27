@@ -38,6 +38,8 @@ export interface KeluarPabrikDetail extends KeluarPabrikRingkas {
   disetujuiOleh: string | null;
   waktuKeluarAktual: string | null;
   waktuKembaliAktual: string | null;
+  /** Tautan gerbang untuk QR Pass; null = belum disetujui / perjalanan sudah selesai. */
+  gerbangUrl: string | null;
   histori: LangkahKeluarPabrik[];
 }
 
