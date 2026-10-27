@@ -24,11 +24,14 @@ interface TombolKembaliProps {
   warna?: string;
   /** Tujuan bila tidak ada riwayat untuk dimundurkan. */
   cadangan?: string;
+  /** Ikon tombol — `close` untuk layar yang ditutup, bukan dimundurkan. */
+  ikon?: string;
 }
 
 export default function TombolKembali({
   warna = Colors.white,
   cadangan = '/(tabs)',
+  ikon = 'arrow-left',
 }: TombolKembaliProps) {
   const router = useRouter();
 
@@ -37,10 +40,10 @@ export default function TombolKembali({
       onPress={() => (router.canGoBack() ? router.back() : router.replace(cadangan as any))}
       style={{ paddingRight: Spacing.md, paddingVertical: Spacing.xs }}
       accessibilityRole="button"
-      accessibilityLabel="Kembali"
+      accessibilityLabel={ikon === 'close' ? 'Tutup' : 'Kembali'}
       hitSlop={8}
     >
-      <Icon name="arrow-left" size={24} color={warna} />
+      <Icon name={ikon} size={24} color={warna} />
     </TouchableOpacity>
   );
 }
