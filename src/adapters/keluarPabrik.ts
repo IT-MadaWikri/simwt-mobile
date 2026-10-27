@@ -66,6 +66,7 @@ export const adaptasiDetailKeluarPabrik = (m: any): KeluarPabrikDetail => ({
   disetujuiOleh: m?.disetujui_oleh ?? null,
   waktuKeluarAktual: m?.waktu_keluar_aktual ?? null,
   waktuKembaliAktual: m?.waktu_kembali_aktual ?? null,
+  gerbangUrl: m?.gerbang_url ?? null,
   histori: (m?.histori ?? []).map((h: any) => ({
     aksi: h?.aksi ?? '',
     catatan: h?.catatan ?? null,

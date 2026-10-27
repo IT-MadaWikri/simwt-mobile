@@ -12,6 +12,7 @@ import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import QrPassKeluarPabrik from '../../../src/components/layananHrd/QrPassKeluarPabrik';
 import LencanaStatusKeluarPabrik from '../../../src/components/layananHrd/LencanaStatusKeluarPabrik';
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
 import Colors, { brand } from '../../../constants/Colors';
@@ -100,6 +101,8 @@ export default function DetailKeluarPabrikScreen() {
             </Text>
           </View>
         ) : null}
+
+        {f.gerbangUrl ? <QrPassKeluarPabrik url={f.gerbangUrl} /> : null}
 
         <Text style={styles.judulBagian}>Pengajuan</Text>
         <View>
