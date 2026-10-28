@@ -27,7 +27,7 @@ export function useGerbangKeluarPabrik() {
       if (id === permintaan.current) setPass(data);
     } catch (e: any) {
       if (id === permintaan.current) {
-        setError(e?.response?.status === 404 ? 'QR Pass tidak dikenali.' : e?.message || 'Pass tidak bisa dimuat.');
+        setError(e?.response?.status === 404 ? 'QR Pass tidak dikenali.' : e?.response?.data?.message || e?.message || 'Pass tidak bisa dimuat.');
       }
     } finally {
       if (id === permintaan.current) setMemuat(false);
