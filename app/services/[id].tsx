@@ -12,7 +12,7 @@
  * ditandai jelas sebagai belum tersedia, ditampilkan redup, dan tidak bisa
  * ditekan.
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
@@ -26,13 +26,105 @@ import SectionHeader from '../../src/components/common/SectionHeader';
 import BannerMaskot from '../../src/components/common/BannerMaskot';
 import BarisAsetTiketAktif from '../../src/components/aset/BarisAsetTiketAktif';
 import RingkasanAset from '../../src/components/aset/RingkasanAset';
+import KartuRequestAkun from '../../src/components/layananIt/KartuRequestAkun';
+import KartuKeluarPabrik from '../../src/components/layananHrd/KartuKeluarPabrik';
 import { SkeletonBaris } from '../../src/components/common/Skeleton';
 import { useAsetTiketAktif } from '../../src/hooks/useAsetTiketAktif';
 import { useRingkasanAset } from '../../src/hooks/useRingkasanAset';
+import { useRequestAkunSaya } from '../../src/hooks/useRequestAkunSaya';
+import { useKeluarPabrikSaya } from '../../src/hooks/useKeluarPabrik';
+import { formatWaktuRequest } from '../../src/adapters/requestAkun';
+import { LABEL_JENIS, formatRentangJam, formatTanggalKeluar } from '../../src/adapters/keluarPabrik';
 import { SERVICES, ServiceItem } from '../../constants/Services';
 
 /** Layanan yang banner maskot "Semua kebutuhan …"-nya disembunyikan dulu. */
 const TANPA_BANNER = ['layanan-it', 'layanan-hrd', 'kegiatan'];
+
+/** Banyaknya histori terbaru yang tampil di bawah grid; selebihnya lewat "Lihat Semua". */
+const JUMLAH_HISTORI = 3;
+
+/** Segarkan histori tiap layar kembali fokus (mis. setelah mengajukan), kecuali fokus pertama. */
+function useSegarkanSaatFokus(muatUlang: () => Promise<void>) {
+  const pertama = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (pertama.current) {
+        pertama.current = false;
+        return;
+      }
+      muatUlang();
+    }, [muatUlang])
+  );
+}
+
+function HistoriLayanan({ judul, rute, memuat, error, kosong, children }: {
+  judul: string;
+  rute: string;
+  memuat: boolean;
+  error: string | null;
+  kosong: string;
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const adaIsi = React.Children.count(children) > 0;
+  return (
+    <View style={styles.bagian}>
+      <SectionHeader title={judul} onAction={() => router.push(rute as any)} />
+      {memuat ? (
+        <SkeletonBaris jumlah={JUMLAH_HISTORI} style={styles.histori} />
+      ) : error ? (
+        <Text style={[gs.emptyText, gs.containerX]}>{error}</Text>
+      ) : !adaIsi ? (
+        <Text style={[gs.emptyText, gs.containerX]}>{kosong}</Text>
+      ) : (
+        <View style={styles.histori}>{children}</View>
+      )}
+    </View>
+  );
+}
+
+function HistoriRequestIt() {
+  const router = useRouter();
+  const h = useRequestAkunSaya();
+  useSegarkanSaatFokus(h.muatUlang);
+  return (
+    <HistoriLayanan judul="Histori Request" rute="/services/layanan-it/histori" memuat={h.memuat} error={h.error} kosong="Belum ada request yang Anda ajukan.">
+      {h.daftar.slice(0, JUMLAH_HISTORI).map((r) => (
+        <KartuRequestAkun
+          key={r.id}
+          jenis={r.jenisPermintaan}
+          sistem={r.sistem}
+          nomorDokumen={r.nomorDokumen}
+          diajukan={formatWaktuRequest(r.diajukanAt)}
+          status={r.status}
+          statusLabel={r.statusLabel}
+          onPress={() => router.push(`/services/layanan-it/${r.id}` as any)}
+        />
+      ))}
+    </HistoriLayanan>
+  );
+}
+
+function HistoriFormHrd() {
+  const router = useRouter();
+  const h = useKeluarPabrikSaya();
+  useSegarkanSaatFokus(h.muatUlang);
+  return (
+    <HistoriLayanan judul="Histori Form" rute="/services/layanan-hrd/histori" memuat={h.memuat} error={h.error} kosong="Belum ada form yang Anda ajukan.">
+      {h.daftar.slice(0, JUMLAH_HISTORI).map((f) => (
+        <KartuKeluarPabrik
+          key={f.id}
+          jenis={LABEL_JENIS[f.jenisKeluar]}
+          waktu={`${formatTanggalKeluar(f.tanggalKeluar)} · ${formatRentangJam(f.jamKeluar, f.jamKembali)}`}
+          nomorDokumen={f.nomorDokumen}
+          status={f.status}
+          statusLabel={f.statusLabel}
+          onPress={() => router.push(`/services/layanan-hrd/${f.id}` as any)}
+        />
+      ))}
+    </HistoriLayanan>
+  );
+}
 
 interface AksiLayanan {
   icon: string;
@@ -141,6 +233,9 @@ export default function ServiceDetailScreen() {
           />
         ) : null}
 
+        {service.id === 'layanan-it' ? <HistoriRequestIt /> : null}
+        {service.id === 'layanan-hrd' ? <HistoriFormHrd /> : null}
+
         {untukAset ? (
           <View style={styles.bagian}>
             <SectionHeader title="Aset Sedang Diperbaiki" />
@@ -175,6 +270,7 @@ export default function ServiceDetailScreen() {
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
   bagian: { marginTop: Spacing.xl },
+  histori: { paddingHorizontal: Spacing.screenPadding },
   pemisah: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginHorizontal: Spacing.screenPadding },
 });
 
@@ -188,7 +284,6 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
   const perLayanan: Record<string, AksiLayanan[]> = {
     'layanan-hrd': [
       { icon: 'logout', label: 'Form Keluar\nPabrik', subtitle: 'Ajukan izin keluar pabrik (Form-HRD-17)', route: '/services/layanan-hrd/keluar-pabrik' },
-      { icon: 'history', label: 'Histori\nForm', subtitle: 'Status form yang Anda ajukan', route: '/services/layanan-hrd/histori' },
     ],
     'database-aset': [
       {
@@ -212,7 +307,6 @@ function aksiUntuk(service: ServiceItem): AksiLayanan[] {
     'layanan-it': [
       { icon: 'account-cog-outline', label: 'Request\nAkun', subtitle: 'Akun baru atau perubahan akses sistem', route: '/services/layanan-it/request-akun' },
       { icon: 'plus-circle-outline', label: 'Request\nSistem', subtitle: 'Pengajuan pembuatan aplikasi baru' },
-      { icon: 'history', label: 'Histori\nRequest', subtitle: 'Status request yang Anda ajukan', route: '/services/layanan-it/histori' },
     ],
   };
 
