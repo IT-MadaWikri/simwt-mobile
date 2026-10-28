@@ -92,6 +92,8 @@ export interface GerbangKeluarPabrik extends KeluarPabrikRingkas {
   waktuKeluarAktual: string | null;
   waktuKembaliAktual: string | null;
   tahap: TahapGerbang | null;
+  /** Menit lewat dari jam kembali (waktu server); 0 bila belum lewat atau bukan tahap kembali. */
+  terlambatMenit: number;
 }
 
 export interface HasilGerbang {

@@ -14,7 +14,7 @@ import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { GerbangKeluarPabrik, HasilGerbang } from '../../types/layananHrd';
-import { LABEL_JENIS, formatRentangJam, formatTanggalKeluar, formatWaktuKeluarPabrik } from '../../adapters/keluarPabrik';
+import { LABEL_JENIS, formatDurasiMenit, formatRentangJam, formatTanggalKeluar, formatWaktuKeluarPabrik } from '../../adapters/keluarPabrik';
 
 interface SheetGerbangKeluarPabrikProps {
   visible: boolean;
@@ -70,7 +70,7 @@ export default function SheetGerbangKeluarPabrik({ visible, pass, hasil, memuat,
           </View>
         ) : !pass ? (
           <View style={styles.galat}>
-            <Icon name="alert-circle-outline" size={40} color={Colors.danger} />
+            <Icon name="alert-circle-outline" size={40} color={Colors.dangerDark} />
             <Text style={styles.teksGalat}>{error || 'Pass tidak ditemukan.'}</Text>
           </View>
         ) : (
@@ -81,6 +81,18 @@ export default function SheetGerbangKeluarPabrik({ visible, pass, hasil, memuat,
                 <View style={gs.flex1}>
                   <Text style={[styles.judulHasil, { color: sukses ? brand[700] : '#b45309' }]}>{hasil.judul}</Text>
                   <Text style={styles.pesanHasil}>{hasil.pesan}</Text>
+                </View>
+              </View>
+            ) : null}
+
+            {!hasil && pass.terlambatMenit > 0 ? (
+              <View style={[styles.hasil, { backgroundColor: '#fef2f2' }]}>
+                <Icon name="alert-circle" size={18} color={Colors.dangerDark} />
+                <View style={gs.flex1}>
+                  <Text style={[styles.judulHasil, { color: Colors.dangerDark }]}>Terlambat Kembali</Text>
+                  <Text style={styles.pesanHasil}>
+                    Melewati jam kembali ({pass.jamKembali?.slice(0, 5).replace(':', '.')}) selama {formatDurasiMenit(pass.terlambatMenit)}.
+                  </Text>
                 </View>
               </View>
             ) : null}

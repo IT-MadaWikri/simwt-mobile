@@ -176,7 +176,15 @@ export const adaptasiGerbangKeluarPabrik = (m: any): GerbangKeluarPabrik => ({
   waktuKeluarAktual: m?.waktu_keluar_aktual ?? null,
   waktuKembaliAktual: m?.waktu_kembali_aktual ?? null,
   tahap: m?.tahap ?? null,
+  terlambatMenit: Number(m?.terlambat_menit) || 0,
 });
+
+/** 135 → "2 jam 15 menit"; 45 → "45 menit". */
+export const formatDurasiMenit = (menit: number) => {
+  const jam = Math.floor(menit / 60);
+  const sisa = menit % 60;
+  return [jam ? `${jam} jam` : '', sisa || !jam ? `${sisa} menit` : ''].filter(Boolean).join(' ');
+};
 
 export const adaptasiHasilGerbang = (m: any): HasilGerbang => ({
   tipe: m?.tipe === 'success' ? 'success' : 'info',
