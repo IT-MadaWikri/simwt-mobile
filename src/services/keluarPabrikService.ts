@@ -5,11 +5,13 @@
 import api from './api';
 import {
   adaptasiDetailKeluarPabrik,
+  adaptasiGerbangKeluarPabrik,
+  adaptasiHasilGerbang,
   adaptasiKeluarPabrik,
   adaptasiLacakKeluarPabrik,
   adaptasiOpsiKeluarPabrik,
 } from '../adapters/keluarPabrik';
-import { FormKeluarPabrik, HasilLacakKeluarPabrik, KeluarPabrikDetail, KeluarPabrikRingkas, OpsiKeluarPabrik } from '../types/layananHrd';
+import { FormKeluarPabrik, GerbangKeluarPabrik, HasilGerbang, HasilLacakKeluarPabrik, KeluarPabrikDetail, KeluarPabrikRingkas, OpsiKeluarPabrik } from '../types/layananHrd';
 
 export function buatPayloadKeluarPabrik(f: FormKeluarPabrik) {
   return {
@@ -45,6 +47,18 @@ export const keluarPabrikService = {
   async detail(id: number): Promise<KeluarPabrikDetail> {
     const response = await api.get(`/layanan-hrd/keluar-pabrik/${id}`);
     return adaptasiDetailKeluarPabrik(response.data?.data);
+  },
+
+  /** Pratinjau pass dari token QR (khusus petugas gerbang yang memindai). */
+  async gerbang(token: string): Promise<GerbangKeluarPabrik> {
+    const response = await api.get('/layanan-hrd/keluar-pabrik/gerbang', { params: { token } });
+    return adaptasiGerbangKeluarPabrik(response.data?.data);
+  },
+
+  /** Catat keluar/kembali sesuai tahap pass; mengembalikan hasil pencatatan dan pass terbaru. */
+  async catatGerbang(token: string): Promise<{ hasil: HasilGerbang; pass: GerbangKeluarPabrik }> {
+    const response = await api.post('/layanan-hrd/keluar-pabrik/gerbang', { token });
+    return { hasil: adaptasiHasilGerbang(response.data?.hasil), pass: adaptasiGerbangKeluarPabrik(response.data?.data) };
   },
 
   async lacak(nomor: string): Promise<HasilLacakKeluarPabrik> {

@@ -29,6 +29,11 @@ import Spacing from '../../constants/Spacing';
 import Typography, { fonts, judulAppBar } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
 import LoadingSpinner from '../../src/components/common/LoadingSpinner';
+import SheetGerbangKeluarPabrik from '../../src/components/layananHrd/SheetGerbangKeluarPabrik';
+import { dialog } from '../../src/components/common/AppDialog';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { useGerbangKeluarPabrik } from '../../src/hooks/useGerbangKeluarPabrik';
+import { tokenQrGerbang } from '../../src/utils/tautan';
 
 /** Nama jenis tiket yang dikunci oleh kategori aset (kosong = pengguna memilih sendiri). */
 const jenisTiketAset = (kode?: string) => (kode === 'MESIN' ? 'Mesin' : kode === 'DIES' ? 'Dies' : '');
@@ -44,12 +49,17 @@ export default function ScanScreen() {
   const [buka, setBuka] = useState(false);
   const [nomor, setNomor] = useState('');
   const { data, memuat, error, muat } = useAsetScan();
+  const gerbang = useGerbangKeluarPabrik();
+  const { user } = useAuth();
+  const petugasGerbang = !!user?.permission_names?.includes('catat_gerbang_keluar_pabrik');
+  const [bukaGerbang, setBukaGerbang] = useState(false);
   const router = useRouter();
 
   // Layar kembali fokus (mis. dari halaman detail): siap memindai lagi.
   useFocusEffect(
     useCallback(() => {
       setBuka(false);
+      setBukaGerbang(false);
       setScanned(false);
     }, [])
   );
@@ -134,6 +144,22 @@ export default function ScanScreen() {
     if (scanned) return;
     setScanned(true);
 
+    // QR Pass Form Keluar Pabrik: tampilkan ringkasan pass di sheet; pencatatan keluar/kembali
+    // baru terjadi saat petugas menekan tombolnya.
+    const tokenGerbang = tokenQrGerbang(data);
+    if (tokenGerbang) {
+      if (!petugasGerbang) {
+        // Pemindaian baru dibuka lagi setelah dialog ditutup, supaya QR yang sama tidak memunculkannya berulang.
+        dialog
+          .alert('QR Pass Keluar Pabrik', 'Hanya petugas gerbang yang dapat memproses QR Pass. Tunjukkan QR ini ke petugas gerbang.')
+          .then(() => setScanned(false));
+        return;
+      }
+      gerbang.muat(tokenGerbang);
+      setBukaGerbang(true);
+      return;
+    }
+
     let nomorAset = data;
 
     // QR lama berisi URL penuh, mis. http://host/aset/012500320002/scan —
@@ -155,6 +181,7 @@ export default function ScanScreen() {
 
   const tutupSheet = () => {
     setBuka(false);
+    setBukaGerbang(false);
     setScanned(false);
   };
 
@@ -192,7 +219,7 @@ export default function ScanScreen() {
         </View>
 
         <View style={[styles.selubung, { alignItems: 'center', paddingTop: Spacing.xxl }]}>
-          <Text style={styles.petunjuk}>Arahkan kamera ke QR Code aset</Text>
+          <Text style={styles.petunjuk}>Arahkan kamera ke QR Code aset atau QR Pass</Text>
           <Text style={styles.petunjukKecil}>
             Pastikan seluruh kode berada di dalam kotak
           </Text>
@@ -216,6 +243,17 @@ export default function ScanScreen() {
         {/* Penyeimbang agar judul benar-benar di tengah. */}
         <View style={{ width: 40 }} />
       </View>
+
+      <SheetGerbangKeluarPabrik
+        visible={bukaGerbang}
+        pass={gerbang.pass}
+        hasil={gerbang.hasil}
+        memuat={gerbang.memuat}
+        mencatat={gerbang.mencatat}
+        error={gerbang.error}
+        onCatat={gerbang.catat}
+        onClose={tutupSheet}
+      />
 
       <SheetAsetScan
         visible={buka}

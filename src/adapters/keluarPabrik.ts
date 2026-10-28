@@ -7,7 +7,10 @@ import {
   FormKeluarPabrik,
   GalatKeluarPabrik,
   HasilLacakKeluarPabrik,
+  GerbangKeluarPabrik,
+  HasilGerbang,
   KeluarPabrikDetail,
+  TahapGerbang,
   KeluarPabrikRingkas,
   OpsiKeluarPabrik,
 } from '../types/layananHrd';
@@ -153,3 +156,30 @@ if (__DEV__) {
   const lengkap = { ...formKeluarPabrikKosong(), idPlant: 1, idDepartemen: 1, jenis: 'dinas' as const, alasan: 'x' };
   console.assert(Object.keys(galatKeluarPabrik(lengkap, null)).length === 0, 'galatKeluarPabrik lengkap');
 }
+
+/**
+ * Tahap pass di gerbang, sama dengan `tahapGerbang()` di API: belum keluar → `keluar`; sudah keluar dan
+ * berencana kembali (jam kembali terisi) → `kembali`; selebihnya `selesai`.
+ */
+export const tahapGerbang = (
+  d: Pick<KeluarPabrikDetail, 'waktuKeluarAktual' | 'waktuKembaliAktual' | 'jamKembali'>
+): TahapGerbang =>
+  d.waktuKembaliAktual ? 'selesai' : d.waktuKeluarAktual ? (d.jamKembali ? 'kembali' : 'selesai') : 'keluar';
+
+/** Label tombol di HP karyawan (menunjukkan QR ke satpam). */
+export const LABEL_TAHAP_GERBANG = { keluar: 'Scan Out', kembali: 'Scan In', selesai: 'Aktivitas Sudah Selesai' } as const;
+
+export const adaptasiGerbangKeluarPabrik = (m: any): GerbangKeluarPabrik => ({
+  ...adaptasiKeluarPabrik(m),
+  namaUser: m?.nama_user ?? '',
+  alasan: m?.alasan ?? '',
+  waktuKeluarAktual: m?.waktu_keluar_aktual ?? null,
+  waktuKembaliAktual: m?.waktu_kembali_aktual ?? null,
+  tahap: m?.tahap ?? null,
+});
+
+export const adaptasiHasilGerbang = (m: any): HasilGerbang => ({
+  tipe: m?.tipe === 'success' ? 'success' : 'info',
+  judul: m?.judul ?? '',
+  pesan: m?.pesan ?? '',
+});

@@ -3,11 +3,12 @@
  * lencana status, nomor dokumen), isian sebagai baris "label | nilai" rapat, catatan penolakan / persetujuan,
  * dan linimasa status. Sumber: GET /layanan-hrd/keluar-pabrik/{id}.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBar from '../../../src/components/common/AppBar';
+import BottomSheet from '../../../src/components/common/BottomSheet';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
@@ -26,7 +27,9 @@ import {
   formatRentangJam,
   formatTanggalKeluar,
   formatWaktuKeluarPabrik,
+  LABEL_TAHAP_GERBANG,
   langkahKeluarPabrik,
+  tahapGerbang,
 } from '../../../src/adapters/keluarPabrik';
 
 /** Satu baris isian: label tetap di kiri, nilai di kanan (membungkus bila panjang); null = tidak tampil. */
@@ -44,6 +47,7 @@ export default function DetailKeluarPabrikScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const d = useDetailKeluarPabrik(Number(id));
+  const [qrTerbuka, setQrTerbuka] = useState(false);
 
   if (d.memuat) {
     return (
@@ -69,13 +73,14 @@ export default function DetailKeluarPabrikScreen() {
   const unit = [f.departemen, f.plant].filter(Boolean).join(' · ');
   const ditolak = f.status === 'ditolak' && !!f.catatanPenolakan;
   const disetujui = f.status === 'disetujui';
+  const tahap = tahapGerbang(f);
 
   return (
     <View style={[gs.screen, { backgroundColor: Colors.white }]}>
       <AppBar judul="Detail Form" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
+        contentContainerStyle={[styles.isi, { paddingBottom: (disetujui ? 0 : insets.bottom) + Spacing.xl }]}
         refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
       >
         <View style={styles.kepala}>
@@ -102,8 +107,6 @@ export default function DetailKeluarPabrikScreen() {
           </View>
         ) : null}
 
-        {f.gerbangUrl ? <QrPassKeluarPabrik url={f.gerbangUrl} /> : null}
-
         <Text style={styles.judulBagian}>Pengajuan</Text>
         <View>
           <Baris label="Pemohon" nilai={f.namaUser} />
@@ -120,11 +123,47 @@ export default function DetailKeluarPabrikScreen() {
         <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
         <LinimasaTiket langkah={langkahKeluarPabrik(f)} />
       </ScrollView>
+
+      {/* Menempel di bawah layar (seperti footer form Kaizen), di luar ScrollView. */}
+      {disetujui ? (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <Button
+            label={LABEL_TAHAP_GERBANG[tahap]}
+            icon={tahap === 'selesai' ? 'check-circle' : 'qrcode-scan'}
+            disabled={tahap === 'selesai' || !f.gerbangUrl}
+            onPress={() => setQrTerbuka(true)}
+            style={gs.flex1}
+          />
+        </View>
+      ) : null}
+
+      {f.gerbangUrl ? (
+        <BottomSheet
+          visible={qrTerbuka}
+          onClose={() => {
+            setQrTerbuka(false);
+            d.segarkan(); // satpam mungkin baru memindai → tahap tombol ikut berubah
+          }}
+          title={tahap === 'kembali' ? 'QR Scan In' : 'QR Scan Out'}
+          subtitle={f.nomorDokumen}
+        >
+          <QrPassKeluarPabrik url={f.gerbangUrl} />
+        </BottomSheet>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  footer: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderSubtle,
+  },
   isi: { paddingHorizontal: Spacing.screenPadding, paddingTop: Spacing.md },
   kosong: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.lg },
   kepala: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, marginBottom: Spacing.md },
