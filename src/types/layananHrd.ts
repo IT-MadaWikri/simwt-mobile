@@ -81,3 +81,21 @@ export interface FormKeluarPabrik {
 export type GalatKeluarPabrik = Partial<
   Record<'plant' | 'departemen' | 'sub' | 'jenis' | 'alasan', string>
 >;
+
+/** Tahap pass di gerbang: `keluar` (belum keluar), `kembali` (sudah keluar, harus kembali), `selesai`. */
+export type TahapGerbang = 'keluar' | 'kembali' | 'selesai';
+
+/** Pass hasil pindai QR oleh petugas gerbang. `tahap` null = izin belum disetujui. */
+export interface GerbangKeluarPabrik extends KeluarPabrikRingkas {
+  namaUser: string;
+  alasan: string;
+  waktuKeluarAktual: string | null;
+  waktuKembaliAktual: string | null;
+  tahap: TahapGerbang | null;
+}
+
+export interface HasilGerbang {
+  tipe: 'success' | 'info';
+  judul: string;
+  pesan: string;
+}

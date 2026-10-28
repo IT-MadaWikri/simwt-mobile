@@ -14,7 +14,7 @@ import Colors, { brand, slate } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
 import { fonts } from '../../constants/Typography';
-import { API_CONFIG } from '../../constants/Api';
+import { hostInternal, hostTautan } from '../../src/utils/tautan';
 import AppBar from '../../src/components/common/AppBar';
 import KeadaanKosong from '../../src/components/common/KeadaanKosong';
 import { dialog } from '../../src/components/common/AppDialog';
@@ -40,12 +40,6 @@ function jarakWaktu(iso: string | null): string {
   if (hari < 7) return `${hari} hari lalu`;
   return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-
-const hostTautan = (url: string) => url.match(/^https?:\/\/([^/:?#]+)/i)?.[1].toLowerCase() ?? '';
-const HOST_API = hostTautan(API_CONFIG.BASE_URL);
-/** Domain milik SIMWT: mwtpart.co.id (beserta subdomain) dan host API yang sedang dipakai. */
-const hostInternal = (host: string) =>
-  host === 'mwtpart.co.id' || host.endsWith('.mwtpart.co.id') || (!!HOST_API && host === HOST_API);
 
 /** Notifikasi Kaizen dibuka ke detail Kaizen di dalam aplikasi, bukan ke web. */
 const adaTujuan = (n: Notifikasi) => n.tipe.toLowerCase().includes('kaizen');
