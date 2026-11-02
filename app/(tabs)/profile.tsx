@@ -170,31 +170,6 @@ export default function ProfileScreen() {
 
           <View style={styles.kelompok}>
             <BarisSetelan
-              ikon="shield-lock-outline"
-              label="Keamanan akun"
-              onPress={() => dialog.alert('Keamanan Akun', 'Fitur ganti password sedang dikembangkan.')}
-            />
-            <BarisSetelan
-              ikon="bell-outline"
-              label="Pengaturan notifikasi"
-              onPress={() => dialog.alert('Segera Hadir', 'Fitur pengaturan notifikasi sedang dalam pengembangan.')}
-            />
-            <BarisSetelan
-              ikon="translate"
-              label="Bahasa"
-              nilai="Indonesia"
-              onPress={() => dialog.alert('Bahasa', 'Pilihan bahasa saat ini hanya Bahasa Indonesia.')}
-            />
-            <BarisSetelan
-              ikon="human-capacity-increase"
-              label="Aksesibilitas"
-              onPress={() => dialog.alert('Aksesibilitas', 'Pengaturan aksesibilitas sedang dalam pengembangan.')}
-              terakhir
-            />
-          </View>
-
-          <View style={styles.kelompok}>
-            <BarisSetelan
               ikon="help-circle-outline"
               label="Pusat bantuan"
               onPress={() => dialog.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')}
