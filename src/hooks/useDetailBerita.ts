@@ -1,34 +1,23 @@
 /**
  * Detail satu artikel berita (`GET /artikel/{id}`) beserta artikel terkait, dan suka (optimistis;
- * false bila gagal dan dikembalikan).
+ * false bila gagal dan dikembalikan). Artikel yang pernah dibuka langsung tampil dari cache.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { beritaService } from '../services/beritaService';
 import { BeritaDetail } from '../types/berita';
 
 export function useDetailBerita(id: number) {
-  const [berita, setBerita] = useState<BeritaDetail | null>(null);
-  const [memuat, setMemuat] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const kunci = useMemo(() => ['berita', 'detail', id], [id]);
+
+  const q = useQuery({ queryKey: kunci, queryFn: () => beritaService.detail(id) });
+  const berita = q.data ?? null;
+  const { refetch } = q;
 
   const muat = useCallback(() => {
-    setMemuat(true);
-    beritaService
-      .detail(id)
-      .then((b) => {
-        setBerita(b);
-        setError(null);
-      })
-      .catch((e: any) => {
-        // 404 = artikel sudah diarsipkan/dihapus; selain itu gangguan jaringan/server.
-        setError(e?.response?.status === 404 ? 'Berita tidak ditemukan.' : e?.message || 'Gagal memuat berita.');
-      })
-      .finally(() => setMemuat(false));
-  }, [id]);
-
-  useEffect(() => {
-    muat();
-  }, [muat]);
+    refetch();
+  }, [refetch]);
 
   /** Suka/batal suka artikel ini (tanpa argumen) atau salah satu artikel terkait (`idTarget`). */
   const ubahSuka = useCallback(
@@ -40,7 +29,7 @@ export function useDetailBerita(id: number) {
 
       const awal = { disukai: sekarang.disukai, jumlahSuka: sekarang.jumlahSuka };
       const terapkan = (disukai: boolean, jumlahSuka: number) =>
-        setBerita((b) => {
+        queryClient.setQueryData<BeritaDetail>(kunci, (b) => {
           if (!b) return b;
           return target === b.id
             ? { ...b, disukai, jumlahSuka }
@@ -58,8 +47,22 @@ export function useDetailBerita(id: number) {
         return false;
       }
     },
-    [berita]
+    [berita, queryClient, kunci]
   );
 
-  return { berita, memuat, error, muat, ubahSuka };
+  const e: any = q.error;
+  return {
+    berita,
+    memuat: berita === null && q.isFetching,
+    // Bila data lama masih ada, gagal menyegarkan tidak perlu menutupi artikelnya.
+    error:
+      berita || !e
+        ? null
+        : // 404 = artikel sudah diarsipkan/dihapus; selain itu gangguan jaringan/server.
+          e.response?.status === 404
+          ? 'Berita tidak ditemukan.'
+          : e.message || 'Gagal memuat berita.',
+    muat,
+    ubahSuka,
+  };
 }

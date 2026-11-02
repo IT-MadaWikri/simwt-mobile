@@ -3,6 +3,7 @@
  */
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { hapusCache } from './queryClient';
 
 const TOKEN_KEY = 'simwt_auth_token';
 const USER_KEY = 'simwt_user_data';
@@ -84,6 +85,7 @@ export const storage = {
   },
 
   async clearAll(): Promise<void> {
+    await hapusCache();
     if (Platform.OS === 'web') {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
