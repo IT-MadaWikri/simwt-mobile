@@ -140,8 +140,8 @@ export default function ServiceDetailScreen() {
   const router = useRouter();
   const tiketAktif = useAsetTiketAktif();
   const { muat: muatTiketAktif } = tiketAktif;
-  const { ringkasan, muat: muatRingkasan } = useRingkasanAset();
   const untukAset = id === 'database-aset';
+  const { ringkasan, muat: muatRingkasan } = useRingkasanAset(untukAset);
   // Segar tiap layar kembali fokus (mis. setelah melapor tiket dari detail aset).
   useFocusEffect(
     useCallback(() => {

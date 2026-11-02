@@ -24,6 +24,8 @@ import { DialogHost } from '../src/components/common/AppDialog';
 import { opsiAppBar } from '../src/components/common/AppBar';
 import { useAlertJaringan } from '../src/hooks/useAlertJaringan';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { queryClient, persister, UMUR_CACHE_MS } from '../src/utils/queryClient';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -149,8 +151,13 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: UMUR_CACHE_MS }}
+    >
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </PersistQueryClientProvider>
   );
 }

@@ -4,6 +4,7 @@
  * menampilkan "-".
  */
 import { useCallback, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { kaizenService } from '../services/kaizenService';
 import { drafKaizen } from '../utils/drafKaizen';
 import { KaizenPoin, KaizenTop } from '../types/kaizen';
@@ -28,14 +29,21 @@ export function hitungPengingat(profil: KaizenPoin | null): PengingatKaizen | nu
 }
 
 export function useRingkasanKaizen(nik?: string) {
-  const [profil, setProfil] = useState<KaizenPoin | null>(null);
-  const [top, setTop] = useState<KaizenTop | null>(null);
   const [jumlahDraf, setJumlahDraf] = useState(0);
 
+  // Poin & Top 5 ikut cache persisten: angka terakhir tampil dulu, gagal memuat tidak menghapusnya.
+  const poin = useQuery<KaizenPoin>({ queryKey: ['kaizen', 'poin'], queryFn: () => kaizenService.getPoin() });
+  const topQ = useQuery<KaizenTop>({ queryKey: ['kaizen', 'top'], queryFn: () => kaizenService.getTop() });
+  const profil = poin.data ?? null;
+  const top = topQ.data ?? null;
+  const { refetch: muatUlangPoin } = poin;
+  const { refetch: muatUlangTop } = topQ;
+
   const muatPoin = useCallback(() => {
-    kaizenService.getPoin().then(setProfil).catch(() => {});
-    kaizenService.getTop().then(setTop).catch(() => {});
-  }, []);
+    // cancelRefetch false: bila muat awal masih berjalan, pakai itu, jangan batalkan lalu ulang.
+    muatUlangPoin({ cancelRefetch: false });
+    muatUlangTop({ cancelRefetch: false });
+  }, [muatUlangPoin, muatUlangTop]);
 
   const muatJumlahDraf = useCallback(() => {
     drafKaizen.daftar(nik).then((d) => setJumlahDraf(d.length));

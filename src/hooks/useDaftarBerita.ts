@@ -1,75 +1,59 @@
 /**
  * Daftar berita: muat halaman pertama, gulir tanpa batas, tarik-untuk-segarkan, dan suka (optimistis).
  *
+ * Datanya disimpan di cache persisten (lihat `utils/queryClient`), jadi daftar terakhir langsung
+ * tampil saat aplikasi dibuka lagi sementara yang terbaru dimuat di latar.
+ *
  * Spinner `menyegarkan` terpisah dari `memuat` dan dijamin padam lewat batas waktu. Suka diubah
- * langsung di layar lalu dikembalikan bila server menolak; `ubahSuka` mengembalikan false untuk
+ * langsung di cache lalu dikembalikan bila server menolak; `ubahSuka` mengembalikan false untuk
  * kegagalan itu supaya layar yang memanggil bisa menampilkannya.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { InfiniteData, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { beritaService } from '../services/beritaService';
-import { Berita } from '../types/berita';
+import { Berita, HalamanBerita } from '../types/berita';
 
 const BATAS_SEGARKAN = 15000;
 
+type CacheBerita = InfiniteData<HalamanBerita, number>;
+
 export function useDaftarBerita({ perHalaman = 20 }: { perHalaman?: number } = {}) {
-  const [berita, setBerita] = useState<Berita[]>([]);
-  const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const kunci = useMemo(() => ['berita', 'daftar', perHalaman], [perHalaman]);
   const [menyegarkan, setMenyegarkan] = useState(false);
-  const [memuatLebih, setMemuatLebih] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const permintaanTerakhir = useRef(0);
 
-  const muat = useCallback(
-    async (halaman: number) => {
-      const id = ++permintaanTerakhir.current;
-      try {
-        const hasil = await beritaService.daftar({ page: halaman, perHalaman });
-        if (id !== permintaanTerakhir.current) return;
-        setBerita((lama) => (halaman === 1 ? hasil.data : [...lama, ...hasil.data]));
-        setPage(hasil.currentPage);
-        setLastPage(hasil.lastPage);
-        setError(null);
-      } catch (e: any) {
-        if (id !== permintaanTerakhir.current) return;
-        setError(e?.message || 'Gagal memuat berita.');
-      } finally {
-        if (id === permintaanTerakhir.current) {
-          setLoading(false);
-          setMenyegarkan(false);
-          setMemuatLebih(false);
-        }
-      }
-    },
-    [perHalaman]
-  );
+  const q = useInfiniteQuery({
+    queryKey: kunci,
+    queryFn: ({ pageParam }) => beritaService.daftar({ page: pageParam, perHalaman }),
+    initialPageParam: 1,
+    getNextPageParam: (terakhir) => (terakhir.currentPage < terakhir.lastPage ? terakhir.currentPage + 1 : undefined),
+  });
+  const { refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = q;
 
-  useEffect(() => {
-    muat(1);
-  }, [muat]);
+  const berita = useMemo(() => q.data?.pages.flatMap((h) => h.data) ?? [], [q.data]);
 
-  // Lewat ref: `muatUlang` harus stabil supaya efek fokus di pemanggil tidak jalan ulang.
-  const muatRef = useRef(muat);
-  muatRef.current = muat;
-  /** Muat ulang halaman pertama tanpa skeleton (mis. kembali ke beranda). */
-  const muatUlang = useCallback(() => muatRef.current(1), []);
+  /** Muat ulang dari halaman pertama saja: halaman lain yang sudah terbuka dibuang dulu, bukan ikut diambil ulang. */
+  const muatUlang = useCallback(async () => {
+    queryClient.setQueryData<CacheBerita>(kunci, (d) => d && { pages: d.pages.slice(0, 1), pageParams: d.pageParams.slice(0, 1) });
+    await refetch();
+  }, [queryClient, kunci, refetch]);
 
   const segarkan = useCallback(() => {
     setMenyegarkan(true);
     const batas = setTimeout(() => setMenyegarkan(false), BATAS_SEGARKAN);
-    muatRef.current(1).finally(() => clearTimeout(batas));
-  }, []);
+    muatUlang().finally(() => {
+      clearTimeout(batas);
+      setMenyegarkan(false);
+    });
+  }, [muatUlang]);
 
   const cobaLagi = useCallback(() => {
-    setLoading(true);
-    muatRef.current(1);
-  }, []);
+    refetch();
+  }, [refetch]);
 
   const muatBerikutnya = () => {
-    if (loading || memuatLebih || menyegarkan || page >= lastPage) return;
-    setMemuatLebih(true);
-    muat(page + 1);
+    if (q.isPending || isFetchingNextPage || menyegarkan || !hasNextPage) return;
+    fetchNextPage();
   };
 
   const ubahSuka = useCallback(
@@ -78,7 +62,17 @@ export function useDaftarBerita({ perHalaman = 20 }: { perHalaman?: number } = {
       if (!awal) return false;
       const suka = !awal.disukai;
       const set = (disukai: boolean, jumlahSuka: number) =>
-        setBerita((l) => l.map((b) => (b.id === id ? { ...b, disukai, jumlahSuka } : b)));
+        queryClient.setQueryData<CacheBerita>(
+          kunci,
+          (d) =>
+            d && {
+              ...d,
+              pages: d.pages.map((h) => ({
+                ...h,
+                data: h.data.map((b: Berita) => (b.id === id ? { ...b, disukai, jumlahSuka } : b)),
+              })),
+            }
+        );
 
       set(suka, Math.max(0, awal.jumlahSuka + (suka ? 1 : -1)));
       try {
@@ -90,15 +84,16 @@ export function useDaftarBerita({ perHalaman = 20 }: { perHalaman?: number } = {
         return false;
       }
     },
-    [berita]
+    [berita, queryClient, kunci]
   );
 
   return {
     berita,
-    memuat: loading && !menyegarkan,
+    // Skeleton hanya bila belum ada data sama sekali; data dari cache langsung tampil.
+    memuat: q.data === undefined && q.isFetching && !menyegarkan,
     menyegarkan,
-    memuatLebih,
-    error,
+    memuatLebih: isFetchingNextPage,
+    error: q.error ? q.error.message || 'Gagal memuat berita.' : null,
     muatUlang,
     cobaLagi,
     segarkan,
