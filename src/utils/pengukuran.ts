@@ -183,6 +183,18 @@ export const ambilToolAktif = ({
   return daftarTools.find((tool) => samakanId(tool.id) === samakanId(idToolAktif)) || daftarTools[0];
 };
 
+const konfigurasiDariAlat = (titik: StandarPengukuran, toolAktif: AlatUkur | null): KonfigurasiInput => {
+  const tipeInput = nilaiKeLower(toolAktif?.tipe_input || titik?.tipe_input);
+
+  return {
+    tipeInput,
+    standarMin: parseAngka(titik?.standar_min),
+    standarMax: parseAngka(titik?.standar_max),
+    targetString: tipeInput === 'radio' ? (toolAktif?.target_string ?? '') : (titik?.target_string ?? ''),
+    opsiRadio: parseOpsiRadio(toolAktif?.opsi_radio),
+  };
+};
+
 export const ambilKonfigurasiInput = ({
   periode,
   titik,
@@ -193,17 +205,13 @@ export const ambilKonfigurasiInput = ({
   titik: StandarPengukuran;
   sampel: number;
   selectedToolIds: PilihanAlat;
-}): KonfigurasiInput => {
-  const toolAktif = ambilToolAktif({ periode, titik, sampel, selectedToolIds });
-  const tipeInput = nilaiKeLower(toolAktif?.tipe_input || titik?.tipe_input);
+}): KonfigurasiInput => konfigurasiDariAlat(titik, ambilToolAktif({ periode, titik, sampel, selectedToolIds }));
 
-  return {
-    tipeInput,
-    standarMin: parseAngka(titik?.standar_min),
-    standarMax: parseAngka(titik?.standar_max),
-    targetString: tipeInput === 'radio' ? (toolAktif?.target_string ?? '') : (titik?.target_string ?? ''),
-    opsiRadio: parseOpsiRadio(toolAktif?.opsi_radio),
-  };
+/** Konfigurasi tampilan satu titik untuk alat terpilih (`toolId`); alat pertama bila tak dikenal atau kosong. */
+export const ambilKonfigurasiTitik = (titik: StandarPengukuran, toolId: number | string | null | undefined) => {
+  const tools = Array.isArray(titik?.tools) ? titik.tools : [];
+  const toolAktif = tools.find((tool) => samakanId(tool.id) === samakanId(toolId)) ?? tools[0] ?? null;
+  return { toolAktif, konfigurasi: konfigurasiDariAlat(titik, toolAktif) };
 };
 
 const ambilNamaProsesItem = (item: StandarPengukuran) => {
@@ -411,4 +419,16 @@ export const buatMeasurementsPerPeriode = ({
   });
 
   return measurements;
+};
+
+const BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+/** "12 Mar 2026, 14.05"; tanpa jam bila nilainya hanya tanggal. Kosong/tidak valid → "-". */
+export const formatTanggalWaktu = (iso?: string | null): string => {
+  if (!iso) return '-';
+  const t = new Date(iso);
+  if (Number.isNaN(t.getTime())) return '-';
+  const tanggal = `${t.getDate()} ${BULAN_PENDEK[t.getMonth()]} ${t.getFullYear()}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return tanggal;
+  return `${tanggal}, ${String(t.getHours()).padStart(2, '0')}.${String(t.getMinutes()).padStart(2, '0')}`;
 };
