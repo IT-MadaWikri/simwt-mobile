@@ -180,3 +180,45 @@ export interface DrafPengukuran {
   measurements: NilaiPengukuran;
   selectedTools: PilihanAlat;
 }
+
+/** Bisnis partner yang dipilih di filter part (nama disimpan agar chip tetap terbaca saat sheet dibuka lagi). */
+export type PilihanBisnisPartner = Pick<OpsiBisnisPartner, 'id' | 'nama'>;
+
+export interface SampelTerkirim {
+  nilai: string;
+  judgement: Judgement | null;
+}
+
+/** Sampel satu titik ukur pada satu periode, dengan alat yang dipakai. */
+export interface KelompokHasil {
+  kunci: string;
+  periode: string;
+  nama: string;
+  drawing: string;
+  alat: string;
+  target: string;
+  sampel: SampelTerkirim[];
+}
+
+export interface TahapApproval {
+  kunci: 'inspected' | 'checked' | 'approved';
+  label: string;
+  oleh: string | null;
+  pada: string | null;
+}
+
+/** Detail satu pengukuran terkirim, sudah dirapikan untuk layar. */
+export interface DetailTerkirim {
+  id: number;
+  kodeUnik: string;
+  judgment: Judgement | null;
+  tanggal: string | null;
+  shift: string;
+  periode: string;
+  diukurOleh: string;
+  lotNo: string;
+  partNama: string;
+  partKode: string;
+  approval: TahapApproval[];
+  hasil: KelompokHasil[];
+}

@@ -19,7 +19,7 @@ const WARNA = {
 
 /**
  * SIMWT Mobile — layanan di grid beranda.
- * Hanya modul yang dipakai saat ini (8). Layanan tanpa layar khusus dibuka
+ * Hanya modul yang dipakai saat ini (7). Layanan tanpa layar khusus dibuka
  * lewat halaman generik `app/services/[id].tsx` (aksinya diatur di sana).
  */
 
@@ -92,6 +92,15 @@ export const SERVICES: ServiceItem[] = [
     iconColor: WARNA.cyan.ikon,
     route: '/services/kegiatan',
     description: 'Booking ruangan meeting & kegiatan kantor',
+  },
+  {
+    id: 'pengukuran-qc',
+    name: 'Pengukuran\nQC',
+    icon: 'gauge',
+    backgroundColor: WARNA.ungu.latar,
+    iconColor: WARNA.ungu.ikon,
+    route: '/services/pengukuran',
+    description: 'Pengukuran part, draf & riwayat QC',
   },
 ];
 

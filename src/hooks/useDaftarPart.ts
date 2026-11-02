@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { pengukuranService } from '../services/pengukuranService';
-import { FilterPart, Part } from '../types/pengukuran';
+import { FilterPart, Part, PilihanBisnisPartner } from '../types/pengukuran';
 import { useDaftarBergulir } from './useDaftarBergulir';
 import { ModeFilter, useSheetFilter } from './useSheetFilter';
 
@@ -13,7 +13,7 @@ export type { ModeFilter };
 
 export interface NilaiFilterPart {
   proses: string[];
-  bisnisPartner: number[];
+  bisnisPartner: PilihanBisnisPartner[];
 }
 
 const samaIsi = <T,>(a: T[], b: T[]) => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -23,14 +23,17 @@ export function useDaftarPart() {
   // Debounce hanya untuk ketikan pencarian; ganti filter langsung dimuat.
   const [cari, setCari] = useState('');
   const [proses, setProses] = useState<string[]>([]);
-  const [bisnisPartner, setBisnisPartner] = useState<number[]>([]);
+  const [bisnisPartner, setBisnisPartner] = useState<PilihanBisnisPartner[]>([]);
 
   useEffect(() => {
     const t = setTimeout(() => setCari(search.trim()), 350);
     return () => clearTimeout(t);
   }, [search]);
 
-  const filter = useMemo<FilterPart>(() => ({ search: cari, proses, bisnisPartner }), [cari, proses, bisnisPartner]);
+  const filter = useMemo<FilterPart>(
+    () => ({ search: cari, proses, bisnisPartner: bisnisPartner.map((b) => b.id) }),
+    [cari, proses, bisnisPartner]
+  );
 
   const daftar = useDaftarBergulir<Part>({
     kunci: ['pengukuran', 'part', filter],
@@ -41,7 +44,7 @@ export function useDaftarPart() {
 
   const terapkanFilter = (n: NilaiFilterPart, mode: ModeFilter) => {
     // Tak ada yang berubah → tak ada pemuatan yang ditunggu, sheet langsung menutup.
-    if (samaIsi(n.proses, proses) && samaIsi(n.bisnisPartner, bisnisPartner)) {
+    if (samaIsi(n.proses, proses) && samaIsi(n.bisnisPartner.map((b) => b.id), bisnisPartner.map((b) => b.id))) {
       sheet.tutupFilter();
       return;
     }

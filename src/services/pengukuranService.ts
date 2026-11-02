@@ -15,10 +15,12 @@ import {
   normalisasiOpsiProsesFilter,
   normalisasiPart,
 } from '../adapters/part';
+import { normalisasiDetailTerkirim } from '../adapters/terkirim';
 import { buatMeasurementsPerPeriode } from '../utils/pengukuran';
 import {
   Checker,
   DetailPart,
+  DetailTerkirim,
   FilterPart,
   FilterTerkirim,
   FormInfo,
@@ -156,11 +158,23 @@ export const pengukuranService = {
     return { items: ambilDaftar(response.data) as PengukuranTerkirim[], total: ambilTotal(response.data), page };
   },
 
-  /** Mengembalikan data transaksi baru (mis. `kode_unik`). */
+  async detailTerkirim(id: number | string): Promise<DetailTerkirim | null> {
+    await pastikanPlant();
+    const response = await api.get(`/pengukuran-qc/riwayat/${id}`);
+    return normalisasiDetailTerkirim(response.data);
+  },
+
+  /** Mengembalikan data transaksi baru (mis. `kode_unik`). Melempar Error berpesan yang bisa langsung ditampilkan. */
   async kirim(payload: PayloadPengukuran): Promise<{ kode_unik?: string }> {
     await pastikanPlant();
-    const response = await api.post('/pengukuran-qc/riwayat', payload);
-    return response.data?.data ?? response.data ?? {};
+    try {
+      const response = await api.post('/pengukuran-qc/riwayat', payload);
+      return response.data?.data ?? response.data ?? {};
+    } catch (e) {
+      const err = e as { response?: { data?: { message?: string; errors?: Record<string, string[]> } }; message?: string };
+      const galatField = Object.values(err.response?.data?.errors ?? {})[0]?.[0];
+      throw new Error(galatField || err.response?.data?.message || err.message || 'Pengukuran belum bisa dikirim. Coba lagi.');
+    }
   },
 };
 
