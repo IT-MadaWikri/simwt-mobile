@@ -20,6 +20,7 @@ import { dialog } from '../../src/components/common/AppDialog';
 import { teksBagikanBerita } from '../../src/adapters/berita';
 import { useDaftarBerita } from '../../src/hooks/useDaftarBerita';
 import { useBelumDibaca } from '../../src/hooks/useBelumDibaca';
+import { useKodeMenu } from '../../src/hooks/useKodeMenu';
 
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
   const belumDibaca = useBelumDibaca();
+  const kodeMenu = useKodeMenu();
 
   // Header bergerak setengah kecepatan gulir, jadi baris atasnya (logo, lonceng,
   // avatar) hilang dari layar saat gulir = 2 × (tepi bawah baris itu).
@@ -82,7 +84,7 @@ export default function HomeScreen() {
           <LinearGradient colors={['rgba(255,255,255,0)', Colors.white]} pointerEvents="none" style={styles.pudarAtas} />
         <BirthdayBanner />
 
-        <ServiceGrid searchQuery={searchQuery} />
+        <ServiceGrid searchQuery={searchQuery} kodeMenu={kodeMenu} />
 
         <BannerMaskot
           pose="ide"

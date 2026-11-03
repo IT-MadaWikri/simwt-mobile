@@ -29,14 +29,18 @@ const TOMBOL_LAINNYA: ServiceItem = {
 
 interface ServiceGridProps {
   searchQuery?: string;
+  /** Kode menu yang diizinkan server; undefined = belum termuat (layanan berizin disembunyikan). */
+  kodeMenu?: string[];
 }
 
-export default function ServiceGrid({ searchQuery = '' }: ServiceGridProps) {
+export default function ServiceGrid({ searchQuery = '', kodeMenu }: ServiceGridProps) {
   const router = useRouter();
   const [sheetTerbuka, setSheetTerbuka] = useState(false);
 
-  const filteredServices = SERVICES.filter((service) =>
-    service.name.toLowerCase().replace(/\n/g, ' ').includes(searchQuery.toLowerCase())
+  const filteredServices = SERVICES.filter(
+    (service) =>
+      (!service.kodeMenu || !!kodeMenu?.includes(service.kodeMenu)) &&
+      service.name.toLowerCase().replace(/\n/g, ' ').includes(searchQuery.toLowerCase())
   );
 
   // Kalau muat di 2 baris tampilkan semua; kalau tidak, sisakan satu slot
