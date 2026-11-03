@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "SIMWT Mobile",
+    "owner": "pt-mada-wikri-tunggal",
     "slug": "simwt-mobile",
     "version": "1.1.0",
     "orientation": "portrait",
@@ -68,16 +69,16 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "12219d51-f42c-48d1-b4c8-9f482d512144"
-      },
-      "router": {}
+        "projectId": "eb642558-da85-424a-8e1b-857b85ab1bf1"
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/12219d51-f42c-48d1-b4c8-9f482d512144"
+      "url": "https://u.expo.dev/eb642558-da85-424a-8e1b-857b85ab1bf1"
     }
   }
 }
