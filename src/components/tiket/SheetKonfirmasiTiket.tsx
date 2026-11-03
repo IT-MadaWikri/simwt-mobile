@@ -4,7 +4,8 @@
  * state-nya hanya mode tampilan dan isian alasan.
  */
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { InputSheet } from '../common/BottomSheet';
 import BottomSheet from '../common/BottomSheet';
 import Button from '../common/Button';
 import Colors from '../../../constants/Colors';
@@ -58,7 +59,6 @@ export default function SheetKonfirmasiTiket({
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      penuh={reopen}
       title={reopen ? `Reopen tiket #${noTiket}` : `Konfirmasi tiket #${noTiket}`}
       subtitle={
         reopen
@@ -69,7 +69,7 @@ export default function SheetKonfirmasiTiket({
       <View style={styles.isi}>
         {reopen ? (
           <View>
-            <TextInput
+            <InputSheet
               style={[gs.field, styles.textArea]}
               placeholder="Jelaskan secara detail kendala yang masih terjadi…"
               placeholderTextColor={Colors.placeholder}

@@ -42,7 +42,7 @@ export default function SheetSimpanDraf({
   onClose,
 }: SheetSimpanDrafProps) {
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Simpan ke Draft" penuh>
+    <BottomSheet visible={visible} onClose={onClose} title="Simpan ke Draft">
       <View style={styles.isi}>
         <FieldTeks label="Judul Draft" nilai={judul} onUbah={onUbahJudul} placeholder={judulBawaan} />
         <FieldTeks label="Nama Anda" nilai={nama} onUbah={onUbahNama} placeholder="Nama pembuat draft" autoCapitalize="words" />

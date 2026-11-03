@@ -842,7 +842,6 @@ export default function BuatKaizenScreen() {
         visible={draf !== null && sheetOrang === null}
         onClose={() => setDraf(null)}
         title={draf?.index === null ? 'Tambah Manfaat' : 'Ubah Manfaat'}
-        penuh
       >
         {d && draf ? (
           <View style={styles.isiSheet}>

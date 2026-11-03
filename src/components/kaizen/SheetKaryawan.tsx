@@ -3,7 +3,8 @@
  * Disarankan oleh, dan PIC manfaat di formulir Buat Kaizen.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { InputSheet } from '../common/BottomSheet';
 import BottomSheet from '../common/BottomSheet';
 import Avatar from '../common/Avatar';
 import Icon from '../common/Icon';
@@ -66,11 +67,11 @@ export default function SheetKaryawan({ visible, judul, onClose, onPilih }: Prop
           : null;
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title={judul} penuh>
+    <BottomSheet visible={visible} onClose={onClose} title={judul}>
       <View style={styles.isi}>
         <View style={[gs.searchBar, styles.cari]}>
           <Icon name="magnify" size={16} color={Colors.textTertiary} />
-          <TextInput
+          <InputSheet
             style={styles.input}
             placeholder="Cari nama atau NIK"
             placeholderTextColor={Colors.placeholder}

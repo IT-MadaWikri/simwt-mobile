@@ -465,7 +465,7 @@ export default function KaizenDetailScreen() {
         />
       </BottomSheet>
 
-      <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen" penuh>
+      <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen">
         <View style={{ paddingHorizontal: Spacing.lg }}>
           <Text style={[styles.teks, { marginBottom: Spacing.sm }]}>
             Alasan ini dikirim ke pelaksana supaya Kaizen-nya bisa diperbaiki dan diajukan ulang.
