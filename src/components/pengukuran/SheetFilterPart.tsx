@@ -38,7 +38,7 @@ export default function SheetFilterPart({ visible, aktif, proses, bisnisPartner,
   }, [visible]);
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Filter Part" penuh>
+    <BottomSheet visible={visible} onClose={onClose} title="Filter Part">
       <View style={{ paddingHorizontal: Spacing.lg }}>
         <BagianCariPilihan
           judul="Proses"

@@ -3,7 +3,8 @@
  * dan kolom isian Buat Kaizen/Tiket. Presentasional.
  */
 import React from 'react';
-import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { StyleSheet, Text, TextInputProps, View } from 'react-native';
+import { InputSheet } from './BottomSheet';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
@@ -38,7 +39,7 @@ export default function FieldTeks({
         {label}
         {wajib ? <Text style={styles.wajib}> *</Text> : <Text style={styles.opsional}> (opsional)</Text>}
       </Text>
-      <TextInput
+      <InputSheet
         style={[styles.input, sisa.multiline && styles.inputBanyakBaris, galat ? styles.inputGalat : null, !editable && styles.inputMati]}
         value={nilai}
         onChangeText={onUbah}

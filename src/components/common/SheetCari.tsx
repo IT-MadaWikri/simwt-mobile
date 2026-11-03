@@ -7,7 +7,8 @@
  * `izinkanBaru` menambah baris "Pakai “…”" di atas hasil, untuk isian yang boleh diketik bebas.
  */
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { InputSheet } from './BottomSheet';
 import BottomSheet from './BottomSheet';
 import Avatar from './Avatar';
 import Icon from './Icon';
@@ -69,7 +70,7 @@ export default function SheetCari({
     <View style={styles.kolomCari}>
       <View style={styles.kotakCari}>
         <Icon name="magnify" size={20} color={Colors.textTertiary} />
-        <TextInput
+        <InputSheet
           style={styles.cari}
           placeholder={placeholder}
           placeholderTextColor={Colors.placeholder}
@@ -85,7 +86,7 @@ export default function SheetCari({
   );
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title={judul} penuh kepalaTetap={kolomCari}>
+    <BottomSheet visible={visible} onClose={onClose} title={judul} kepalaTetap={kolomCari}>
       <View style={styles.isi}>
         {barisBaru ? (
           <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={() => pilih(kata)}>

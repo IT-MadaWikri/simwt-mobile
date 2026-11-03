@@ -13,6 +13,7 @@ import {
   Poppins_800ExtraBold,
 } from '@expo-google-fonts/poppins';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -76,45 +77,48 @@ function RootLayoutNav() {
   return (
     // Akar gestur: dibutuhkan react-native-gesture-handler (mis. baris notifikasi yang bisa digeser).
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="auto" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          // Transisi halus ala Gojek: dorongan mendatar dengan parallax.
-          //
-          // Sengaja `ios_from_right`, BUKAN `slide_from_right`. Keduanya hanya
-          // berlaku di Android — bedanya `slide_from_right` menggeser layar
-          // lama dan baru dengan kecepatan sama (terasa kaku), sedangkan
-          // `ios_from_right` memakai kurva dan parallax gaya iOS. Di iOS
-          // keduanya sama-sama jatuh ke transisi default, yang memang sudah
-          // berbentuk dorongan ini — jadi hasilnya konsisten di dua platform.
-          animation: 'ios_from_right',
-          animationDuration: 260,
-          // Geser dari tepi untuk kembali (iOS).
-          gestureEnabled: true,
-        }}
-      >
-        {/* Semua halaman memakai transisi geser (default di atas), termasuk login & beranda. */}
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="services/[id]"
-          options={opsiAppBar}
-        />
-        <Stack.Screen
-          name="scan-result"
-          options={{ ...opsiAppBar, title: 'Detail Aset' }}
-        />
-        <Stack.Screen name="browser" options={{ ...opsiAppBar, animation: 'fade' }} />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-        />
-      </Stack>
+      {/* Induk semua BottomSheet (common/BottomSheet, berbasis @gorhom/bottom-sheet). */}
+      <BottomSheetModalProvider>
+        <StatusBar style="auto" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            // Transisi halus ala Gojek: dorongan mendatar dengan parallax.
+            //
+            // Sengaja `ios_from_right`, BUKAN `slide_from_right`. Keduanya hanya
+            // berlaku di Android — bedanya `slide_from_right` menggeser layar
+            // lama dan baru dengan kecepatan sama (terasa kaku), sedangkan
+            // `ios_from_right` memakai kurva dan parallax gaya iOS. Di iOS
+            // keduanya sama-sama jatuh ke transisi default, yang memang sudah
+            // berbentuk dorongan ini — jadi hasilnya konsisten di dua platform.
+            animation: 'ios_from_right',
+            animationDuration: 260,
+            // Geser dari tepi untuk kembali (iOS).
+            gestureEnabled: true,
+          }}
+        >
+          {/* Semua halaman memakai transisi geser (default di atas), termasuk login & beranda. */}
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="services/[id]"
+            options={opsiAppBar}
+          />
+          <Stack.Screen
+            name="scan-result"
+            options={{ ...opsiAppBar, title: 'Detail Aset' }}
+          />
+          <Stack.Screen name="browser" options={{ ...opsiAppBar, animation: 'fade' }} />
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+        </Stack>
 
-      {/* Dipasang sekali di sini supaya `dialog.alert()` / `dialog.confirm()`
-          bisa dipanggil dari layar mana pun. Lihat AppDialog.tsx. */}
-      <DialogHost />
+        {/* Dipasang sekali di sini supaya `dialog.alert()` / `dialog.confirm()`
+            bisa dipanggil dari layar mana pun. Lihat AppDialog.tsx. */}
+        <DialogHost />
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

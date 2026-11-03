@@ -3,7 +3,8 @@
  * Presentasional: pencarian dijalankan pemanggil lewat `useCariAset`.
  */
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { InputSheet } from '../common/BottomSheet';
 import BottomSheet from '../common/BottomSheet';
 import Icon from '../common/Icon';
 import Colors, { slate } from '../../../constants/Colors';
@@ -26,11 +27,11 @@ interface SheetAsetProps {
 export default function SheetAset({ visible, q, onChangeQ, hasil, memuat, gagal, onPilih, onClose }: SheetAsetProps) {
   const kata = q.trim();
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Pilih Aset" penuh>
+    <BottomSheet visible={visible} onClose={onClose} title="Pilih Aset">
       <View style={styles.isi}>
         <View style={[gs.searchBar, styles.kotakCari]}>
           <Icon name="magnify" size={16} color={Colors.textTertiary} />
-          <TextInput
+          <InputSheet
             style={styles.cari}
             placeholder="Cari nama, alias, PIC, atau nomor aset"
             placeholderTextColor={Colors.placeholder}
