@@ -1,76 +1,27 @@
 /**
- * Menu Pengukuran QC — layar pertama tumpukan Pengukuran, dibuka dari ikon Pengukuran QC di beranda.
- * Isinya grid menu: Daftar Part (mulai mengukur), Draf (dengan lencana jumlah), dan Terkirim.
+ * Splash modul Pengukuran QC — layar pertama tumpukan, dibuka dari ikon di beranda. Tampil sebentar
+ * seperti modul eksternal yang sedang dibuka, lalu menggantikan dirinya dengan menu (jadi tombol
+ * kembali dari menu langsung ke beranda, bukan ke splash).
  */
-import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppBar from '../../../src/components/common/AppBar';
-import SectionHeader from '../../../src/components/common/SectionHeader';
-import ServiceIcon from '../../../src/components/common/ServiceIcon';
-import Colors from '../../../constants/Colors';
-import Spacing from '../../../constants/Spacing';
-import { gs } from '../../../constants/GlobalStyles';
-import { ServiceItem } from '../../../constants/Services';
-import { useDrafPengukuran } from '../../../src/hooks/useDrafPengukuran';
+import React, { useEffect } from 'react';
+import { Stack, useRouter } from 'expo-router';
+import SplashModul from '../../../src/components/common/SplashModul';
 
-const WARNA = { backgroundColor: Colors.servicePurple, iconColor: '#9a6bff' };
+const DURASI_SPLASH = 1400;
 
-export default function MenuPengukuranScreen() {
-  const insets = useSafeAreaInsets();
-  const { jumlah: jumlahDraf, muat: muatDraf } = useDrafPengukuran();
+export default function SplashPengukuranScreen() {
+  const router = useRouter();
 
-  // Jumlah draf bisa berubah di layar lain (simpan, hapus, kirim), jadi dimuat tiap kembali ke menu.
-  useFocusEffect(useCallback(() => muatDraf(), [muatDraf]));
-
-  const menu: ServiceItem[] = [
-    {
-      id: 'pengukuran-part',
-      name: 'Daftar\nPart',
-      icon: 'cog-outline',
-      route: '/services/pengukuran/part',
-      description: 'Pilih part dan proses untuk mulai mengukur',
-      ...WARNA,
-    },
-    {
-      id: 'pengukuran-draf',
-      name: 'Draf',
-      icon: 'content-save-outline',
-      route: '/services/pengukuran/draf',
-      description: 'Lanjutkan pengukuran yang belum selesai',
-      lencana: jumlahDraf,
-      ...WARNA,
-    },
-    {
-      id: 'pengukuran-terkirim',
-      name: 'Terkirim',
-      icon: 'send',
-      route: '/services/pengukuran/terkirim',
-      description: 'Riwayat pengukuran yang sudah dikirim',
-      ...WARNA,
-    },
-  ];
+  // Pindah otomatis; bila pengguna kembali lebih dulu, pembersihan efek membatalkan pindahnya.
+  useEffect(() => {
+    const t = setTimeout(() => router.replace('/services/pengukuran/menu' as never), DURASI_SPLASH);
+    return () => clearTimeout(t);
+  }, [router]);
 
   return (
     <>
-      <AppBar judul="Pengukuran QC" />
-      <ScrollView
-        style={[gs.screen, { backgroundColor: Colors.white }]}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
-      >
-        <SectionHeader title="Menu Pengukuran" />
-        <View style={styles.grid}>
-          {menu.map((m) => (
-            <ServiceIcon key={m.id} service={m} />
-          ))}
-        </View>
-      </ScrollView>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SplashModul ikon="gauge" nama="Pengukuran QC" warna="#9a6bff" />
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
-});

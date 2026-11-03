@@ -1,5 +1,5 @@
 /**
- * Tumpukan layar Pengukuran QC: menu (index) → daftar part (part) → pilih proses (part/[id]) → input;
+ * Tumpukan layar Pengukuran QC: splash modul (index) → menu → daftar part (part) → pilih proses (part/[id]) → input;
  * draf (membuka input); riwayat terkirim (terkirim) → detail (terkirim/[id]).
  */
 import React from 'react';
@@ -16,7 +16,8 @@ export default function PengukuranLayout() {
         gestureEnabled: true,
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Pengukuran QC' }} />
+      <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade' }} />
+      <Stack.Screen name="menu" options={{ title: 'Pengukuran QC', animation: 'fade' }} />
       <Stack.Screen name="part/index" options={{ title: 'Daftar Part' }} />
       <Stack.Screen name="part/[id]" options={{ title: 'Pilih Proses' }} />
       <Stack.Screen name="input" options={{ title: 'Input Pengukuran' }} />

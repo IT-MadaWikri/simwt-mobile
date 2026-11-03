@@ -58,12 +58,13 @@ export interface Part {
   nama_bisnis_partner: string;
   nama_customer: string;
   jumlah_standar_pengukuran: number;
+  /** Path relatif di storage api-simwt (lihat `buatUrlStorageApi`); null bila part tak punya gambar. */
+  gambar_part: string | null;
 }
 
 export interface DetailPart extends Omit<Part, 'jumlah_standar_pengukuran'> {
   standar_pengukuran: StandarPengukuran[];
   drawings: DrawingPart[];
-  gambar_part?: string | null;
 }
 
 export interface HalamanPart {

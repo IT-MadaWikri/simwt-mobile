@@ -3,7 +3,7 @@
  * lalu daftar dengan tarik-untuk-segarkan. Mengetuk part membuka pilihan proses.
  * Sumber: GET /pengukuran-qc/part — cari, filter, dan paginasi (gulir tanpa batas) diproses server.
  */
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +18,7 @@ import Colors, { brand } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../../constants/Typography';
 import { gs, inputReset } from '../../../../constants/GlobalStyles';
+import { buatUrlStorageApi } from '../../../../src/utils/storageApi';
 import { useDaftarPart } from '../../../../src/hooks/useDaftarPart';
 import { useOpsiFilterPart } from '../../../../src/hooks/useOpsiFilterPart';
 
@@ -25,6 +26,7 @@ export default function DaftarPartScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const p = useDaftarPart();
+  const bukaPart = useCallback((id: number) => router.push(`/services/pengukuran/part/${id}` as any), [router]);
   const opsi = useOpsiFilterPart(p.filterTerbuka);
 
   // Titik hijau di tombol filter bila proses/bisnis partner sedang menyaring (kata cari tampak di kolomnya sendiri).
@@ -81,11 +83,13 @@ export default function DaftarPartScreen() {
           }
           renderItem={({ item }) => (
             <KartuPart
+              id={item.id}
               nama={item.nama}
               kode={item.kode}
               bisnisPartner={item.nama_customer}
               jumlahProses={item.proses?.length ?? 0}
-              onPress={() => router.push(`/services/pengukuran/part/${item.id}` as any)}
+              gambarUrl={item.gambar_part ? buatUrlStorageApi(item.gambar_part) : null}
+              onPress={bukaPart}
             />
           )}
         />

@@ -93,6 +93,7 @@ export const normalisasiPart = (item: Mentah): Part => {
     jenis: typeof item?.jenis === 'string' ? item.jenis : '',
     proses: normalisasiProsesPart(item?.proses),
     jumlah_standar_pengukuran: item?.standar_pengukuran_count || 0,
+    gambar_part: item?.gambar_part || null,
   };
 };
 
@@ -113,6 +114,7 @@ export const normalisasiDetailPart = (mentah: unknown): DetailPart | null => {
     proses: normalisasiProsesPart(data.proses),
     standar_pengukuran: Array.isArray(data.standar_pengukuran) ? data.standar_pengukuran.map(normalisasiStandar) : [],
     drawings: Array.isArray(data.drawings) ? data.drawings : [],
+    gambar_part: data.gambar_part || null,
   };
 };
 
