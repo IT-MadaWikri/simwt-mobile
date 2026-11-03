@@ -7,7 +7,6 @@
  * @param prosesDraf   proses yang berasal dari draf aktif
  */
 import { useMemo } from 'react';
-import { API_CONFIG } from '../../constants/Api';
 import { PROSES_FINAL_INSPECTION } from '../../constants/Pengukuran';
 import { useDetailPart } from './useDetailPart';
 import {
@@ -16,15 +15,12 @@ import {
   filterStandarPengukuranAktif,
   pilihDrawingSlides,
 } from '../utils/pengukuran';
+import { buatUrlStorageApi } from '../utils/storageApi';
 
 export interface ProsesDraf {
   id: number | null;
   nama: string;
 }
-
-/** Drawing disimpan di storage api-simwt: URL dasar API tanpa `/api`, lalu `/storage/<path>`. */
-const buatUrlStorageApi = (path: string) =>
-  `${API_CONFIG.BASE_URL.replace(/\/api\/?$/, '')}/storage/${path.replace(/^\/+/, '')}`;
 
 export function useKonteksPengukuran({
   idPart,
