@@ -1,9 +1,9 @@
 /**
- * Kartu pilihan periode (dengan titik status isian dan jamnya) plus isian jam untuk periode yang
+ * Tab pilihan periode (dengan titik status isian) plus isian jam untuk periode yang
  * sedang dipilih. Dipakai di tab Dimensi dan Visual. Presentasional.
  */
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FieldJam from '../common/FieldJam';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -26,26 +26,32 @@ interface PilihPeriodeProps {
 }
 
 export default function PilihPeriode({ daftarPeriode, periodeAktif, ambilStatus, ambilJam, onPilih, onUbahJam }: PilihPeriodeProps) {
+  const jumlah = Math.max(daftarPeriode.length, 1);
+  const indeks = Math.max(daftarPeriode.indexOf(periodeAktif), 0);
+  const geser = useRef(new Animated.Value(indeks)).current;
+
+  useEffect(() => {
+    // `left` berupa persen (properti layout), jadi tanpa native driver dan tanpa mengukur lebar.
+    Animated.spring(geser, { toValue: indeks, useNativeDriver: false, bounciness: 0, speed: 20 }).start();
+  }, [geser, indeks]);
+
+  const left = geser.interpolate({ inputRange: [0, jumlah], outputRange: ['0%', '100%'] });
+
   return (
     <View style={styles.wadah}>
-      <View style={styles.baris}>
-        {daftarPeriode.map((periode) => {
-          const aktif = periode === periodeAktif;
-          return (
-            <TouchableOpacity
-              key={periode}
-              style={[styles.kartu, aktif && styles.kartuAktif]}
-              onPress={() => onPilih(periode)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.periode, aktif && { color: brand[700] }]}>{periode}</Text>
-              <View style={styles.status}>
+      <View style={styles.tabs}>
+        <View style={styles.jalur}>
+          <Animated.View style={[styles.indikator, { width: `${100 / jumlah}%`, left }]} />
+          {daftarPeriode.map((periode) => {
+            const aktif = periode === periodeAktif;
+            return (
+              <TouchableOpacity key={periode} style={styles.tab} onPress={() => onPilih(periode)} activeOpacity={0.7}>
                 <View style={[styles.titik, { backgroundColor: WARNA_STATUS[ambilStatus(periode)] }]} />
-                <Text style={styles.jam}>{ambilJam(periode) || '--:--'}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+                <Text style={[styles.periode, aktif && styles.periodeAktif]}>{periode}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.baris}>
@@ -59,20 +65,31 @@ export default function PilihPeriode({ daftarPeriode, periodeAktif, ambilStatus,
 const styles = StyleSheet.create({
   wadah: { marginBottom: Spacing.lg },
   baris: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.md },
-  kartu: {
+  jalur: { flexDirection: 'row' },
+  tabs: {
+    padding: 4,
+    marginBottom: Spacing.md,
+    borderRadius: Spacing.radius.full,
+    backgroundColor: slate[100],
+  },
+  tab: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-    padding: Spacing.md,
-    borderRadius: Spacing.radius.md,
-    ...Spacing.curve,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    paddingVertical: Spacing.sm,
+    borderRadius: Spacing.radius.full,
+  },
+  indikator: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    borderRadius: Spacing.radius.full,
     backgroundColor: Colors.white,
   },
-  kartuAktif: { borderColor: brand[600], backgroundColor: brand[50] },
-  periode: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  status: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  periode: { fontFamily: fonts.medium, fontSize: ukuranIsi, color: Colors.textTertiary },
+  periodeAktif: { fontFamily: fonts.bold, color: brand[700] },
   titik: { width: 8, height: 8, borderRadius: 4 },
-  jam: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   catatan: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
 });
