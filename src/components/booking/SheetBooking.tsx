@@ -9,6 +9,7 @@ import Avatar from '../common/Avatar';
 import BottomSheet from '../common/BottomSheet';
 import Button from '../common/Button';
 import Icon from '../common/Icon';
+import Lencana from '../common/Lencana';
 import { IKON, WARNA_STATUS } from './BarisBooking';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
@@ -86,7 +87,7 @@ export default function SheetBooking({
   onTambahKalender,
   onBagikan,
 }: SheetBookingProps) {
-  const lencana = WARNA_STATUS[status] ?? WARNA_STATUS[0];
+  const warnaLencana = WARNA_STATUS[status] ?? WARNA_STATUS[0];
   const [daftarPeserta, setDaftarPeserta] = useState(false);
   return (
     <>
@@ -99,9 +100,7 @@ export default function SheetBooking({
             <View style={styles.teksInfo}>
               <Text style={styles.judul} numberOfLines={2}>{judul}</Text>
               <View style={styles.barisLencana}>
-                <View style={[styles.lencana, { backgroundColor: lencana.bg }]}>
-                  <Text style={[styles.teksLencana, { color: lencana.fg }]}>{statusLabel}</Text>
-                </View>
+                <Lencana label={statusLabel} warna={warnaLencana} />
                 <Text style={styles.label}>{jenisLabel}</Text>
               </View>
             </View>
@@ -144,8 +143,6 @@ const styles = StyleSheet.create({
   ikonJenis: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   judul: { fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
   barisLencana: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: 4 },
-  lencana: { paddingHorizontal: Spacing.sm, paddingVertical: 2, borderRadius: Spacing.radius.full },
-  teksLencana: { fontFamily: fonts.semibold, fontSize: 11 },
   barisInfo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   ikonInfo: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   teksInfo: { flex: 1 },

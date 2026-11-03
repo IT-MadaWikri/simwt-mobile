@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
+import Lencana from '../../../src/components/common/Lencana';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand, slate } from '../../../constants/Colors';
+import Colors, { brand, lencana, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { Employee, karyawanService } from '../../../src/services/karyawanService';
 import { fonts, judulAppBar } from '../../../constants/Typography';
@@ -80,17 +81,9 @@ export default function HumanCapitalScreen() {
         
         <View style={styles.badgesContainer}>
           {item.nik && (
-            <View style={[styles.badge, { backgroundColor: brand[50] }]}>
-              <Icon name="badge-account-horizontal-outline" size={12} color={brand[700]} />
-              <Text style={[styles.badgeText, { color: brand[700] }]}>{item.nik}</Text>
-            </View>
+            <Lencana label={item.nik} ikon="badge-account-horizontal-outline" warna={lencana.hijau} />
           )}
-          <View style={[styles.badge, { backgroundColor: Colors.servicePurple }]}>
-            <Icon name="domain" size={12} color="#7e22ce" />
-            <Text style={[styles.badgeText, { color: '#7e22ce' }]} numberOfLines={1}>
-              {getDepartment(item)}
-            </Text>
-          </View>
+          <Lencana label={getDepartment(item)} ikon="domain" warna={lencana.ungu} maxLebar={120} />
         </View>
       </View>
       
@@ -217,19 +210,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: Spacing.radius.sm,
-    gap: 4,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontFamily: fonts.semibold,
-    maxWidth: 120, // To prevent super long department names from overflowing
   },
   activeDot: {
     width: 12,

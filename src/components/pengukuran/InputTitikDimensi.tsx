@@ -2,7 +2,8 @@
 import React from 'react';
 import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import ChipPilihan from './ChipPilihan';
-import Colors, { brand, slate } from '../../../constants/Colors';
+import Lencana from '../common/Lencana';
+import Colors, { brand, lencana, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { inputReset } from '../../../constants/GlobalStyles';
@@ -46,7 +47,7 @@ export default function InputTitikDimensi({
           <Text style={styles.drawingTeks}>{titik.nomor_drawing || '-'}</Text>
         </View>
         <Text style={styles.nama}>{titik.nama_point}</Text>
-        {adalahTitikCritical(titik) ? <Text style={styles.critical}>Critical</Text> : null}
+        {adalahTitikCritical(titik) ? <Lencana label="Critical" warna={lencana.merah} /> : null}
       </View>
       <Text style={styles.sub}>{toolAktif?.nama || '-'} · {tipeInput || '-'}</Text>
       {radio || targetString ? (
@@ -121,16 +122,6 @@ const styles = StyleSheet.create({
   drawing: { minWidth: 28, height: 28, paddingHorizontal: 6, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: brand[50] },
   drawingTeks: { fontFamily: fonts.bold, fontSize: ukuranIsi, color: brand[700] },
   nama: { flexShrink: 1, fontFamily: fonts.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  critical: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 1,
-    borderRadius: Spacing.radius.full,
-    overflow: 'hidden',
-    backgroundColor: Colors.serviceRed,
-    fontFamily: fonts.bold,
-    fontSize: 12,
-    color: Colors.dangerDark,
-  },
   sub: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingVertical: 4 },
   sampel: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginTop: Spacing.sm },

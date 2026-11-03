@@ -8,7 +8,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import BottomSheet from '../common/BottomSheet';
 import Icon from '../common/Icon';
 import { Skeleton } from '../common/Skeleton';
-import Colors, { brand } from '../../../constants/Colors';
+import Lencana from '../common/Lencana';
+import Colors, { brand, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { DetailAset } from '../../types/aset';
@@ -58,7 +59,7 @@ export default function SheetAsetScan({
   onClose,
 }: SheetAsetScanProps) {
   const aset = data?.dataAsset;
-  const lencana = [aset?.asset_condition, aset?.asset_use].filter(Boolean);
+  const daftarLencana = [aset?.asset_condition, aset?.asset_use].filter(Boolean);
   const menu = menuUntuk(aset?.aset_kategori?.kode);
   const aksi: Record<IdMenu, () => void> = { detail: onLihatDetail, tiket: onBuatTiket, dies: onLaporDies, produksi: onProduksi };
   const keterangan = [aset?.aset_kategori?.asset_category_name, aset?.plant?.nama].filter(Boolean).join(' · ');
@@ -83,12 +84,10 @@ export default function SheetAsetScan({
             {aset.alias && aset.asset_name ? <Text style={styles.nomor} numberOfLines={1}>{aset.asset_name}</Text> : null}
             <Text style={styles.nomor}>{aset.asset_number || '-'}</Text>
             {keterangan ? <Text style={styles.keterangan}>{keterangan}</Text> : null}
-            {lencana.length > 0 ? (
+            {daftarLencana.length > 0 ? (
               <View style={styles.lencanaBaris}>
-                {lencana.map((teks) => (
-                  <View key={teks} style={styles.lencana}>
-                    <Text style={styles.teksLencana}>{teks}</Text>
-                  </View>
+                {daftarLencana.map((teks) => (
+                  <Lencana key={teks} label={String(teks)} warna={lencana.hijau} />
                 ))}
               </View>
             ) : null}
@@ -128,13 +127,6 @@ const styles = StyleSheet.create({
   nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   keterangan: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, marginTop: Spacing.sm },
   lencanaBaris: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md },
-  lencana: {
-    backgroundColor: brand[50],
-    borderRadius: Spacing.radius.full,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-  },
-  teksLencana: { fontFamily: fonts.semibold, fontSize: 12, color: brand[700] },
   galat: { alignItems: 'center', paddingVertical: Spacing.xl },
   teksGalat: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.md },
   menu: { rowGap: Spacing.sm, marginTop: Spacing.lg },

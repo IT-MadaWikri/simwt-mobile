@@ -71,6 +71,17 @@ export const slate = {
   900: '#0f172a',
 } as const;
 
+/** Pasangan latar pastel + teks tegas untuk `common/Lencana` dan style `gs.badge*`. */
+export const lencana = {
+  hijau: { bg: brand[100], fg: brand[700] },
+  biru: { bg: '#e0f2fe', fg: '#0284c7' },
+  oranye: { bg: '#ffedd5', fg: '#ea580c' },
+  merah: { bg: '#fee2e2', fg: '#dc2626' },
+  ungu: { bg: '#ede9fe', fg: '#7c3aed' },
+  kuning: { bg: '#fef3c7', fg: '#b45309' },
+  abu: { bg: slate[100], fg: slate[600] },
+} as const;
+
 export const Colors = {
   brand,
   slate,

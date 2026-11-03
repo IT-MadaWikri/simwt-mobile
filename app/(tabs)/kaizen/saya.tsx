@@ -34,6 +34,7 @@ import BottomSheet from '../../../src/components/common/BottomSheet';
 import Avatar from '../../../src/components/common/Avatar';
 import { useKaizenSaya } from '../../../src/hooks/useKaizenSaya';
 import { NilaiFilter } from '../../../src/hooks/useDaftarKaizen';
+import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
@@ -198,9 +199,7 @@ export default function KaizenSaya() {
           </Text>
         </View>
         <View style={styles.kanan}>
-          <View style={[styles.badgeStatus, { backgroundColor: warna.bg }]}>
-            <Text style={[styles.teksBadge, { color: warna.fg }]}>{warna.label}</Text>
-          </View>
+          <Lencana label={warna.label} warna={warna} />
           <Text style={styles.tanggal}>{tgl.getDate()} {BULAN[tgl.getMonth()]} {tgl.getFullYear()}</Text>
         </View>
         <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
@@ -572,16 +571,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 4,
     flexShrink: 0,
-  },
-  badgeStatus: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-  },
-  teksBadge: {
-    fontSize: 10,
-    fontFamily: fonts.semibold,
   },
   tanggal: {
     fontSize: 12,

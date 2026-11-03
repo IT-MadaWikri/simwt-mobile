@@ -29,7 +29,7 @@
  *    (`fonts.semibold`, `fonts.bold`, …). Lihat catatan di `Typography.ts`.
  */
 import { Platform, StyleSheet, TextStyle } from 'react-native';
-import Colors, { brand, slate } from './Colors';
+import Colors, { brand, lencana, slate } from './Colors';
 import Spacing from './Spacing';
 import Typography, { fonts } from './Typography';
 
@@ -360,24 +360,23 @@ export const gs = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.xs,
     alignSelf: 'flex-start',
-    borderRadius: Spacing.radius.full,
+    borderRadius: Spacing.radius.md,
     ...Spacing.curve,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
-  badgeBrand: { backgroundColor: brand[50] },
-  badgeMuted: { backgroundColor: slate[100] },
-  badgeDanger: { backgroundColor: '#fef2f2' },
-  badgeWarning: { backgroundColor: '#fffbeb' },
-  // Teks lencana/badge sengaja lebih kecil (10) dari teks isi (12) supaya muat di dalam pil.
+  badgeBrand: { backgroundColor: lencana.hijau.bg },
+  badgeMuted: { backgroundColor: lencana.abu.bg },
+  badgeDanger: { backgroundColor: lencana.merah.bg },
+  badgeWarning: { backgroundColor: lencana.kuning.bg },
   badgeText: {
-    fontFamily: fonts.semibold,
-    fontSize: 10,
+    fontFamily: fonts.medium,
+    fontSize: 11,
   },
-  badgeTextBrand: { color: brand[700] },
-  badgeTextMuted: { color: Colors.textSecondary },
-  badgeTextDanger: { color: Colors.dangerDark },
-  badgeTextWarning: { color: '#b45309' },
+  badgeTextBrand: { color: lencana.hijau.fg },
+  badgeTextMuted: { color: lencana.abu.fg },
+  badgeTextDanger: { color: lencana.merah.fg },
+  badgeTextWarning: { color: lencana.kuning.fg },
 
   // ══════════════════════════════════════════════════════════════════════
   // UBIN IKON — bagian Gojek yang dipertahankan

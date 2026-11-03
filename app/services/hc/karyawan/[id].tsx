@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import Icon from '../../../../src/components/common/Icon';
+import Lencana from '../../../../src/components/common/Lencana';
 import Button from '../../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { karyawanService, Employee } from '../../../../src/services/karyawanService';
-import Colors, { brand, slate } from '../../../../constants/Colors';
+import Colors, { brand, lencana, slate } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
 import { fonts, judulAppBar } from '../../../../constants/Typography';
 import AppBar from '../../../../src/components/common/AppBar';
@@ -138,18 +139,10 @@ export default function EmployeeDetailScreen() {
               
               <View style={styles.badgesColumn}>
                 {employee.nik && (
-                  <View style={[styles.badge, styles.badgeBlue]}>
-                    <Icon name="card-account-details-outline" size={12} color={brand[700]} />
-                    <Text style={[styles.badgeText, { color: brand[700] }]}>{employee.nik}</Text>
-                  </View>
+                  <Lencana label={employee.nik} ikon="card-account-details-outline" warna={lencana.biru} style={{ alignSelf: 'flex-start' }} />
                 )}
                 <View style={styles.badgesRowHorizontal}>
-                  <View style={[styles.badge, styles.badgeGreenOutline]}>
-                    <Icon name="account-tie-outline" size={12} color={GOJEK_GREEN} />
-                    <Text style={[styles.badgeText, { color: GOJEK_GREEN }]} numberOfLines={1}>
-                      {roleName || 'Staff'}
-                    </Text>
-                  </View>
+                  <Lencana label={roleName || 'Staff'} ikon="account-tie-outline" warna={lencana.hijau} />
                   <View style={[styles.badge, styles.badgeGreenSolid]}>
                     <View style={[styles.dot, { backgroundColor: isActive ? Colors.white : GOJEK_GREY }]} />
                     <Text style={[styles.badgeText, { color: Colors.white }]}>{status}</Text>
@@ -271,10 +264,7 @@ export default function EmployeeDetailScreen() {
           
           <View style={styles.fullWidthItem}>
             <Text style={styles.infoLabel}>STATUS SAAT INI</Text>
-            <View style={[styles.badge, styles.badgeGreenLight, { alignSelf: 'flex-start', marginTop: 6 }]}>
-              <View style={[styles.dot, { backgroundColor: GOJEK_GREEN }]} />
-              <Text style={[styles.badgeText, { color: GOJEK_GREEN }]}>{status}</Text>
-            </View>
+            <Lencana label={status} titik warna={lencana.hijau} style={{ alignSelf: 'flex-start', marginTop: 6 }} />
           </View>
         </View>
 
@@ -395,21 +385,8 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
     gap: 6,
   },
-  badgeBlue: {
-    backgroundColor: brand[50],
-    borderWidth: 1,
-    borderColor: brand[100],
-  },
-  badgeGreenOutline: {
-    backgroundColor: GOJEK_GREEN_LIGHT,
-    borderWidth: 1,
-    borderColor: brand[100],
-  },
   badgeGreenSolid: {
     backgroundColor: '#00D161',
-  },
-  badgeGreenLight: {
-    backgroundColor: GOJEK_GREEN_LIGHT,
   },
   badgeText: {
     fontSize: 10,
