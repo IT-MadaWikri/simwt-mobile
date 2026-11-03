@@ -12,7 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
 import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
-import Colors, { brand, slate, gradasiPalet } from '../../../constants/Colors';
+import Lencana from '../../../src/components/common/Lencana';
+import Colors, { brand, slate, gradasiPalet, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
@@ -22,10 +23,10 @@ import { relatif, urlFoto } from '../../../src/utils/kaizen';
 import { SkeletonDasbor } from '../../../src/components/common/Skeleton';
 
 const WARNA_REDEEM: Record<string, { bg: string; fg: string }> = {
-  Diproses: { bg: '#fffbeb', fg: '#b45309' },
-  'Gift Ready': { bg: '#eff6ff', fg: '#1d4ed8' },
-  Diterima: { bg: brand[50], fg: brand[700] },
-  Dibatalkan: { bg: '#fef2f2', fg: Colors.dangerDark },
+  Diproses: lencana.kuning,
+  'Gift Ready': lencana.biru,
+  Diterima: lencana.hijau,
+  Dibatalkan: lencana.merah,
 };
 
 const angka = (n: number) => n.toLocaleString('id-ID');
@@ -126,7 +127,7 @@ export default function RedeemPoin() {
       <Text style={styles.judul}>Riwayat redeem</Text>
       {data && data.riwayat.length === 0 ? <Text style={styles.kosong}>Belum pernah redeem.</Text> : null}
       {data?.riwayat.map((r) => {
-        const w = WARNA_REDEEM[r.status_redeem] ?? { bg: slate[100], fg: Colors.textSecondary };
+        const w = WARNA_REDEEM[r.status_redeem] ?? lencana.abu;
         return (
           <View key={r.id} style={styles.riwayat}>
             <View style={gs.flex1}>
@@ -136,9 +137,7 @@ export default function RedeemPoin() {
                 <Text style={[styles.caption, { color: Colors.dangerDark }]}>{r.alasan_dibatalkan}</Text>
               ) : null}
             </View>
-            <View style={[styles.badge, { backgroundColor: w.bg }]}>
-              <Text style={[styles.teksBadge, { color: w.fg }]}>{r.status_redeem}</Text>
-            </View>
+            <Lencana label={r.status_redeem} warna={w} />
           </View>
         );
       })}
@@ -208,6 +207,4 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   caption: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, marginTop: 2 },
-  badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  teksBadge: { fontSize: 10, fontFamily: fonts.semibold },
 });

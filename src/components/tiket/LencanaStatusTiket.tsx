@@ -1,21 +1,18 @@
 /** Lencana status tiket (PENDING, PROSES, RESOLVED, OK, …) — presentasional. */
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Icon from '../common/Icon';
-import { brand, slate } from '../../../constants/Colors';
-import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import Lencana from '../common/Lencana';
+import { lencana } from '../../../constants/Colors';
 import { STATUS_TIKET } from '../../adapters/tiket';
 import { StatusTiket } from '../../types/tiket';
 
 export const WARNA_STATUS_TIKET: Record<StatusTiket, { bg: string; fg: string }> = {
-  PENDING: { bg: '#fffbeb', fg: '#b45309' },
-  NEED_APPROVAL: { bg: '#fffbeb', fg: '#b45309' },
-  PROSES: { bg: brand[50], fg: brand[700] },
-  RESOLVED: { bg: brand[50], fg: brand[700] },
-  OK: { bg: slate[100], fg: slate[600] },
-  FATAL: { bg: '#fef2f2', fg: '#b91c1c' },
-  CANCEL: { bg: slate[100], fg: slate[600] },
+  PENDING: lencana.kuning,
+  NEED_APPROVAL: lencana.kuning,
+  PROSES: lencana.biru,
+  RESOLVED: lencana.hijau,
+  OK: lencana.abu,
+  FATAL: lencana.merah,
+  CANCEL: lencana.abu,
 };
 
 interface LencanaStatusTiketProps {
@@ -26,26 +23,5 @@ interface LencanaStatusTiketProps {
 
 export default function LencanaStatusTiket({ status, panjang = false }: LencanaStatusTiketProps) {
   const meta = STATUS_TIKET[status];
-  const { bg, fg } = WARNA_STATUS_TIKET[status];
-  return (
-    <View style={[styles.lencana, { backgroundColor: bg }]}>
-      <Icon name={meta.ikon as any} size={12} color={fg} />
-      <Text style={[styles.teks, { color: fg }]}>{panjang ? meta.keterangan : meta.label}</Text>
-    </View>
-  );
+  return <Lencana label={panjang ? meta.keterangan : meta.label} warna={WARNA_STATUS_TIKET[status]} ikon={meta.ikon} />;
 }
-
-const styles = StyleSheet.create({
-  lencana: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: Spacing.radius.full,
-  },
-  teks: {
-    fontFamily: fonts.semibold,
-    fontSize: 10,
-  },
-});

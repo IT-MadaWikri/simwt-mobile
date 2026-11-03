@@ -16,6 +16,7 @@ import BannerAksi from '../../../src/components/common/BannerAksi';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
 import { Skeleton, SkeletonBaris } from '../../../src/components/common/Skeleton';
+import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
@@ -190,9 +191,7 @@ export default function MenuKaizenScreen() {
                       <Text style={styles.sub} numberOfLines={1}>{k.nomor || `#${k.id}`}</Text>
                     </View>
                     <View style={styles.kanan}>
-                      <View style={[styles.badgeStatus, { backgroundColor: warna.bg }]}>
-                        <Text style={[styles.teksBadge, { color: warna.fg }]}>{warna.label}</Text>
-                      </View>
+                      <Lencana label={warna.label} warna={warna} />
                       <Text style={styles.sub}>{tgl.getDate()} {BULAN[tgl.getMonth()]} {tgl.getFullYear()}</Text>
                     </View>
                     <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
@@ -350,15 +349,5 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 4,
     flexShrink: 0,
-  },
-  badgeStatus: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: Spacing.radius.full,
-    ...Spacing.curve,
-  },
-  teksBadge: {
-    fontSize: 10,
-    fontFamily: fonts.semibold,
   },
 });

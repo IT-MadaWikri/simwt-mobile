@@ -1,17 +1,16 @@
 /**
  * Helper tampilan Kaizen yang dipakai bersama layar daftar & detail.
  */
-import Colors, { brand, slate } from '../../constants/Colors';
+import { lencana } from '../../constants/Colors';
 
 /** Warna pil status. DITERIMA = menunggu penilaian. */
 export const WARNA_STATUS: Record<string, { bg: string; fg: string; label: string }> = {
-  DITERIMA: { bg: '#fffbeb', fg: '#b45309', label: 'Menunggu penilaian' },
-  DISETUJUI: { bg: brand[50], fg: brand[700], label: 'Disetujui' },
-  DITOLAK: { bg: '#fef2f2', fg: Colors.dangerDark, label: 'Ditolak' },
+  DITERIMA: { ...lencana.kuning, label: 'Menunggu penilaian' },
+  DISETUJUI: { ...lencana.hijau, label: 'Disetujui' },
+  DITOLAK: { ...lencana.merah, label: 'Ditolak' },
 };
 
-export const warnaStatus = (status: string) =>
-  WARNA_STATUS[status] ?? { bg: slate[100], fg: Colors.textSecondary, label: status };
+export const warnaStatus = (status: string) => WARNA_STATUS[status] ?? { ...lencana.abu, label: status };
 
 export const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
