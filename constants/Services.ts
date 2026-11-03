@@ -35,6 +35,8 @@ export interface ServiceItem {
   lencana?: number;
   /** Belum tersedia: tampil dengan badge "Soon" dan tidak bisa diketuk. */
   segera?: boolean;
+  /** `kode` entri menu di web (`menu_items`); tile tampil hanya bila server mengizinkannya. Kosong = semua pengguna. */
+  kodeMenu?: string;
 }
 
 export const SERVICES: ServiceItem[] = [
@@ -47,6 +49,7 @@ export const SERVICES: ServiceItem[] = [
     // Layar pertama tumpukan Kaizen adalah halaman menu (Kaizen saya / Butuh approval).
     route: '/kaizen',
     description: 'Continuous improvement',
+    kodeMenu: 'simmwt.kaizen',
   },
   {
     id: 'tiket-masalah',
@@ -56,6 +59,7 @@ export const SERVICES: ServiceItem[] = [
     iconColor: WARNA.koral.ikon,
     route: '/services/tiket',
     description: 'Sistem ticketing & helpdesk',
+    kodeMenu: 'simmwt.tiket',
   },
   {
     id: 'database-aset',
@@ -65,6 +69,7 @@ export const SERVICES: ServiceItem[] = [
     iconColor: WARNA.tosca.ikon,
     route: '/services/database-aset',
     description: 'Manajemen data aset perusahaan',
+    kodeMenu: 'simmwt.aset',
   },
   {
     id: 'layanan-it',
@@ -92,6 +97,7 @@ export const SERVICES: ServiceItem[] = [
     iconColor: WARNA.cyan.ikon,
     route: '/services/kegiatan',
     description: 'Booking ruangan meeting & kegiatan kantor',
+    kodeMenu: 'simmwt.kegiatan',
   },
   {
     id: 'pengukuran-qc',
@@ -101,6 +107,7 @@ export const SERVICES: ServiceItem[] = [
     iconColor: WARNA.ungu.ikon,
     route: '/services/pengukuran',
     description: 'Pengukuran part, draf & riwayat QC',
+    kodeMenu: 'qc',
   },
 ];
 
