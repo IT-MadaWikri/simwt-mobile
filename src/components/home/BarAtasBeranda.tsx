@@ -40,7 +40,7 @@ export default function BarAtasBeranda({ belumDibaca, tanpaLogo = false }: BarAt
           onPress={() => router.push('/(tabs)/notification')}
           accessibilityLabel="Notifikasi"
         >
-          <Icon name="bell-outline" size={24} color={Colors.ink} />
+          <Icon name="inbox" size={24} color={Colors.ink} />
           {belumDibaca > 0 && (
             <LencanaAngka jumlah={belumDibaca} ukuran={18} tepi={Colors.white} style={styles.badge} />
           )}
