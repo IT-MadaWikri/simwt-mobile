@@ -15,6 +15,7 @@ import BarAtasBeranda from '../../src/components/home/BarAtasBeranda';
 import ServiceGrid from '../../src/components/home/ServiceGrid';
 import NewsCarousel from '../../src/components/home/NewsCarousel';
 import BirthdayBanner from '../../src/components/home/BirthdayBanner';
+import { useUlangTahunHariIni } from '../../src/hooks/useUlangTahunHariIni';
 import BannerMaskot from '../../src/components/common/BannerMaskot';
 import { dialog } from '../../src/components/common/AppDialog';
 import { teksBagikanBerita } from '../../src/adapters/berita';
@@ -48,6 +49,7 @@ export default function HomeScreen() {
   };
   const router = useRouter();
   const berita = useDaftarBerita({ perHalaman: 5 });
+  const ulangTahun = useUlangTahunHariIni();
 
   // Suka/jumlah bisa berubah di layar lain; muat ulang (tanpa skeleton) saat beranda kembali fokus.
   const sudahFokus = useRef(false);
@@ -82,7 +84,12 @@ export default function HomeScreen() {
         <View style={styles.isi}>
           {/* Tepi atas memudar dari transparan ke putih, supaya header yang tertutup tidak terpotong tegas. */}
           <LinearGradient colors={['rgba(255,255,255,0)', Colors.white]} pointerEvents="none" style={styles.pudarAtas} />
-        <BirthdayBanner />
+        <BirthdayBanner
+          birthdays={ulangTahun.daftar}
+          idMengirim={ulangTahun.idMengirim}
+          sudahDiucapkan={ulangTahun.sudahDiucapkan}
+          onBeriSelamat={ulangTahun.beriSelamat}
+        />
 
         <ServiceGrid searchQuery={searchQuery} kodeMenu={kodeMenu} />
 

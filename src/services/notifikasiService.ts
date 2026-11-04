@@ -31,6 +31,7 @@ export function rupaNotifikasi(tipe: string): { icon: string; warna: 'brand' | '
   if (kunci.includes('kaizen')) return { icon: 'lightbulb-on-outline', warna: 'brand' };
   if (kunci.includes('aset') || kunci.includes('asset')) return { icon: 'database-outline', warna: 'brand' };
   if (kunci.includes('audit')) return { icon: 'clipboard-check-outline', warna: 'brand' };
+  if (kunci.includes('ulang tahun')) return { icon: 'cake-variant-outline', warna: 'brand' };
   if (kunci.includes('error') || kunci.includes('gagal')) return { icon: 'alert-circle-outline', warna: 'danger' };
   return { icon: 'bell-outline', warna: 'brand' };
 }
