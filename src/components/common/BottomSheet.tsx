@@ -31,9 +31,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BrandSpinner from './BrandSpinner';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
+import { useTinggiKeyboard } from '../../hooks/useTinggiKeyboard';
 import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 const TINGGI_PENUH = 0.85;
+/** Perkiraan tinggi handle + judul sheet, dikurangkan dari ruang di atas keyboard. */
+const TINGGI_KEPALA = 96;
 
 const DalamSheet = createContext(false);
 
@@ -97,6 +100,13 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
   const insets = useSafeAreaInsets();
   const { height: tinggiLayar } = useWindowDimensions();
   const ref = useRef<BottomSheetModal>(null);
+  const tinggiKeyboard = useTinggiKeyboard();
+  // Saat keyboard terbuka sheet terangkat tepat di atasnya; tinggi isi dibatasi ke ruang yang tersisa
+  // supaya bagian bawah (mis. hasil pencarian) tidak tertutup keyboard.
+  const maksIsi =
+    tinggiKeyboard > 0
+      ? Math.max(160, Math.min(tinggiLayar * TINGGI_PENUH, tinggiLayar - tinggiKeyboard - insets.top - TINGGI_KEPALA))
+      : tinggiLayar * TINGGI_PENUH;
 
   const visibleRef = useRef(visible);
   visibleRef.current = visible;
@@ -162,7 +172,7 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
       onDismiss={saatLepas}
       stackBehavior="push"
       enableDynamicSizing
-      maxDynamicContentSize={tinggiLayar * TINGGI_PENUH}
+      maxDynamicContentSize={maksIsi}
       topInset={insets.top}
       enablePanDownToClose
       keyboardBehavior="interactive"
