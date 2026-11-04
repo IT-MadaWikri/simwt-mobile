@@ -18,7 +18,7 @@ import LencanaStatusKeluarPabrik from '../../../src/components/layananHrd/Lencan
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailKeluarPabrik } from '../../../src/hooks/useKeluarPabrik';
 import {
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   ikon: { width: 40, height: 40, borderRadius: 20, backgroundColor: brand[50], alignItems: 'center', justifyContent: 'center' },
   judul: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
   barisStatus: { flexDirection: 'row', alignItems: 'center', marginVertical: 2 },
-  nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  nomor: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   catatan: {
     flexDirection: 'row',
     gap: Spacing.sm,
@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.md,
     ...Spacing.curve,
   },
-  teksCatatan: { flex: 1, fontFamily: fonts.regular, fontSize: 12 },
+  teksCatatan: { flex: 1, fontFamily: fonts.regular, fontSize: ukuranCatatan },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -195,6 +195,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border,
   },
-  label: { width: 88, fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  nilai: { flex: 1, fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  label: { width: 88, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
+  nilai: { flex: 1, fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
 });

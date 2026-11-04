@@ -9,7 +9,7 @@ import PolaMemphis from './PolaMemphis';
 import { MASKOT, PoseMaskot, RASIO_MASKOT } from './KeadaanKosong';
 import Colors, { brand, palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 
 const LATAR = { mint: brand[100], krem: palet.krem, limau: palet.limau } as const;
 
@@ -50,7 +50,7 @@ export default function BannerMaskot({
     >
       <View style={[styles.kartu, { backgroundColor: LATAR[warna], paddingRight: lebarMaskot + Spacing.xl }]}>
         <PolaMemphis variasi={0} />
-        {/* Sapaan besar di beranda juga pengecualian 12px; judul hero di sini 16. */}
+        {/* Sapaan besar di beranda juga pengecualian dari ukuran isi; judul hero di sini 16. */}
         <Text style={styles.judul}>
           {judul}
           {sorot ? (
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   teks: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
   },
   ajakan: {
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   labelAjakan: {
     fontFamily: fonts.bold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.ink,
   },
   maskot: {

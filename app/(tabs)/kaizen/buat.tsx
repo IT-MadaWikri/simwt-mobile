@@ -33,7 +33,7 @@ import SheetKaryawan from '../../../src/components/kaizen/SheetKaryawan';
 import EditorFoto, { FotoKaizen, TagFoto } from '../../../src/components/kaizen/EditorFoto';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { kaizenService } from '../../../src/services/kaizenService';
@@ -914,7 +914,7 @@ const styles = StyleSheet.create({
   },
   teksLangkah: {
     marginTop: 6,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textTertiary,
   },
@@ -929,7 +929,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -957,7 +957,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
   },
   hitung: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
     marginBottom: 6,
@@ -984,7 +984,7 @@ const styles = StyleSheet.create({
   },
   galat: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.danger,
   },
@@ -1014,7 +1014,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   nikOrang: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1065,7 +1065,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   teksPlant: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1110,7 +1110,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTag: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.semibold,
     color: Colors.white,
   },
@@ -1141,7 +1141,7 @@ const styles = StyleSheet.create({
     backgroundColor: brand[50],
   },
   teksBarisSumber: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -1153,7 +1153,7 @@ const styles = StyleSheet.create({
   ket: {
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1161,13 +1161,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   ringkasLabel: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   ringkasTema: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -1199,7 +1199,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   judulManfaat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },

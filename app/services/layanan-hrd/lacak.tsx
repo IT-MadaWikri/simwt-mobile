@@ -11,7 +11,7 @@ import FieldTeks from '../../../src/components/common/FieldTeks';
 import LencanaStatusKeluarPabrik from '../../../src/components/layananHrd/LencanaStatusKeluarPabrik';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useLacakKeluarPabrik } from '../../../src/hooks/useKeluarPabrik';
 import { LABEL_JENIS, formatRentangJam, formatTanggalKeluar, formatWaktuKeluarPabrik } from '../../../src/adapters/keluarPabrik';
@@ -86,6 +86,6 @@ const styles = StyleSheet.create({
   },
   judul: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
   baris: { gap: 2 },
-  label: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  nilai: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  label: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
+  nilai: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
 });

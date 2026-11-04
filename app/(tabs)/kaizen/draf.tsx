@@ -11,7 +11,7 @@ import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { drafKaizen, DrafKaizen } from '../../../src/utils/drafKaizen';
@@ -105,13 +105,13 @@ const styles = StyleSheet.create({
     backgroundColor: brand[50],
   },
   tema: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   meta: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },

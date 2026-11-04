@@ -11,7 +11,7 @@ import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { drafProduksi, DrafProduksi } from '../../../src/utils/drafProduksi';
@@ -108,6 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: brand[50],
   },
-  judul: { fontSize: 12, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
-  meta: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
+  judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
+  meta: { marginTop: 2, fontSize: ukuranCatatan, fontFamily: fonts.regular, color: Colors.textSecondary },
 });

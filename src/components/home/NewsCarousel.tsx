@@ -6,7 +6,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { Berita } from '../../types/berita';
 import BarisBerita from '../berita/BarisBerita';
 import Button from '../common/Button';
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   teksKosong: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
     textAlign: 'center',
   },

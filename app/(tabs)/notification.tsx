@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate, ubin } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
-import { fonts, fontsJudul } from '../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../constants/Typography';
 import { hostInternal, hostTautan } from '../../src/utils/tautan';
 import AppBar from '../../src/components/common/AppBar';
 import KeadaanKosong from '../../src/components/common/KeadaanKosong';
@@ -154,7 +154,7 @@ export default function NotifikasiScreen() {
           <View style={[gs.row, { gap: Spacing.lg, paddingHorizontal: Spacing.lg }]}>
             {adaBelumDibaca ? (
               <TouchableOpacity onPress={tandaiSemua}>
-                <Text style={{ color: Colors.white, fontSize: 12, fontFamily: fonts.semibold }}>
+                <Text style={{ color: Colors.white, fontSize: ukuranIsi, fontFamily: fonts.semibold }}>
                   Tandai semua dibaca
                 </Text>
               </TouchableOpacity>
@@ -317,13 +317,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   judul: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   teksAksi: {
     color: Colors.white,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
   },
   kanan: {
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   waktu: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },

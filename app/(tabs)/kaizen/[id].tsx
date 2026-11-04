@@ -32,7 +32,7 @@ import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenDetail } from '../../../src/types/kaizen';
@@ -533,12 +533,12 @@ const styles = StyleSheet.create({
   tema: {
     marginTop: Spacing.sm,
     marginBottom: 4,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   kecil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.md,
   },
   nama: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
   },
   judulSeksi: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef2f2',
   },
   judulAlasan: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.dangerDark,
     marginBottom: 2,
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTagFoto: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.semibold,
     color: Colors.white,
   },
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
   },
   ketBagikan: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
   },
   angka: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },

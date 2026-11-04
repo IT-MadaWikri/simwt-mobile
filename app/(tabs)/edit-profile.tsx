@@ -21,7 +21,7 @@ import Icon from '../../src/components/common/Icon';
 import { dialog } from '../../src/components/common/AppDialog';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
-import { fonts, fontsJudul } from '../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
 import { useAuth } from '../../src/contexts/AuthContext';
 
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   identitas: { alignItems: 'center', marginBottom: Spacing.xl },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   bagian: { marginBottom: Spacing.lg },
-  ket: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  ket: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   ketAtas: { marginBottom: Spacing.md },
   info: {
     flexDirection: 'row',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     ...Spacing.curve,
     backgroundColor: brand[50],
   },
-  teksInfo: { fontSize: 12, fontFamily: fonts.regular, color: brand[700] },
+  teksInfo: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: brand[700] },
   footer: {
     flexDirection: 'row',
     gap: Spacing.sm,

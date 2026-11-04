@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { karyawanService, Employee } from '../../../../src/services/karyawanService';
 import Colors, { brand, lencana, slate } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
-import { fonts, fontsJudul, judulAppBar } from '../../../../constants/Typography';
+import { fonts, fontsJudul, judulAppBar, ukuranIsi } from '../../../../constants/Typography';
 import AppBar from '../../../../src/components/common/AppBar';
 import { SkeletonDetail } from '../../../../src/components/common/Skeleton';
 
@@ -285,12 +285,12 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: Spacing.md,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: GOJEK_GREY,
   },
   errorText: {
     marginTop: Spacing.md,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: GOJEK_GREY,
     fontFamily: fonts.semibold,
   },
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: GOJEK_DARK,
   },
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: Colors.white,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
   },
   profileInfo: {
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileName: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.extrabold,
     color: GOJEK_DARK,
     marginBottom: 10,
@@ -421,12 +421,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   summaryLabel: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textTertiary,
     fontFamily: fonts.bold,
   },
   summaryValue: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.extrabold,
     color: brand[600],
   },
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.extrabold,
     color: GOJEK_DARK,
     marginLeft: 12,
@@ -480,13 +480,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
   },
   infoValue: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: GOJEK_DARK,
     marginTop: 2,

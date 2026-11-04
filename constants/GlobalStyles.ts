@@ -168,7 +168,7 @@ export const gs = StyleSheet.create({
     letterSpacing: letterSpacing.wide,
     marginBottom: Spacing.xs,
   },
-  /** Teks isi standar — 12px (lihat `ukuranIsi`). */
+  /** Teks isi standar — 14px (lihat `ukuranIsi`). */
   body: {
     fontFamily: fonts.regular,
     fontSize: sizes.sm,

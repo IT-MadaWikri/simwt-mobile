@@ -37,7 +37,7 @@ import { NilaiFilter } from '../../../src/hooks/useDaftarKaizen';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { Kaizen, KaizenPeringkat } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, relatif, warnaStatus } from '../../../src/utils/kaizen';
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   tanggal: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   judulTop: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nomorPeringkat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textSecondary,
   },
@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   judulDaftar: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
@@ -717,23 +717,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tema: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
   nilai: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   nilaiKecil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   tagText: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.medium,
     color: Colors.textSecondary,
   },
@@ -771,7 +771,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   kakiText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     letterSpacing: 0.4,
   },
@@ -804,12 +804,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   namaProfil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   nikProfil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -830,12 +830,12 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.border,
   },
   angkaStat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   labelStat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
     marginTop: 2,
@@ -856,7 +856,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   teksPilHutang: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
   },
   lencana: {
@@ -904,16 +904,16 @@ const styles = StyleSheet.create({
     width: 60,
   },
   labelLencana: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   gelarLencana: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.bold,
   },
   ketLencana: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },

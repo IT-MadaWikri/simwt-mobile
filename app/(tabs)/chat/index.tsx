@@ -15,7 +15,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import Icon from '../../../src/components/common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import Typography, { fonts, judulAppBar } from '../../../constants/Typography';
+import Typography, { fonts, judulAppBar, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { chatService } from '../../../src/services/chatService';
@@ -116,7 +116,7 @@ export default function DaftarChatScreen() {
               </Text>
               {kontak.ai && (
                 <View style={[gs.badge, gs.badgeBrand, styles.badgeAi]}>
-                  <Text style={[gs.badgeText, gs.badgeTextBrand, { fontSize: 12 }]}>AI</Text>
+                  <Text style={[gs.badgeText, gs.badgeTextBrand, { fontSize: ukuranIsi }]}>AI</Text>
                 </View>
               )}
             </View>

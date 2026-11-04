@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   judulKonfirmasi: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
   metrik: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
   judulSeksi: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',

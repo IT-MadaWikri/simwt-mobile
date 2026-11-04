@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   kosong: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.lg },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   bagian: { marginBottom: Spacing.lg },
   barisJam: { flexDirection: 'row', gap: Spacing.md },
   hapusJam: { alignSelf: 'flex-start' },
-  tautan: { fontFamily: fonts.semibold, fontSize: 12, color: brand[700] },
+  tautan: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: brand[700] },
   pemohon: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   ikonPemohon: { width: 36, height: 36, borderRadius: 18, backgroundColor: brand[50], alignItems: 'center', justifyContent: 'center' },
   namaPemohon: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  redup: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  redup: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   kartu: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   kartuAktif: { borderColor: brand[600], backgroundColor: brand[50] },
   labelKartu: { flex: 1, fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  galat: { fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',
     gap: Spacing.sm,

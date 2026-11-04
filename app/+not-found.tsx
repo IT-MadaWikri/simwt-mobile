@@ -2,7 +2,7 @@ import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
-import { fonts, fontsJudul } from '../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../constants/Typography';
 
 export default function NotFoundScreen() {
   return (
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.bold,
   },
   link: {
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   linkText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: '#2e78b7',
   },
 });

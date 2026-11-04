@@ -16,7 +16,7 @@ import Icon from '../../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, judulAppBar } from '../../../constants/Typography';
+import { fonts, judulAppBar, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { stoService, StoPaket, StoBaris } from '../../../src/services/stoService';
 import AppBar from '../../../src/components/common/AppBar';
@@ -102,7 +102,7 @@ export default function DetailLembarStoScreen() {
           ) : null}
         </View>
 
-        <Text style={[gs.title, { fontSize: 12, marginTop: 2 }]} numberOfLines={2}>
+        <Text style={[gs.title, { fontSize: ukuranIsi, marginTop: 2 }]} numberOfLines={2}>
           {item.nama_part ?? '-'}
         </Text>
 

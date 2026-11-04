@@ -13,7 +13,7 @@ import FieldPilihan from '../../../src/components/common/FieldPilihan';
 import SheetCari from '../../../src/components/common/SheetCari';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { usePencarian } from '../../../src/hooks/usePencarian';
 import { produksiService } from '../../../src/services/produksiService';
@@ -83,7 +83,7 @@ export default function PilihPasanganScreen() {
 const styles = StyleSheet.create({
   isi: { flex: 1, padding: Spacing.lg },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -98,9 +98,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
   },
-  nama: { fontSize: 12, fontFamily: fonts.bold, color: Colors.textPrimary },
-  nomor: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
-  ket: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  nama: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
+  nomor: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
+  ket: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   footer: {
     flexDirection: 'row',
     gap: Spacing.sm,

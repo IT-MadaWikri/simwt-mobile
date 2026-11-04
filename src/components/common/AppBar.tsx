@@ -1,5 +1,5 @@
 /**
- * AppBar — app bar standar SIMMWT: hijau, judul putih 14px bold, tombol
+ * AppBar — app bar standar SIMMWT: hijau, judul putih 18px bold (`judulAppBar`), tombol
  * kembali `TombolKembali`. Satu-satunya sumber gaya header di aplikasi.
  *
  * Di dalam layar:

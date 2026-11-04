@@ -7,7 +7,7 @@ import Icon from './Icon';
 import PolaMemphis from './PolaMemphis';
 import Colors, { brand, palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 
 const KEPALA = {
   putri: require('../../../assets/images/maskot/kepala-putri.png'),
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
   isi: { flex: 1 },
   judul: {
     fontFamily: fontsJudul.bold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.ink,
   },
   teks: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
   },
   panah: {

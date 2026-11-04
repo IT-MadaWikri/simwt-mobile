@@ -16,7 +16,7 @@ import LencanaStatusRequestAkun from '../../../src/components/layananIt/LencanaS
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailRequestAkun } from '../../../src/hooks/useDetailRequestAkun';
 import { LABEL_METODE, formatWaktuRequest, langkahRequestAkun } from '../../../src/adapters/requestAkun';
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
   judul: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
   barisSistem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginVertical: 2 },
   flexMenyusut: { flexShrink: 1 },
-  sistem: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  sistem: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
+  nomor: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   catatan: {
     flexDirection: 'row',
     gap: Spacing.sm,
@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.md,
     ...Spacing.curve,
   },
-  teksCatatan: { flex: 1, fontFamily: fonts.regular, fontSize: 12 },
+  teksCatatan: { flex: 1, fontFamily: fonts.regular, fontSize: ukuranCatatan },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -151,6 +151,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border,
   },
-  label: { width: 88, fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  nilai: { flex: 1, fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  label: { width: 88, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
+  nilai: { flex: 1, fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
 });

@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   kosong: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.lg },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   ikonPemohon: { width: 36, height: 36, borderRadius: 18, backgroundColor: brand[50], alignItems: 'center', justifyContent: 'center' },
   namaPemohon: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  redup: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  redup: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   metode: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   metodeAktif: { borderColor: brand[600], backgroundColor: brand[50] },
   labelMetode: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  galat: { fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',
     gap: Spacing.sm,

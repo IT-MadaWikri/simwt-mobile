@@ -73,5 +73,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
-  ket: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  ket: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
 });

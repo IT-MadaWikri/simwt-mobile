@@ -6,7 +6,7 @@
 import React from 'react';
 import { Image, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Colors from '../../../constants/Colors';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 
 const PALET = [
   '#0ea5e9', '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#e11d48',
@@ -45,7 +45,7 @@ export default function Avatar({ nama, ukuran = 40, foto, style }: AvatarProps) 
       <Text
         style={[
           styles.huruf,
-          { fontSize: 12, lineHeight: ukuran, height: ukuran },
+          { fontSize: ukuranIsi, lineHeight: ukuran, height: ukuran },
         ]}
       >
         {inisialNama(nama)}

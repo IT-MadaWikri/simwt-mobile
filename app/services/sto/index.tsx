@@ -13,7 +13,7 @@ import Button from '../../../src/components/common/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, judulAppBar } from '../../../constants/Typography';
+import { fonts, judulAppBar, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { stoService, StoLembar, StoPeriode } from '../../../src/services/stoService';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
@@ -207,7 +207,7 @@ export default function StoScreen() {
                               </Text>
                             </View>
                           </View>
-                          <Text style={[gs.metric, { fontSize: 12 }]}>{persen}%</Text>
+                          <Text style={[gs.metric, { fontSize: ukuranIsi }]}>{persen}%</Text>
                         </View>
 
                         {/* Bilah progres — sepadan dengan yang ada di web,

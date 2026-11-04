@@ -160,13 +160,13 @@ const styles = StyleSheet.create({
   },
   label: {
     flexShrink: 1,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.medium,
     color: Colors.textTertiary,
   },
   hemat: {
     flex: 1,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
   },
   teks: {

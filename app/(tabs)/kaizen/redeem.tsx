@@ -15,7 +15,7 @@ import { dialog } from '../../../src/components/common/AppDialog';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate, gradasiPalet, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenGift, KaizenPoin } from '../../../src/types/kaizen';
@@ -163,12 +163,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  labelPoin: { fontSize: 12, fontFamily: fonts.regular, color: Colors.ink },
-  nilaiPoin: { fontSize: 12, fontFamily: fonts.bold, color: Colors.ink },
+  labelPoin: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.ink },
+  nilaiPoin: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.ink },
   judul: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
@@ -206,5 +206,5 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.sm,
   },
-  caption: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, marginTop: 2 },
+  caption: { fontSize: ukuranCatatan, fontFamily: fonts.regular, color: Colors.textTertiary, marginTop: 2 },
 });

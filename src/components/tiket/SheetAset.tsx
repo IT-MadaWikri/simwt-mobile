@@ -9,7 +9,7 @@ import BottomSheet from '../common/BottomSheet';
 import Icon from '../common/Icon';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { AsetRingkas } from '../../types/tiket';
 
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     ...inputReset,
   },
-  info: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, paddingVertical: Spacing.lg, textAlign: 'center' },
+  info: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary, paddingVertical: Spacing.lg, textAlign: 'center' },
   baris: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -94,6 +94,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: slate[200],
   },
-  nama: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  nama: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  sub: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
 });

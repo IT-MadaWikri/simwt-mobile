@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 interface BarisAsetProps {
   nama: string;
@@ -56,6 +56,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   isi: { flex: 1, gap: 2 },
-  judul: { fontFamily: fontsJudul.semibold, fontSize: 12, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  judul: { fontFamily: fontsJudul.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  sub: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textTertiary },
 });

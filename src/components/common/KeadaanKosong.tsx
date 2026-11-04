@@ -7,7 +7,7 @@ import { ReactNode } from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 
 export const MASKOT = {
   salam: require('../../../assets/images/maskot/putri-salam.png'),
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   teks: {
     marginTop: Spacing.xs,
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
     textAlign: 'center',
   },

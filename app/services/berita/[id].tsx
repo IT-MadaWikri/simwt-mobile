@@ -16,13 +16,13 @@ import Icon from '../../../src/components/common/Icon';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { tanggalBerita, teksBagikanBerita } from '../../../src/adapters/berita';
 import { useDetailBerita } from '../../../src/hooks/useDetailBerita';
 
 // Gaya isi artikel: Poppins 12px seperti teks lain; judul bagian memakai varian bold.
-const baseStyle = { fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, color: Colors.textSecondary };
+const baseStyle = { fontFamily: fonts.regular, fontSize: ukuranIsi, lineHeight: 20, color: Colors.textSecondary };
 const tagsStyles = {
   p: { marginTop: 0, marginBottom: Spacing.md },
   h2: { fontFamily: fontsJudul.bold, fontWeight: 'normal' as const, fontSize: 16, lineHeight: 24, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
     flexShrink: 1,
   },

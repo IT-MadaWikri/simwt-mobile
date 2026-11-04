@@ -12,7 +12,7 @@ import KeadaanKosong from '../../../../src/components/common/KeadaanKosong';
 import { SkeletonBaris } from '../../../../src/components/common/Skeleton';
 import Colors, { brand } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../../constants/Typography';
 import { gs, inputReset } from '../../../../constants/GlobalStyles';
 import { useDetailPart } from '../../../../src/hooks/useDetailPart';
 
@@ -108,8 +108,8 @@ export default function PilihProsesScreen() {
 
 const styles = StyleSheet.create({
   kepala: { gap: 2, paddingHorizontal: Spacing.screenPadding, paddingTop: Spacing.md },
-  nama: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  nama: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  sub: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
   barisCari: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.screenPadding, paddingVertical: Spacing.md },
   kotakCari: { height: 36, paddingVertical: 0, paddingHorizontal: Spacing.md, gap: 6 },
   cari: { flex: 1, paddingVertical: 0, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textPrimary, ...inputReset },

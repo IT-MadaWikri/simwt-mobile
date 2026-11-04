@@ -1,6 +1,7 @@
 /**
  * QuickStats — deretan kartu metrik ringkas di beranda.
  */
+import { ukuranIsi } from '../../../constants/Typography';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
@@ -86,6 +87,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   value: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
   },
 });

@@ -13,12 +13,8 @@
  * menimpa file font yang benar dan hasilnya tidak konsisten dengan iOS. Pakai
  * varian family-nya (`semibold`, `bold`, …), bukan `fontWeight`.
  *
- * Skala ukuran mengikuti kebutuhan mobile ala Gojek (padat, mudah dipindai),
- * bukan skala desktop karir-mwt.
- *
- * Teks UI ringkas — sapaan & subjudul header, input pencarian, label kecil —
- * memakai `sizes.sm` (12px). Bedakan hierarki lewat varian family
- * (`bold` vs `regular`), bukan lewat ukuran.
+ * Skala ukuran memakai standar umum aplikasi mobile: isi 14, catatan/caption 12,
+ * judul kartu 16, judul app bar 18, lalu 20/24/28 untuk judul besar.
  */
 
 /** Teks isi (body, label, nama, angka, tombol) — **Inter**. */
@@ -39,29 +35,29 @@ export const fontsJudul = {
   extrabold: 'Poppins_800ExtraBold',
 } as const;
 
-/**
- * Ukuran teks isi konten (body, keterangan, input, chip, tombol) — STANDAR
- * design system: 12px. Judul memakai ukuran lebih besar; caption 11px.
- */
-export const ukuranIsi = 12;
+/** Ukuran teks isi (body, input, label, tombol, nama) — 14px. */
+export const ukuranIsi = 14;
+
+/** Ukuran teks catatan (caption, meta, waktu, lencana, keterangan kecil) — 12px. */
+export const ukuranCatatan = 12;
 
 /** Gaya judul app bar — dipakai SEMUA header supaya ukurannya seragam. */
-export const judulAppBar = { fontFamily: fontsJudul.bold, fontSize: 12 } as const;
+export const judulAppBar = { fontFamily: fontsJudul.bold, fontSize: 18 } as const;
 
 export const Typography = {
   fonts,
   fontsJudul,
 
-  /** Ukuran font (px). Semua 12 — hierarki dibedakan lewat varian family, bukan ukuran. */
+  /** Ukuran font (px): xs caption, sm/md isi, lg judul kartu, xl–display judul besar. */
   sizes: {
     xs: 12,
-    sm: 12,
-    md: 12,
-    lg: 12,
-    xl: 12,
-    xxl: 12,
-    xxxl: 12,
-    display: 12,
+    sm: 14,
+    md: 14,
+    lg: 16,
+    xl: 18,
+    xxl: 20,
+    xxxl: 24,
+    display: 28,
   },
 
   /**

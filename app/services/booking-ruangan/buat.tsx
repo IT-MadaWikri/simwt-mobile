@@ -216,7 +216,7 @@ export default function BuatBookingScreen() {
 const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: slate[50],
   },
   namaPeserta: { flex: 1, fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  galat: { fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',
     gap: Spacing.sm,

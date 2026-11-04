@@ -4,7 +4,7 @@ import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View, useWindowDim
 import Icon from '../common/Icon';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { SlideDrawing } from '../../utils/pengukuran';
 
 const TINGGI = 200;
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   slide: { height: TINGGI, backgroundColor: slate[100] },
   gambar: { width: '100%', height: '100%' },
   kosong: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.sm },
-  teks: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  teks: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   jumlah: {
     position: 'absolute',
     bottom: Spacing.sm,
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
     backgroundColor: 'rgba(0,0,0,0.55)',
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.white,
     overflow: 'hidden',
   },

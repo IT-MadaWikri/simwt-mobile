@@ -9,7 +9,7 @@ import Icon from '../common/Icon';
 import LencanaStatusTiket from './LencanaStatusTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { StatusTiket } from '../../types/tiket';
 
 interface RingkasanTiketProps {
@@ -102,12 +102,12 @@ const styles = StyleSheet.create({
   judul: {
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.bold,
     color: Colors.textPrimary,
   },
-  kecil: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
-  isi: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
+  kecil: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
+  isi: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
   chipBaris: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   chip: {
     flexDirection: 'row',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
     maxWidth: '100%',
   },
-  chipTeks: { fontSize: 12, fontFamily: fonts.semibold },
+  chipTeks: { fontSize: ukuranCatatan, fontFamily: fonts.semibold },
   orang: { marginTop: Spacing.md, gap: Spacing.sm },
   kartuOrang: {
     flexDirection: 'row',
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.md,
     ...Spacing.curve,
   },
-  peran: { fontSize: 12, fontFamily: fonts.semibold },
+  peran: { fontSize: ukuranIsi, fontFamily: fonts.semibold },
   nama: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
   barisInfo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginTop: Spacing.sm },
   ubinIkon: {

@@ -13,7 +13,7 @@ import Avatar from '../common/Avatar';
 import PolaMemphis from '../common/PolaMemphis';
 import Colors, { palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranCatatan, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import type { Employee } from '../../services/karyawanService';
 
@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
   },
   petunjuk: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
   },
   bannerTitle: {
     fontFamily: fonts.bold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.ink,
   },
 
@@ -157,12 +157,12 @@ const styles = StyleSheet.create({
   },
   nama: {
     fontFamily: fonts.semibold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
   meta: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
   },
 });

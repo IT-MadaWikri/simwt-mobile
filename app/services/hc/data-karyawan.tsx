@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, lencana, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { Employee, karyawanService } from '../../../src/services/karyawanService';
-import { fonts, judulAppBar } from '../../../constants/Typography';
+import { fonts, judulAppBar, ukuranIsi } from '../../../constants/Typography';
 import AppBar from '../../../src/components/common/AppBar';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { inputReset } from '../../../constants/GlobalStyles';
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
     ...inputReset,
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   avatarInitial: {
     color: Colors.white,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
   },
   cardContent: {
@@ -196,13 +196,13 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
   },
   nameText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   roleText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
     marginBottom: 6,
   },
@@ -230,6 +230,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: Spacing.md,
     color: Colors.textSecondary,
-    fontSize: 12,
+    fontSize: ukuranIsi,
   },
 });

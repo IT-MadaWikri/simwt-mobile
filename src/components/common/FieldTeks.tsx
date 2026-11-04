@@ -76,5 +76,5 @@ const styles = StyleSheet.create({
   inputBanyakBaris: { minHeight: 76, textAlignVertical: 'top' },
   inputGalat: { borderColor: Colors.danger },
   inputMati: { color: Colors.textSecondary, backgroundColor: slate[100] },
-  galat: { marginTop: 4, fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { marginTop: 4, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
 });

@@ -8,7 +8,7 @@ import Icon from '../common/Icon';
 import LencanaStatusKeluarPabrik from './LencanaStatusKeluarPabrik';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { StatusKeluarPabrik } from '../../types/layananHrd';
 
 interface KartuKeluarPabrikProps {
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   ikon: { width: 36, height: 36, borderRadius: 18, backgroundColor: brand[50], alignItems: 'center', justifyContent: 'center' },
   isi: { flex: 1, gap: 2 },
   atas: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  judul: { flex: 1, fontFamily: fontsJudul.bold, fontSize: 12, color: Colors.textPrimary },
-  teks: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  redup: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  judul: { flex: 1, fontFamily: fontsJudul.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  teks: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
+  redup: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
 });

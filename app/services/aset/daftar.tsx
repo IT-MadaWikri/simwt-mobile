@@ -143,6 +143,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: brand[600],
   },
-  jumlah: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, paddingBottom: Spacing.sm },
+  jumlah: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary, paddingBottom: Spacing.sm },
   pemisah: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginHorizontal: Spacing.screenPadding },
 });

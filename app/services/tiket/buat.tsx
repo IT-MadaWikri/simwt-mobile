@@ -265,7 +265,7 @@ export default function BuatTiketScreen() {
 const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   judulBagian: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   field: { marginBottom: Spacing.md },
   label: { fontSize: ukuranIsi, fontFamily: fonts.medium, color: Colors.textPrimary, marginBottom: 6 },
   wajib: { color: Colors.danger },
-  hitung: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, marginBottom: 6 },
+  hitung: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary, marginBottom: 6 },
   input: {
     borderWidth: 1,
     borderColor: Colors.border,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   textArea: { minHeight: 120, textAlignVertical: 'top' },
   inputGalat: { borderColor: Colors.danger },
-  galat: { marginTop: 4, fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { marginTop: 4, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',
     gap: Spacing.sm,
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     borderColor: brand[200],
     backgroundColor: brand[50],
   },
-  teksSumber: { fontSize: 12, fontFamily: fonts.semibold, color: brand[700] },
+  teksSumber: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: brand[700] },
   gambar: { width: '100%', height: '100%' },
   hapusFoto: {
     position: 'absolute',
@@ -341,10 +341,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
   },
-  namaAset: { fontSize: 12, fontFamily: fonts.bold, color: Colors.textPrimary },
-  nomorAset: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
-  ketAset: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
-  ket: { marginTop: Spacing.sm, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  namaAset: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
+  nomorAset: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
+  ketAset: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
+  ket: { marginTop: Spacing.sm, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   footer: {
     flexDirection: 'row',
     gap: Spacing.sm,

@@ -19,7 +19,7 @@ import TimelineHari from '../../../src/components/booking/TimelineHari';
 import SheetBooking from '../../../src/components/booking/SheetBooking';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useKalenderBooking } from '../../../src/hooks/useKalenderBooking';
 import { acaraKalenderBooking, kategoriBooking, rentangJam, teksBagikanBooking, warnaRuangan } from '../../../src/adapters/bookingRuangan';
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   segmen: { flexDirection: 'row', padding: 3, borderRadius: Spacing.radius.full, backgroundColor: slate[100] },
   pilihanSegmen: { paddingHorizontal: Spacing.lg, height: 34, justifyContent: 'center', borderRadius: Spacing.radius.full },
   pilihanAktif: { backgroundColor: Colors.white },
-  teksSegmen: { fontFamily: fonts.medium, fontSize: 12, color: Colors.textSecondary },
+  teksSegmen: { fontFamily: fonts.medium, fontSize: ukuranIsi, color: Colors.textSecondary },
   teksSegmenAktif: { fontFamily: fonts.bold, color: brand[700] },
   judulDaftar: {
     fontFamily: fontsJudul.bold,

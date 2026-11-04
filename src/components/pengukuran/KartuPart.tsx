@@ -4,7 +4,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 interface KartuPartProps {
   id: number;
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   gambar: { width: '100%', height: '100%' },
   isi: { flex: 1, gap: 2 },
-  judul: { fontFamily: fontsJudul.semibold, fontSize: 12, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  proses: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  judul: { fontFamily: fontsJudul.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  sub: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
+  proses: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
 });

@@ -19,7 +19,7 @@ import { Skeleton, SkeletonBaris } from '../../../src/components/common/Skeleton
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { ServiceItem } from '../../../constants/Services';
 import { useAuth } from '../../../src/contexts/AuthContext';
@@ -269,12 +269,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   nilaiPoin: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     ...Spacing.curve,
   },
   teksPil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
   },
   fotoHadiah: {
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   hargaHadiah: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: brand[700],
   },
@@ -335,13 +335,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tema: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },

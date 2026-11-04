@@ -4,7 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 interface KartuDrafProps {
   judul: string;
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   },
   ikon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: brand[50] },
   isi: { flex: 1, gap: 2 },
-  judul: { fontFamily: fontsJudul.semibold, fontSize: 12, color: Colors.textPrimary },
-  meta: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  waktu: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  judul: { fontFamily: fontsJudul.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  meta: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
+  waktu: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textTertiary },
 });

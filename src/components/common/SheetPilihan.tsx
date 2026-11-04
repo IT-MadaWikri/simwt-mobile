@@ -8,7 +8,7 @@ import BottomSheet from './BottomSheet';
 import Icon from './Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 
 interface Opsi {
   id: number;
@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border,
   },
-  label: { flex: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textPrimary },
+  label: { flex: 1, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textPrimary },
   labelAktif: { fontFamily: fonts.semibold, color: brand[700] },
 });

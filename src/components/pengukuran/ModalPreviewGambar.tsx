@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../common/Icon';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { SlideDrawing } from '../../utils/pengukuran';
 
 interface ModalPreviewGambarProps {
@@ -81,5 +81,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  jumlah: { position: 'absolute', alignSelf: 'center', fontFamily: fonts.semibold, fontSize: 12, color: Colors.white },
+  jumlah: { position: 'absolute', alignSelf: 'center', fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.white },
 });

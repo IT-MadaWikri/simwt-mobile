@@ -31,7 +31,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BrandSpinner from './BrandSpinner';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 const TINGGI_PENUH = 0.85;
 
@@ -212,12 +212,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fontsJudul.bold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
   subtitle: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
     marginTop: 2,
   },

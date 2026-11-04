@@ -6,7 +6,7 @@ import LencanaJudgment from './LencanaJudgment';
 import Lencana from '../common/Lencana';
 import Colors, { brand, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { formatTanggalWaktu } from '../../utils/pengukuran';
 import { DetailTerkirim, KelompokHasil, SampelTerkirim, TahapApproval } from '../../types/pengukuran';
 
@@ -210,14 +210,14 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderSubtle,
     backgroundColor: Colors.white,
   },
-  judulSeksi: { fontFamily: fontsJudul.bold, fontSize: 12, color: Colors.textPrimary },
+  judulSeksi: { fontFamily: fontsJudul.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
   judulBaris: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
   kode: { flex: 1, fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: Spacing.md },
   info: { width: '50%', gap: 2, paddingRight: Spacing.md },
-  label: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  nilai: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  label: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
+  nilai: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  sub: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
   lot: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   grup: { overflow: 'hidden' },
   grupGaris: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border },
   kepalaGrup: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: Spacing.md },
-  periode: { fontFamily: fonts.bold, fontSize: 12, color: brand[700] },
+  periode: { fontFamily: fonts.bold, fontSize: ukuranIsi, color: brand[700] },
   hasil: { gap: 4, paddingBottom: Spacing.md },
   keterangan: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
   judulHasil: { flexDirection: 'row', alignItems: 'center', gap: 6 },

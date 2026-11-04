@@ -15,7 +15,7 @@ import LencanaStatusTiket from '../src/components/tiket/LencanaStatusTiket';
 import { SkeletonDetail } from '../src/components/common/Skeleton';
 import Colors, { slate } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../constants/Typography';
 import { gs } from '../constants/GlobalStyles';
 import { useAsetScan } from '../src/hooks/useAsetScan';
 import { statusAman, tiketAktif } from '../src/adapters/tiket';
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xs,
   },
   judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.bold, color: Colors.textPrimary },
-  sub: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary, marginTop: 2 },
+  sub: { fontSize: ukuranCatatan, fontFamily: fonts.regular, color: Colors.textSecondary, marginTop: 2 },
   barisNomor: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   chipBaris: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs, marginTop: Spacing.sm },
   chip: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
     maxWidth: '100%',
   },
-  chipTeks: { fontSize: 12, fontFamily: fonts.semibold },
+  chipTeks: { fontSize: ukuranCatatan, fontFamily: fonts.semibold },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs },
   ubin: {
@@ -270,11 +270,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
-  nilai: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  label: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
+  nilai: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
 
   judulSeksi: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
@@ -284,12 +284,12 @@ const styles = StyleSheet.create({
   judulBaris: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: 2 },
   barisSpek: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingVertical: 7 },
   garis: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border },
-  labelSpek: { width: 100, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
-  nilaiSpek: { flex: 1, textAlign: 'right', fontSize: 12, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  labelSpek: { width: 100, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
+  nilaiSpek: { flex: 1, textAlign: 'right', fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
 
   deskripsi: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary, lineHeight: 18 },
   barisRiwayat: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingVertical: Spacing.sm },
-  teksRiwayat: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  teksRiwayat: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
   kosong: { alignItems: 'center', gap: Spacing.xs, paddingVertical: Spacing.lg },
 
   footer: {

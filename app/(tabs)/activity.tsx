@@ -25,7 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate, ubin } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
-import { fonts, fontsJudul } from '../../constants/Typography';
+import { fonts, fontsJudul, ukuranCatatan, ukuranIsi } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
   approvalService,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipTeks: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.semibold,
     color: Colors.textSecondary,
   },
@@ -326,13 +326,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   judul: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     maxWidth: '30%',
   },
   waktu: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   teksAksi: {
     color: Colors.white,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
   },
 });

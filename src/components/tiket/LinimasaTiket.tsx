@@ -9,7 +9,7 @@ import Icon from '../common/Icon';
 import ZoomFoto from './ZoomFoto';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { LangkahLinimasa } from '../../types/tiket';
 
 const waktu = (iso: string) =>
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   tiang: { flex: 1, width: 1.5, marginVertical: 3, backgroundColor: slate[200] },
   isi: { flex: 1, gap: 2 },
   judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
-  teks: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
-  waktu: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  teks: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
+  waktu: { fontSize: ukuranCatatan, fontFamily: fonts.regular, color: Colors.textTertiary },
   foto: { gap: 4, marginTop: 2 },
   part: {
     flexDirection: 'row',
