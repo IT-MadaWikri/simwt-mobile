@@ -67,27 +67,35 @@ export default function SheetKaryawan({ visible, judul, onClose, onPilih }: Prop
           : null;
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title={judul}>
-      <View style={styles.isi}>
-        <View style={[gs.searchBar, styles.cari]}>
-          <Icon name="magnify" size={16} color={Colors.textTertiary} />
-          <InputSheet
-            style={styles.input}
-            placeholder="Cari nama atau NIK"
-            placeholderTextColor={Colors.placeholder}
-            value={q}
-            onChangeText={setQ}
-            autoFocus
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          {q ? (
-            <TouchableOpacity onPress={() => setQ('')} hitSlop={10} accessibilityLabel="Hapus pencarian">
-              <Icon name="close-circle" size={16} color={Colors.textTertiary} />
-            </TouchableOpacity>
-          ) : null}
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      title={judul}
+      penuh
+      kepalaTetap={
+        <View style={styles.kepalaCari}>
+          <View style={gs.searchBar}>
+            <Icon name="magnify" size={16} color={Colors.textTertiary} />
+            <InputSheet
+              style={styles.input}
+              placeholder="Cari nama atau NIK"
+              placeholderTextColor={Colors.placeholder}
+              value={q}
+              onChangeText={setQ}
+              autoFocus
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {q ? (
+              <TouchableOpacity onPress={() => setQ('')} hitSlop={10} accessibilityLabel="Hapus pencarian">
+                <Icon name="close-circle" size={16} color={Colors.textTertiary} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
         </View>
-
+      }
+    >
+      <View style={styles.isi}>
         {memuat ? (
           <View style={styles.memuat}>
             <ActivityIndicator size="small" color={Colors.primary} />
@@ -123,8 +131,9 @@ const styles = StyleSheet.create({
   isi: {
     paddingHorizontal: Spacing.lg,
   },
-  cari: {
-    marginBottom: Spacing.sm,
+  kepalaCari: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
   },
   input: {
     flex: 1,
