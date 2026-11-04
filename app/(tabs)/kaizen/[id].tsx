@@ -224,7 +224,7 @@ export default function KaizenDetailScreen() {
   ];
 
   return (
-    <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
       {/* Hanya Kaizen yang sudah disetujui yang layak dibagikan. Share sheet bawaan OS (WA, FB, dll). */}
       <AppBar
         judul="Detail Kaizen"

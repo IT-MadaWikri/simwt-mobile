@@ -1,3 +1,6 @@
+import { ubin } from './Colors';
+import type { NamaIkonSolid } from '../src/components/common/IkonSolid';
+
 // Warna layanan: `ikon` = warna dasar yang cerah (ubin kaca di ServiceIcon diturunkan darinya,
 // glifnya putih), `latar` = tint pucatnya untuk tempat lain (mis. halaman layanan).
 const pucat = (hex: string) => {
@@ -17,6 +20,18 @@ const WARNA = {
   cyan: warna('#14b8d4'),
 };
 
+// Pasangan ubin datar per hue, berkunci warna `ikon` di atas (sumber nilai: `ubin` di Colors.ts).
+export const UBIN: Record<string, { latar: string; glif: string }> = {
+  [WARNA.jingga.ikon]: ubin.jingga,
+  [WARNA.koral.ikon]: ubin.koral,
+  [WARNA.tosca.ikon]: ubin.tosca,
+  [WARNA.ungu.ikon]: ubin.ungu,
+  [WARNA.biru.ikon]: ubin.biru,
+  [WARNA.pink.ikon]: ubin.pink,
+  [WARNA.hijau.ikon]: ubin.hijau,
+  [WARNA.cyan.ikon]: ubin.cyan,
+};
+
 /**
  * SIMWT Mobile — layanan di grid beranda.
  * Hanya modul yang dipakai saat ini (7). Layanan tanpa layar khusus dibuka
@@ -27,6 +42,8 @@ export interface ServiceItem {
   id: string;
   name: string;
   icon: string;
+  /** Ikon solid Streamline untuk ubin grid (lihat `IkonSolid`); bila kosong dipakai `icon` (Lucide). */
+  ikonSolid?: NamaIkonSolid;
   backgroundColor: string;
   iconColor: string;
   route: string;
@@ -44,6 +61,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'kaizen',
     name: 'Kaizen',
     icon: 'lightbulb-on-outline',
+    ikonSolid: 'lightbulb',
     backgroundColor: WARNA.jingga.latar,
     iconColor: WARNA.jingga.ikon,
     // Layar pertama tumpukan Kaizen adalah halaman menu (Kaizen saya / Butuh approval).
@@ -55,6 +73,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'tiket-masalah',
     name: 'Tiket\nMasalah',
     icon: 'ticket-confirmation-outline',
+    ikonSolid: 'tickets',
     backgroundColor: WARNA.koral.latar,
     iconColor: WARNA.koral.ikon,
     route: '/services/tiket',
@@ -65,6 +84,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'database-aset',
     name: 'Aset',
     icon: 'database-outline',
+    ikonSolid: 'database',
     backgroundColor: WARNA.tosca.latar,
     iconColor: WARNA.tosca.ikon,
     route: '/services/database-aset',
@@ -75,6 +95,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'layanan-it',
     name: 'Layanan\nIT',
     icon: 'headset',
+    ikonSolid: 'customer-support-5',
     backgroundColor: WARNA.pink.latar,
     iconColor: WARNA.pink.ikon,
     route: '/services/layanan-it',
@@ -84,6 +105,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'layanan-hrd',
     name: 'Layanan\nHRD',
     icon: 'account-group-outline',
+    ikonSolid: 'user-collaborate-group',
     backgroundColor: WARNA.hijau.latar,
     iconColor: WARNA.hijau.ikon,
     route: '/services/layanan-hrd',
@@ -93,6 +115,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'kegiatan',
     name: 'Kegiatan',
     icon: 'calendar-clock-outline',
+    ikonSolid: 'blank-calendar',
     backgroundColor: WARNA.cyan.latar,
     iconColor: WARNA.cyan.ikon,
     route: '/services/kegiatan',
@@ -103,6 +126,7 @@ export const SERVICES: ServiceItem[] = [
     id: 'pengukuran-qc',
     name: 'Pengukuran\nQC',
     icon: 'gauge',
+    ikonSolid: 'dashboard-gauge-1',
     backgroundColor: WARNA.ungu.latar,
     iconColor: WARNA.ungu.ikon,
     route: '/services/pengukuran',

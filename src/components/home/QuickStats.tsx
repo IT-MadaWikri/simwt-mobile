@@ -4,7 +4,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
-import Colors, { brand } from '../../../constants/Colors';
+import { ubin } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
 import SectionHeader from '../common/SectionHeader';
@@ -22,29 +22,29 @@ const STATS: StatItem[] = [
     icon: 'ticket-outline',
     label: 'Tiket Open',
     value: '5',
-    color: Colors.dangerDark,
-    bgColor: Colors.serviceRed,
+    color: ubin.koral.glif,
+    bgColor: ubin.koral.latar,
   },
   {
     icon: 'clipboard-check-outline',
     label: 'Audit',
     value: '2',
-    color: brand[600],
-    bgColor: brand[50],
+    color: ubin.hijau.glif,
+    bgColor: ubin.hijau.latar,
   },
   {
     icon: 'lightbulb-on-outline',
     label: 'Kaizen',
     value: '8',
-    color: '#b45309',
-    bgColor: Colors.serviceAmber,
+    color: ubin.jingga.glif,
+    bgColor: ubin.jingga.latar,
   },
   {
     icon: 'calendar-check-outline',
     label: 'Kegiatan',
     value: '3',
-    color: '#c2410c',
-    bgColor: Colors.serviceOrange,
+    color: ubin.cyan.glif,
+    bgColor: ubin.cyan.latar,
   },
 ];
 

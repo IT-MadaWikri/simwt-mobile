@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.md,
     padding: Spacing.sm,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.borderSubtle,
     borderRadius: Spacing.radius.md,
     ...Spacing.curve,
   },

@@ -1,28 +1,27 @@
 /**
  * ServiceIcon — satu item pada grid layanan beranda.
  *
- * Bentuk grid 4 kolom dengan ubin squircle ini sengaja dipertahankan dari gaya
- * Gojek; yang berubah hanya font, radius, dan warna lencana agar mengikuti
- * karir-mwt.
+ * Ubin squircle datar: latar pastel dari hue layanan, glif tebal dalam versi
+ * gelap hue yang sama (gaya Streamline Flex Solid). Keduanya diturunkan dari
+ * `service.iconColor` (pasangan `UBIN` di Services.ts), jadi pemanggil tidak perlu warna tambahan.
  */
 import LencanaAngka from './LencanaAngka';
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Icon from './Icon';
-import { BlurTargetView, BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
+import IkonSolid from './IkonSolid';
 import { useRouter } from 'expo-router';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import Typography, { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import { ServiceItem } from '../../../constants/Services';
+import { ServiceItem, UBIN } from '../../../constants/Services';
 
-/** Campur warna hex #rrggbb dengan putih; `bagian` 0 = warna asli, 1 = putih. */
-const cerahkan = (hex: string, bagian: number, alfa = 1) => {
+/** Campur warna hex #rrggbb dengan `target` (putih/hitam); `bagian` 0 = warna asli, 1 = target. */
+const campur = (hex: string, target: number, bagian: number) => {
   const n = parseInt(hex.slice(1), 16);
-  const kanal = (geser: number) => Math.round(((n >> geser) & 255) * (1 - bagian) + 255 * bagian);
-  return `rgba(${kanal(16)},${kanal(8)},${kanal(0)},${alfa})`;
+  const kanal = (geser: number) => Math.round(((n >> geser) & 255) * (1 - bagian) + target * bagian);
+  return `rgb(${kanal(16)},${kanal(8)},${kanal(0)})`;
 };
 
 interface ServiceIconProps {
@@ -35,8 +34,6 @@ interface ServiceIconProps {
 export default function ServiceIcon({ service, size = 'medium', onPress }: ServiceIconProps) {
   const router = useRouter();
   const skala = useRef(new Animated.Value(1)).current;
-  // Ubin belakang = bahan yang dikaburkan oleh ubin depan (wajib di Android lewat BlurTargetView).
-  const sasaranBlur = useRef<View | null>(null);
 
   // Bounce: mengecil saat disentuh, lalu memantul melewati 1 saat dilepas.
   const tekan = () =>
@@ -44,14 +41,13 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
   const lepas = () =>
     Animated.spring(skala, { toValue: 1, speed: 14, bounciness: 18, useNativeDriver: true }).start();
 
-  const iconSize = size === 'small' ? 20 : size === 'large' ? 30 : 24;
-  const containerSize = size === 'small' ? 44 : size === 'large' ? 64 : 54;
-  // Dua ubin kaca bertumpuk: ubin depan di kiri-bawah, ubin belakang yang lebih pucat bergeser ke kanan-atas.
-  const ubin = containerSize - 10;
-  // Efek kaca (warna cerah, glif putih): ubin belakang lebih pucat, ubin depan tembus pandang (warna belakang terlihat di baliknya)
-  // dengan kilap putih di sudut kiri-atas dan tepi putih tipis.
-  const belakang = [cerahkan(service.iconColor, 0.4), cerahkan(service.iconColor, 0.1)] as const;
-  const depan = [cerahkan(service.iconColor, 0.1, 0.92), cerahkan(service.iconColor, 0, 0.92)] as const;
+  const iconSize = size === 'small' ? 24 : size === 'large' ? 36 : 30;
+  const containerSize = size === 'small' ? 44 : size === 'large' ? 64 : 56;
+  // Hue di luar palet (mis. dari layar lain) jatuh ke turunan otomatis.
+  const { latar: latarUbin, glif: warnaGlif } = UBIN[service.iconColor] ?? {
+    latar: campur(service.iconColor, 255, 0.62),
+    glif: campur(service.iconColor, 0, 0.5),
+  };
 
   // Selalu ikuti `route` yang didefinisikan di constants/Services.ts —
   // dulu tujuan dirakit dari `id` dengan satu pengecualian ber-hardcode untuk
@@ -85,37 +81,12 @@ export default function ServiceIcon({ service, size = 'medium', onPress }: Servi
       activeOpacity={0.7}
     >
       <Animated.View style={[styles.iconWrapper, { transform: [{ scale: skala }] }]}>
-        <View style={{ width: containerSize, height: containerSize }}>
-          <BlurTargetView ref={sasaranBlur} style={StyleSheet.absoluteFill}>
-            <LinearGradient
-              colors={belakang}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.ubin, styles.ubinBelakang, { width: ubin, height: ubin }]}
-            />
-          </BlurTargetView>
-          <BlurView
-            blurTarget={sasaranBlur}
-            blurMethod="dimezisBlurView"
-            intensity={30}
-            blurReductionFactor={4}
-            tint="default"
-            style={[styles.ubin, styles.ubinDepan, { width: ubin, height: ubin }]}
-          >
-            <LinearGradient
-              colors={depan}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <LinearGradient
-              colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0.7, y: 0.7 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Icon name={service.icon} size={iconSize} color={Colors.white} />
-          </BlurView>
+        <View style={[styles.ubin, { width: containerSize, height: containerSize, backgroundColor: latarUbin }]}>
+          {service.ikonSolid ? (
+            <IkonSolid name={service.ikonSolid} size={iconSize} color={warnaGlif} />
+          ) : (
+            <Icon name={service.icon} size={iconSize} color={warnaGlif} strokeWidth={2.4} />
+          )}
         </View>
         {renderBadge()}
       </Animated.View>
@@ -143,22 +114,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   ubin: {
-    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: Spacing.radius.sm,
+    borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
-  },
-  ubinBelakang: {
-    top: 0,
-    right: 0,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
-  },
-  ubinDepan: {
-    bottom: 0,
-    left: 0,
-    overflow: 'hidden',
   },
   badge: {
     position: 'absolute',

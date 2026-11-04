@@ -10,7 +10,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Icon from '../../src/components/common/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand, slate } from '../../constants/Colors';
+import Colors, { brand, slate, ubin } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
 import { fonts } from '../../constants/Typography';
@@ -45,9 +45,9 @@ function jarakWaktu(iso: string | null): string {
 const adaTujuan = (n: Notifikasi) => n.tipe.toLowerCase().includes('kaizen');
 
 const WARNA = {
-  brand: { tile: brand[50], icon: brand[600] },
-  warning: { tile: Colors.serviceAmber, icon: '#b45309' },
-  danger: { tile: Colors.serviceRed, icon: Colors.dangerDark },
+  brand: { tile: ubin.hijau.latar, icon: ubin.hijau.glif },
+  warning: { tile: ubin.jingga.latar, icon: ubin.jingga.glif },
+  danger: { tile: ubin.koral.latar, icon: ubin.koral.glif },
 };
 
 export default function NotifikasiScreen() {
@@ -216,7 +216,7 @@ export default function NotifikasiScreen() {
 
   if (memuat) {
     return (
-      <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
         {appBar}
         <SkeletonBaris jumlah={8} />
       </View>
@@ -224,7 +224,7 @@ export default function NotifikasiScreen() {
   }
 
   return (
-    <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
       {appBar}
       <FlatList
         data={daftar}
