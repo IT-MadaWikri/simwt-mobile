@@ -18,7 +18,7 @@
  * Kolom ketik di dalam sheet memakai `InputSheet` (bukan `TextInput`) supaya keyboard tertangani.
  */
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BackHandler, Platform, StyleSheet, Text, TextInput, TextInputProps, useWindowDimensions, View } from 'react-native';
+import { BackHandler, StyleSheet, Text, TextInput, TextInputProps, useWindowDimensions, View } from 'react-native';
 import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
@@ -174,9 +174,6 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
       enableDynamicSizing
       maxDynamicContentSize={maksIsi}
       topInset={insets.top}
-      // Android edge-to-edge tidak mengecilkan jendela saat keyboard muncul, jadi gorhom (mode
-      // adjustResize) tidak mengangkat sheet. Angkat sendiri setinggi keyboard.
-      bottomInset={Platform.OS === 'android' ? tinggiKeyboard : 0}
       enablePanDownToClose
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
