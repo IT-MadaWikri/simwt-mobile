@@ -6,6 +6,13 @@
 import '../src/utils/kunciSkalaFont';
 import { useFonts } from 'expo-font';
 import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from '@expo-google-fonts/inter';
+import {
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
@@ -130,6 +137,11 @@ export default function RootLayout() {
   // Nama key di sini menjadi nama `fontFamily` yang dipakai di style —
   // harus sama persis dengan nilai di `constants/Typography.ts`.
   const [loaded, error] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,

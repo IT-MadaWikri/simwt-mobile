@@ -9,7 +9,7 @@ import Icon from '../common/Icon';
 import Lencana from '../common/Lencana';
 import Colors, { lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 
 export const IKON = { offline: 'door-open', online: 'video-outline', luar: 'map-marker-outline' } as const;
 
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   isi: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   ikon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   teks: { flex: 1 },
-  judul: { fontFamily: fonts.bold, fontSize: 12, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 12, color: Colors.textPrimary },
   jam: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, marginTop: 2 },
   bagikan: {
     width: 32,

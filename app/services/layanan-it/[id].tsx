@@ -16,7 +16,7 @@ import LencanaStatusRequestAkun from '../../../src/components/layananIt/LencanaS
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailRequestAkun } from '../../../src/hooks/useDetailRequestAkun';
 import { LABEL_METODE, formatWaktuRequest, langkahRequestAkun } from '../../../src/adapters/requestAkun';
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   kosong: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.lg },
   kepala: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, marginBottom: Spacing.md },
   ikon: { width: 40, height: 40, borderRadius: 20, backgroundColor: brand[50], alignItems: 'center', justifyContent: 'center' },
-  judul: { fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
   barisSistem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginVertical: 2 },
   flexMenyusut: { flexShrink: 1 },
   sistem: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   teksCatatan: { flex: 1, fontFamily: fonts.regular, fontSize: 12 },
   judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

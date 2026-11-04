@@ -20,7 +20,7 @@ import SheetKonfirmasiTiket from '../../../src/components/tiket/SheetKonfirmasiT
 import SheetBagikanTiket from '../../../src/components/tiket/SheetBagikanTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailTiket } from '../../../src/hooks/useDetailTiket';
 import { useKonfirmasiTiket } from '../../../src/hooks/useKonfirmasiTiket';
@@ -201,11 +201,11 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderSubtle,
   },
   linimasa: { maxHeight: 320 },
-  judulKonfirmasi: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  judulKonfirmasi: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
   metrik: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
   judulSeksi: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

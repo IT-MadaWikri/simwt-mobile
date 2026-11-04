@@ -5,7 +5,7 @@ import Icon from '../common/Icon';
 import LencanaStatusTiket from '../tiket/LencanaStatusTiket';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { StatusTiket } from '../../types/tiket';
 
 interface BarisAsetTiketAktifProps {
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   isi: { flex: 1, gap: 2 },
-  judul: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.semibold, fontSize: 12, color: Colors.textPrimary },
   sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
   kanan: { alignItems: 'flex-end', gap: 4, flexShrink: 0 },
 });

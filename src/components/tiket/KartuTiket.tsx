@@ -5,7 +5,7 @@ import Icon from '../common/Icon';
 import LencanaStatusTiket, { WARNA_STATUS_TIKET } from './LencanaStatusTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { STATUS_TIKET } from '../../adapters/tiket';
 import { StatusTiket } from '../../types/tiket';
 import { BULAN } from '../../utils/kaizen';
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   isi: { flex: 1, gap: 2 },
-  judul: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.semibold, fontSize: 12, color: Colors.textPrimary },
   nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
   meta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginTop: 2 },
   potongan: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },

@@ -15,7 +15,7 @@ import LencanaStatusTiket from '../src/components/tiket/LencanaStatusTiket';
 import { SkeletonDetail } from '../src/components/common/Skeleton';
 import Colors, { slate } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
-import { fonts, ukuranIsi } from '../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../constants/Typography';
 import { gs } from '../constants/GlobalStyles';
 import { useAsetScan } from '../src/hooks/useAsetScan';
 import { statusAman, tiketAktif } from '../src/adapters/tiket';
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     marginTop: Spacing.xs,
   },
-  judul: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
+  judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.bold, color: Colors.textPrimary },
   sub: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary, marginTop: 2 },
   barisNomor: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   chipBaris: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs, marginTop: Spacing.sm },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
 
   judulSeksi: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

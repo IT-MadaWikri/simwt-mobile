@@ -19,7 +19,7 @@ import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useBuatRequestAkun } from '../../../src/hooks/useBuatRequestAkun';
 import { pakaiDetailAkses } from '../../../src/adapters/requestAkun';
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   kosong: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.lg },
   judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

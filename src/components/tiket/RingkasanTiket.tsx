@@ -9,7 +9,7 @@ import Icon from '../common/Icon';
 import LencanaStatusTiket from './LencanaStatusTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { StatusTiket } from '../../types/tiket';
 
 interface RingkasanTiketProps {
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
     fontSize: 12,
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     color: Colors.textPrimary,
   },
   kecil: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },

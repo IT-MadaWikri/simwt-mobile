@@ -32,7 +32,7 @@ import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenDetail } from '../../../src/types/kaizen';
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   },
   judulSeksi: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   },
   judulJejak: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   alasan: {
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   },
   judulAlasan: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.dangerDark,
     marginBottom: 2,
   },
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   },
   judulBagikan: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   ketBagikan: {

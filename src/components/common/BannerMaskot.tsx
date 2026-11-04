@@ -9,7 +9,7 @@ import PolaMemphis from './PolaMemphis';
 import { MASKOT, PoseMaskot, RASIO_MASKOT } from './KeadaanKosong';
 import Colors, { brand, palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 
 const LATAR = { mint: brand[100], krem: palet.krem, limau: palet.limau } as const;
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
   judul: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 16,
     lineHeight: 24,
     color: Colors.ink,

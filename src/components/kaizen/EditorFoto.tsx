@@ -23,7 +23,7 @@ import Icon from '../common/Icon';
 import Button from '../common/Button';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 
 export type TagFoto = 'sebelum' | 'sesudah';
 
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   judul: {
     fontSize: 12,
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     color: Colors.white,
   },
   area: {

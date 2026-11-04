@@ -25,7 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate, ubin } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
-import { fonts } from '../../constants/Typography';
+import { fonts, fontsJudul } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
   approvalService,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   },
   judul: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   sub: {

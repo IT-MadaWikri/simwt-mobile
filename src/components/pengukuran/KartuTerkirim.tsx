@@ -5,7 +5,7 @@ import Icon from '../common/Icon';
 import LencanaJudgment from './LencanaJudgment';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { Judgement } from '../../types/pengukuran';
 
 interface KartuTerkirimProps {
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   isi: { flex: 1, gap: 2 },
-  judul: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.semibold, fontSize: 12, color: Colors.textPrimary },
   sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
   waktu: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
 });

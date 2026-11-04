@@ -15,7 +15,7 @@ import { dialog } from '../../../src/components/common/AppDialog';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate, gradasiPalet, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenGift, KaizenPoin } from '../../../src/types/kaizen';
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   kosong: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },

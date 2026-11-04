@@ -10,7 +10,7 @@ import Icon from '../common/Icon';
 import TeksBergulir from '../common/TeksBergulir';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { RingkasanAsetData } from '../../types/aset';
 
 interface RingkasanAsetProps {
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   cincinBesar: { width: UKURAN_DONAT, height: UKURAN_DONAT },
   isiLebar: { flex: 1, gap: 2 },
-  judulLebar: { fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
+  judulLebar: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
   subLebar: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
   nilaiKanan: { alignItems: 'flex-end' },
   // Angka hero di kanan: pengecualian aturan 12px.

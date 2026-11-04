@@ -11,7 +11,7 @@ import { Skeleton } from '../common/Skeleton';
 import LencanaStatusKeluarPabrik from './LencanaStatusKeluarPabrik';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { GerbangKeluarPabrik, HasilGerbang } from '../../types/layananHrd';
 import { LABEL_JENIS, formatDurasiMenit, formatRentangJam, formatTanggalKeluar, formatWaktuKeluarPabrik } from '../../adapters/keluarPabrik';
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   labelKotak: { fontFamily: fonts.regular, fontSize: 11, color: Colors.textTertiary },
   waktuKotak: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary, marginTop: 1 },
   hasil: { flexDirection: 'row', gap: Spacing.sm, padding: Spacing.md, marginBottom: Spacing.md, borderRadius: Spacing.radius.lg, ...Spacing.curve },
-  judulHasil: { fontFamily: fonts.bold, fontSize: 12 },
+  judulHasil: { fontFamily: fontsJudul.bold, fontSize: 12 },
   pesanHasil: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, marginTop: 1 },
   tombol: { marginTop: Spacing.lg },
   galat: { alignItems: 'center', paddingVertical: Spacing.xl },

@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { karyawanService, Employee } from '../../../../src/services/karyawanService';
 import Colors, { brand, lencana, slate } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
-import { fonts, judulAppBar } from '../../../../constants/Typography';
+import { fonts, fontsJudul, judulAppBar } from '../../../../constants/Typography';
 import AppBar from '../../../../src/components/common/AppBar';
 import { SkeletonDetail } from '../../../../src/components/common/Skeleton';
 
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontFamily: fonts.extrabold,
+    fontFamily: fontsJudul.extrabold,
     color: GOJEK_DARK,
     marginLeft: 12,
     letterSpacing: 0.5,

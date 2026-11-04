@@ -6,7 +6,7 @@ import FieldPilihan from '../common/FieldPilihan';
 import ChipPilihan from './ChipPilihan';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { DAFTAR_PERIODE_NON_FINAL, PILIHAN_SHIFT } from '../../../constants/Pengukuran';
 import { Periode } from '../../types/pengukuran';
 
@@ -72,7 +72,7 @@ export default function FormInfoPengukuran({
 
 const styles = StyleSheet.create({
   wadah: { padding: Spacing.screenPadding, backgroundColor: Colors.white },
-  judul: { marginBottom: 6, fontSize: ukuranIsi, fontFamily: fonts.medium, color: Colors.textPrimary },
+  judul: { marginBottom: 6, fontSize: ukuranIsi, fontFamily: fontsJudul.medium, color: Colors.textPrimary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: Spacing.lg },
   info: {
     gap: 4,

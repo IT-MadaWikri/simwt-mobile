@@ -37,7 +37,7 @@ import { NilaiFilter } from '../../../src/hooks/useDaftarKaizen';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { Kaizen, KaizenPeringkat } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, relatif, warnaStatus } from '../../../src/utils/kaizen';
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   judulSeksi: {
     marginTop: Spacing.sm,
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   chips: {
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   judulTop: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   kosongTop: {
@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
   },
   judulDaftar: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   card: {
@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
   },
   judulHutang: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textSecondary,
   },
   pilHutang: {

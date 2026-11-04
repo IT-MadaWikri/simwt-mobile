@@ -6,7 +6,7 @@ import LencanaJudgment from './LencanaJudgment';
 import Lencana from '../common/Lencana';
 import Colors, { brand, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { formatTanggalWaktu } from '../../utils/pengukuran';
 import { DetailTerkirim, KelompokHasil, SampelTerkirim, TahapApproval } from '../../types/pengukuran';
 
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderSubtle,
     backgroundColor: Colors.white,
   },
-  judulSeksi: { fontFamily: fonts.bold, fontSize: 12, color: Colors.textPrimary },
+  judulSeksi: { fontFamily: fontsJudul.bold, fontSize: 12, color: Colors.textPrimary },
   judulBaris: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
   kode: { flex: 1, fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: Spacing.md },

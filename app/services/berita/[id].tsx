@@ -16,7 +16,7 @@ import Icon from '../../../src/components/common/Icon';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { tanggalBerita, teksBagikanBerita } from '../../../src/adapters/berita';
 import { useDetailBerita } from '../../../src/hooks/useDetailBerita';
@@ -25,8 +25,8 @@ import { useDetailBerita } from '../../../src/hooks/useDetailBerita';
 const baseStyle = { fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, color: Colors.textSecondary };
 const tagsStyles = {
   p: { marginTop: 0, marginBottom: Spacing.md },
-  h2: { fontFamily: fonts.bold, fontWeight: 'normal' as const, fontSize: 16, lineHeight: 24, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
-  h3: { fontFamily: fonts.bold, fontWeight: 'normal' as const, fontSize: 14, lineHeight: 22, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
+  h2: { fontFamily: fontsJudul.bold, fontWeight: 'normal' as const, fontSize: 16, lineHeight: 24, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
+  h3: { fontFamily: fontsJudul.bold, fontWeight: 'normal' as const, fontSize: 14, lineHeight: 22, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
   strong: { fontFamily: fonts.bold, fontWeight: 'normal' as const },
   b: { fontFamily: fonts.bold, fontWeight: 'normal' as const },
   a: { color: Colors.primary, textDecorationLine: 'underline' as const },
@@ -122,8 +122,8 @@ export default function BeritaDetailScreen() {
           source={{ html: berita.isi }}
           baseStyle={baseStyle}
           tagsStyles={tagsStyles}
-          // Font Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
-          systemFonts={[fonts.regular, fonts.bold]}
+          // Font Inter/Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
+          systemFonts={[fonts.regular, fonts.bold, fontsJudul.bold]}
         />
 
         <BagikanSosmed
@@ -152,7 +152,7 @@ export default function BeritaDetailScreen() {
 
 const styles = StyleSheet.create({
   judul: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 20,
     lineHeight: 28,
     color: Colors.textPrimary,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderSubtle,
   },
   judulTerkait: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 14,
     color: Colors.textPrimary,
     marginBottom: Spacing.xs,

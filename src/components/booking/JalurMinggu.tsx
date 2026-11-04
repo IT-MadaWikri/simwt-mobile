@@ -7,7 +7,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { NAMA_BULAN, NAMA_HARI, SINGKATAN_HARI, harianPekan, kunciTanggal, sama } from '../../utils/kalender';
 
 interface JalurMingguProps {
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
   },
   sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  judul: { fontFamily: fonts.bold, fontSize: 18, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 18, color: Colors.textPrimary },
   hari: { fontFamily: fonts.regular, color: Colors.textSecondary },
   panah: { width: 32, height: 32, borderRadius: Spacing.radius.full, alignItems: 'center', justifyContent: 'center' },
   baris: { flexDirection: 'row', paddingHorizontal: Spacing.sm, paddingBottom: Spacing.sm },

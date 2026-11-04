@@ -7,7 +7,7 @@ import { Animated, ImageBackground, StyleSheet, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "../../../constants/Colors";
 import Spacing from "../../../constants/Spacing";
-import Typography, { fonts } from "../../../constants/Typography";
+import Typography, { fonts, fontsJudul } from "../../../constants/Typography";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCuaca } from "../../hooks/useCuaca";
 import Icon from "../common/Icon";
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   // Sapaan besar: pengecualian dari aturan 12px, khusus puncak beranda.
   title: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 18,
     color: Colors.textPrimary,
   },

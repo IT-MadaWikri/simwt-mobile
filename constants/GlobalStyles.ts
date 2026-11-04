@@ -31,7 +31,7 @@
 import { Platform, StyleSheet, TextStyle } from 'react-native';
 import Colors, { brand, lencana, slate } from './Colors';
 import Spacing from './Spacing';
-import Typography, { fonts } from './Typography';
+import Typography, { fonts, fontsJudul } from './Typography';
 
 const { sizes, lineHeights, letterSpacing } = Typography;
 
@@ -126,34 +126,34 @@ export const gs = StyleSheet.create({
     color: Colors.textPrimary,
   },
   h1: {
-    fontFamily: fonts.extrabold,
+    fontFamily: fontsJudul.extrabold,
     fontSize: sizes.xxxl,
     lineHeight: sizes.xxxl * lineHeights.tight,
     color: Colors.textPrimary,
     letterSpacing: letterSpacing.tight,
   },
   h2: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: sizes.xxl,
     lineHeight: sizes.xxl * lineHeights.tight,
     color: Colors.textPrimary,
   },
   h3: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: sizes.xl,
     lineHeight: sizes.xl * lineHeights.tight,
     color: Colors.textPrimary,
   },
   /** Judul kartu / baris daftar. */
   title: {
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     fontSize: sizes.lg,
     lineHeight: sizes.lg * lineHeights.normal,
     color: Colors.textPrimary,
   },
   /** Judul blok konten — padanan `.section-title h2` (hijau, tebal). */
   sectionTitle: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: sizes.xl,
     lineHeight: sizes.xl * lineHeights.tight,
     color: brand[700],

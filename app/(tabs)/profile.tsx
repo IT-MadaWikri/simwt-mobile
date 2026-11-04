@@ -15,7 +15,7 @@ import { biometric } from '../../src/utils/biometric';
 import Colors, { gradasiLembut } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { fonts } from '../../constants/Typography';
+import { fonts, fontsJudul } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import Button from '../../src/components/common/Button';
 
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   judulHalaman: {
     textAlign: 'center',
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 12,
     color: Colors.textPrimary,
     marginBottom: Spacing.lg,

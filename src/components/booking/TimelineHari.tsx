@@ -8,7 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { sama } from '../../utils/kalender';
 import { rentangJamTampil, susunKolom } from '../../utils/timelineBooking';
 
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   kartuDalam: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.xs },
-  judul: { fontFamily: fonts.bold, fontSize: 12, color: Colors.ink },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 12, color: Colors.ink },
   kategori: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
   baris: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   jam: { flexShrink: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },

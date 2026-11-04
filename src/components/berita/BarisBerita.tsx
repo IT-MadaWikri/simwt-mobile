@@ -6,7 +6,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { labelKategori } from '../../adapters/berita';
 import { relatif } from '../../utils/kaizen';
 import { Berita } from '../../types/berita';
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   judul: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 12,
     lineHeight: 18,
     color: Colors.textPrimary,

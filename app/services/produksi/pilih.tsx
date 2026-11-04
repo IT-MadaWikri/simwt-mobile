@@ -13,7 +13,7 @@ import FieldPilihan from '../../../src/components/common/FieldPilihan';
 import SheetCari from '../../../src/components/common/SheetCari';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { usePencarian } from '../../../src/hooks/usePencarian';
 import { produksiService } from '../../../src/services/produksiService';
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   isi: { flex: 1, padding: Spacing.lg },
   judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

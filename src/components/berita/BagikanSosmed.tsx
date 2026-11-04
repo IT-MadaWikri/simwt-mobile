@@ -8,7 +8,7 @@ import { Linking, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-
 import { FontAwesome6 } from '@expo/vector-icons';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 
 interface BagikanSosmedProps {
   teks: string;
@@ -56,7 +56,7 @@ export default function BagikanSosmed({ teks, onGagal }: BagikanSosmedProps) {
 const styles = StyleSheet.create({
   wadah: { marginTop: Spacing.lg },
   judul: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 12,
     color: Colors.textPrimary,
     marginBottom: Spacing.sm,

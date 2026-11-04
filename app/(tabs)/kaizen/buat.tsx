@@ -33,7 +33,7 @@ import SheetKaryawan from '../../../src/components/kaizen/SheetKaryawan';
 import EditorFoto, { FotoKaizen, TagFoto } from '../../../src/components/kaizen/EditorFoto';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { kaizenService } from '../../../src/services/kaizenService';
@@ -930,7 +930,7 @@ const styles = StyleSheet.create({
   },
   judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1200,7 +1200,7 @@ const styles = StyleSheet.create({
   },
   judulManfaat: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   segmen: {

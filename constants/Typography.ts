@@ -1,10 +1,11 @@
 /**
  * SIMWT Mobile — Sistem tipografi.
  *
- * Memakai **Poppins**, font yang sama dengan portal karir `karir-mwt`
- * (di sana lewat `next/font/google`, di sini lewat `@expo-google-fonts/poppins`).
- * Font di-load di `app/_layout.tsx`; nama family di bawah HARUS sama persis
- * dengan key yang didaftarkan ke `useFonts()` di sana.
+ * Dua keluarga: **Inter** untuk teks isi (`fonts`) dan **Poppins** untuk judul
+ * (`fontsJudul`, sama dengan portal karir `karir-mwt`). Keduanya dari
+ * `@expo-google-fonts/*`, di-load di `app/_layout.tsx`; nama family di bawah
+ * HARUS sama persis dengan key yang didaftarkan ke `useFonts()` di sana.
+ * Teks yang bukan judul memakai `fonts`; style berjudul memakai `fontsJudul`.
  *
  * React Native tidak punya konsep "font global" seperti CSS `body { font-family }`,
  * jadi setiap style teks wajib menyebut `fontFamily` sendiri. Jangan menulis
@@ -20,7 +21,17 @@
  * (`bold` vs `regular`), bukan lewat ukuran.
  */
 
+/** Teks isi (body, label, nama, angka, tombol) — **Inter**. */
 export const fonts = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  extrabold: 'Inter_800ExtraBold',
+} as const;
+
+/** Judul (app bar, judul sheet/dialog/bagian/kartu, h1–h3) — **Poppins**. */
+export const fontsJudul = {
   regular: 'Poppins_400Regular',
   medium: 'Poppins_500Medium',
   semibold: 'Poppins_600SemiBold',
@@ -35,10 +46,11 @@ export const fonts = {
 export const ukuranIsi = 12;
 
 /** Gaya judul app bar — dipakai SEMUA header supaya ukurannya seragam. */
-export const judulAppBar = { fontFamily: fonts.bold, fontSize: 12 } as const;
+export const judulAppBar = { fontFamily: fontsJudul.bold, fontSize: 12 } as const;
 
 export const Typography = {
   fonts,
+  fontsJudul,
 
   /** Ukuran font (px). Semua 12 — hierarki dibedakan lewat varian family, bukan ukuran. */
   sizes: {

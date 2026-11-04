@@ -23,7 +23,7 @@ import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useBuatBooking } from '../../../src/hooks/useBuatBooking';
 import { kunciTanggal } from '../../../src/utils/kalender';
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

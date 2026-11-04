@@ -21,7 +21,7 @@ import PilihPeriode from '../../../src/components/pengukuran/PilihPeriode';
 import SegmenPengukuran, { Segmen } from '../../../src/components/pengukuran/SegmenPengukuran';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { usePengukuranEntry } from '../../../src/hooks/usePengukuranEntry';
 
@@ -175,6 +175,6 @@ const styles = StyleSheet.create({
   nama: { fontFamily: fonts.bold, fontSize: 16, color: Colors.textPrimary },
   sub: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   isi: { padding: Spacing.screenPadding, backgroundColor: Colors.white },
-  judul: { marginBottom: Spacing.sm, fontFamily: fonts.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  judul: { marginBottom: Spacing.sm, fontFamily: fontsJudul.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
   tombolDrawing: { position: 'absolute', right: Spacing.lg, bottom: Spacing.lg },
 });

@@ -8,7 +8,7 @@ import ChipPilihan from './ChipPilihan';
 import Icon from '../common/Icon';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 
 export interface ItemPilihan {
@@ -92,7 +92,7 @@ export default function BagianCariPilihan({
 
 const styles = StyleSheet.create({
   bagian: { marginBottom: Spacing.lg },
-  judul: { marginTop: Spacing.sm, fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  judul: { marginTop: Spacing.sm, fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingTop: 6, paddingBottom: Spacing.sm },
   kotakCari: { height: 36, paddingVertical: 0, paddingHorizontal: Spacing.md, gap: 6, marginTop: 6 },
   cari: { flex: 1, paddingVertical: 0, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textPrimary, ...inputReset },

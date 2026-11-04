@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Poppins punya ruang atas/bawah yang tidak simetris; padding font Android
+  // Inter bisa punya ruang atas/bawah yang tidak simetris; padding font Android
   // dimatikan dan kotak teks dibuat setinggi lingkaran agar inisial pas di tengah.
   huruf: {
     fontFamily: fonts.bold,

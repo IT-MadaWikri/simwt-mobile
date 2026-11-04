@@ -21,7 +21,7 @@ import Icon from '../../src/components/common/Icon';
 import { dialog } from '../../src/components/common/AppDialog';
 import Colors, { brand } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
-import { fonts } from '../../constants/Typography';
+import { fonts, fontsJudul } from '../../constants/Typography';
 import { gs } from '../../constants/GlobalStyles';
 import { useAuth } from '../../src/contexts/AuthContext';
 
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   identitas: { alignItems: 'center', marginBottom: Spacing.xl },
   judulBagian: {
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

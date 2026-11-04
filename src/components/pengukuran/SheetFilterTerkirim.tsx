@@ -10,7 +10,7 @@ import FieldTanggal from '../common/FieldTanggal';
 import ChipPilihan from './ChipPilihan';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { ModeFilter, NilaiFilterTerkirim } from '../../hooks/useDaftarTerkirim';
 import { FilterTerkirim } from '../../types/pengukuran';
@@ -87,6 +87,6 @@ export default function SheetFilterTerkirim({ visible, aktif, memuat, onTerapkan
 }
 
 const styles = StyleSheet.create({
-  judulSeksi: { marginTop: Spacing.sm, fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  judulSeksi: { marginTop: Spacing.sm, fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', paddingTop: 6, paddingBottom: Spacing.sm, gap: 6 },
 });

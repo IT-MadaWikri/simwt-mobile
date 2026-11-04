@@ -8,7 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul } from '../../../constants/Typography';
 import { NAMA_BULAN, NAMA_HARI, SINGKATAN_HARI, kunciTanggal, sama, selBulan } from '../../utils/kalender';
 
 interface KalenderBulanProps {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.md,
   },
-  judul: { fontFamily: fonts.bold, fontSize: 18, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 18, color: Colors.textPrimary },
   sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
   panah: {
     width: 32,
