@@ -32,6 +32,7 @@ import { biometric } from '../src/utils/biometric';
 import { jalankanSetelahTransisi } from '../src/utils/useSetelahTransisi';
 import { dialog } from '../src/components/common/AppDialog';
 import Button from '../src/components/common/Button';
+import { versiAplikasi } from '../src/utils/versiAplikasi';
 
 const MASKOT = require('../assets/images/maskot-login.png');
 const RASIO_MASKOT = 213 / 340;
@@ -281,7 +282,7 @@ export default function LoginScreen() {
         </Animated.View>
 
         <View style={[gs.center, styles.kaki]}>
-          <Text style={gs.caption}>SIMWT Mobile v1.0.0</Text>
+          <Text style={gs.caption}>SIMWT Mobile v{versiAplikasi}</Text>
         </View>
         </View>
       </ScrollView>
