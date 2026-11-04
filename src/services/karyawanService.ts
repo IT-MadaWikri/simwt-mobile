@@ -17,9 +17,18 @@ export interface Employee {
   tanggal_masuk_kerja?: string;
   umur?: string | number;
   status_karyawan?: string;
+  /** Hanya di daftar ulang tahun: baris ini milik pengguna yang sedang login. */
+  diri?: boolean;
+  /** Hanya di daftar ulang tahun: ucapan hari ini dari pengguna ini sudah terkirim. */
+  sudah_diucapkan?: boolean;
 }
 
 export const karyawanService = {
+  /** Kirim notifikasi ucapan ke karyawan yang berulang tahun; nama pengirim ditentukan server. */
+  beriUcapanUlangTahun: async (idKaryawan: number): Promise<void> => {
+    await api.post(`/karyawan/${idKaryawan}/ucapan-ulang-tahun`);
+  },
+
   getBirthdaysToday: async (): Promise<Employee[]> => {
     try {
       const response = await api.get('/karyawan/birthday-today');

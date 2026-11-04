@@ -4,30 +4,29 @@
  * Pola bottom sheet-nya tetap ala Gojek (muncul dari bawah, header berwarna
  * brand); warna, font, dan sudutnya mengikuti karir-mwt.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from '../common/Icon';
+import Button from '../common/Button';
 import KueUlangTahun from './KueUlangTahun';
 import BottomSheet from '../common/BottomSheet';
 import Avatar from '../common/Avatar';
 import PolaMemphis from '../common/PolaMemphis';
-import Colors, { brand, palet } from '../../../constants/Colors';
+import Colors, { palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
-import { Employee, karyawanService } from '../../services/karyawanService';
+import type { Employee } from '../../services/karyawanService';
 
-export default function BirthdayBanner() {
-  const [birthdays, setBirthdays] = useState<Employee[]>([]);
+interface BirthdayBannerProps {
+  birthdays: Employee[];
+  /** Id karyawan yang ucapannya sedang dikirim (tombolnya memutar). */
+  idMengirim: number | null;
+  sudahDiucapkan: (item: Employee) => boolean;
+  onBeriSelamat: (id: number) => void;
+}
+
+export default function BirthdayBanner({ birthdays, idMengirim, sudahDiucapkan, onBeriSelamat }: BirthdayBannerProps) {
   const [sheetTerbuka, setSheetTerbuka] = useState(false);
-
-  useEffect(() => {
-    const fetchBirthdays = async () => {
-      const data = await karyawanService.getBirthdaysToday();
-      setBirthdays(data);
-    };
-    fetchBirthdays();
-  }, []);
 
   if (birthdays.length === 0) return null;
 
@@ -58,9 +57,20 @@ export default function BirthdayBanner() {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.ucapan} activeOpacity={0.7}>
-          <Icon name="chat-outline" size={16} color={brand[700]} />
-        </TouchableOpacity>
+        {/* Baris milik sendiri tidak diberi tombol. */}
+        {!item.diri &&
+          (sudahDiucapkan(item) ? (
+            <Button label="Terkirim" icon="check" variant="muted" disabled />
+          ) : (
+            <Button
+              label="Beri Selamat"
+              icon="party-popper"
+              variant="outline"
+              loading={idMengirim === item.id}
+              disabled={idMengirim !== null}
+              onPress={() => onBeriSelamat(item.id)}
+            />
+          ))}
       </View>
     );
   };
@@ -154,13 +164,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 12,
     color: Colors.textSecondary,
-  },
-  ucapan: {
-    width: 36,
-    height: 36,
-    borderRadius: Spacing.radius.full,
-    backgroundColor: brand[50],
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
