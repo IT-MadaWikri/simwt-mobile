@@ -105,7 +105,8 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
   const insets = useSafeAreaInsets();
   const { height: tinggiLayar } = useWindowDimensions();
   const ref = useRef<BottomSheetModal>(null);
-  // Hanya dipakai sheet `penuh`: ruang gulir tambahan setinggi keyboard supaya hasil terbawah bisa naik di atasnya.
+  // Ruang gulir tambahan setinggi keyboard di semua sheet: di Android edge-to-edge keyboard menutupi
+  // bagian bawah sheet, jadi isi terbawah (kolom form, hasil cari) harus bisa digulir naik di atasnya.
   const tinggiKeyboard = useTinggiKeyboard();
   const tinggiPenuh = tinggiLayar - insets.top;
 
@@ -187,7 +188,7 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
       <DalamSheet.Provider value>
         <IsiSheet
           kepalaTetap={kepalaTetap}
-          paddingBawah={insets.bottom + Spacing.lg + (penuh ? tinggiKeyboard : 0)}
+          paddingBawah={insets.bottom + Spacing.lg + tinggiKeyboard}
           tinggiMin={penuh ? tinggiPenuh - TINGGI_KEPALA : undefined}
         >
           {children}
