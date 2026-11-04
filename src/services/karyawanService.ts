@@ -19,6 +19,8 @@ export interface Employee {
   status_karyawan?: string;
   /** Hanya di daftar ulang tahun: baris ini milik pengguna yang sedang login. */
   diri?: boolean;
+  /** Hanya di daftar ulang tahun: karyawan ini punya akun aplikasi (bisa menerima notifikasi). */
+  punya_akun?: boolean;
   /** Hanya di daftar ulang tahun: ucapan hari ini dari pengguna ini sudah terkirim. */
   sudah_diucapkan?: boolean;
 }
