@@ -5,12 +5,15 @@
 import React, { useEffect, useRef } from 'react';
 import { Tabs, useSegments } from 'expo-router';
 import Icon from '../../src/components/common/Icon';
-import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
+import { View, StyleSheet, Animated, Pressable, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { palet } from '../../constants/Colors';
-import { fonts } from '../../constants/Typography';
 import { gayaAppBar, opsiAppBar } from '../../src/components/common/AppBar';
 import TombolKembali from '../../src/components/common/TombolKembali';
+
+// 5 tab (termasuk tombol scan) masing-masing selebar ini, lalu dirapatkan ke tengah bar.
+const LEBAR_TAB = 62;
+const JUMLAH_TAB = 5;
 
 // Ikon tab: tebal saat aktif. Animasinya ada di BouncePress (saat di-tap).
 function AnimatedTabIcon({ name, focused, color }: { name: string, focused: boolean, color: any }) {
@@ -54,6 +57,8 @@ const CustomScanButton = ({ onPress }: any) => (
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const jarakTepi = Math.max(0, (width - LEBAR_TAB * JUMLAH_TAB) / 2);
   // Tab bar tetap tampil di daftar chat; hanya disembunyikan di ruang chat dan
   // layar "baru" (segmen ke-3 ada), karena keduanya punya bilah tulis sendiri.
   const segments = useSegments() as string[];
@@ -72,16 +77,13 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: Colors.borderSubtle,
           // Safe area ditambah di bawah area tab agar tidak tertutup navigasi sistem.
-          height: 60 + insets.bottom,
+          height: 56 + insets.bottom,
           paddingBottom: insets.bottom + 6,
-          paddingTop: 8,
+          paddingTop: 6,
+          paddingHorizontal: jarakTepi,
         },
-        // Label tebal saat aktif, reguler saat tidak.
-        tabBarLabel: ({ focused, color, children }) => (
-          <Text style={[styles.tabLabel, { color, fontFamily: focused ? fonts.bold : fonts.regular }]}>
-            {children}
-          </Text>
-        ),
+        // Hanya ikon; `title` tetap jadi label aksesibilitas.
+        tabBarShowLabel: false,
         tabBarButton: (props) => <BouncePress {...props} />,
         tabBarItemStyle: styles.tabItem,
         ...gayaAppBar,
@@ -201,9 +203,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tabLabel: {
-    fontSize: 12,
   },
   scanButton: {
     flex: 1,
