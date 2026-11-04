@@ -31,9 +31,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BrandSpinner from './BrandSpinner';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
+import { useTinggiKeyboard } from '../../hooks/useTinggiKeyboard';
 import { fonts } from '../../../constants/Typography';
 
 const TINGGI_PENUH = 0.85;
+/** Perkiraan tinggi handle + judul sheet, dikurangkan agar sheet `penuh` tidak melebihi layar. */
+const TINGGI_KEPALA = 100;
 
 const DalamSheet = createContext(false);
 
@@ -49,6 +52,11 @@ interface BottomSheetProps {
   subtitle?: string;
   /** Isi yang menempel di bawah judul dan tidak ikut menggulir (mis. kolom cari). */
   kepalaTetap?: React.ReactNode;
+  /**
+   * Sheet setinggi mungkin (di bawah status bar) — untuk sheet cari yang keyboardnya langsung terbuka:
+   * kolom di atas tetap terlihat, dan daftar bisa digulir sampai di atas keyboard.
+   */
+  penuh?: boolean;
   children: React.ReactNode;
 }
 
@@ -56,7 +64,7 @@ interface BottomSheetProps {
  * Isi sheet. Dipasang hanya selama sheet tampil, jadi spinner muncul di setiap pembukaan dan isi
  * sebenarnya baru dirender setelah interaksi (animasi buka) selesai.
  */
-function IsiSheet({ kepalaTetap, paddingBawah, children }: { kepalaTetap?: React.ReactNode; paddingBawah: number; children: React.ReactNode }) {
+function IsiSheet({ kepalaTetap, paddingBawah, tinggiMin, children }: { kepalaTetap?: React.ReactNode; paddingBawah: number; tinggiMin?: number; children: React.ReactNode }) {
   const [siap, setSiap] = useState(false);
 
   // Dua frame cukup agar sheet mulai naik; animasinya jalan di thread UI jadi tak tersendat isi.
@@ -73,7 +81,7 @@ function IsiSheet({ kepalaTetap, paddingBawah, children }: { kepalaTetap?: React
 
   if (!siap) {
     return (
-      <BottomSheetView style={styles.memuat}>
+      <BottomSheetView style={[styles.memuat, tinggiMin ? { minHeight: tinggiMin } : null]}>
         <BrandSpinner size={24} color={brand[600]} />
       </BottomSheetView>
     );
@@ -85,7 +93,7 @@ function IsiSheet({ kepalaTetap, paddingBawah, children }: { kepalaTetap?: React
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       stickyHeaderIndices={kepalaTetap ? [0] : undefined}
-      contentContainerStyle={{ paddingBottom: paddingBawah }}
+      contentContainerStyle={{ paddingBottom: paddingBawah, minHeight: tinggiMin }}
     >
       {kepalaTetap ? <View style={styles.kepalaTetap}>{kepalaTetap}</View> : null}
       {children}
@@ -93,10 +101,13 @@ function IsiSheet({ kepalaTetap, paddingBawah, children }: { kepalaTetap?: React
   );
 }
 
-export default function BottomSheet({ visible, onClose, title, subtitle, kepalaTetap, children }: BottomSheetProps) {
+export default function BottomSheet({ visible, onClose, title, subtitle, kepalaTetap, penuh, children }: BottomSheetProps) {
   const insets = useSafeAreaInsets();
   const { height: tinggiLayar } = useWindowDimensions();
   const ref = useRef<BottomSheetModal>(null);
+  // Hanya dipakai sheet `penuh`: ruang gulir tambahan setinggi keyboard supaya hasil terbawah bisa naik di atasnya.
+  const tinggiKeyboard = useTinggiKeyboard();
+  const tinggiPenuh = tinggiLayar - insets.top;
 
   const visibleRef = useRef(visible);
   visibleRef.current = visible;
@@ -162,7 +173,7 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
       onDismiss={saatLepas}
       stackBehavior="push"
       enableDynamicSizing
-      maxDynamicContentSize={tinggiLayar * TINGGI_PENUH}
+      maxDynamicContentSize={penuh ? tinggiPenuh : tinggiLayar * TINGGI_PENUH}
       topInset={insets.top}
       enablePanDownToClose
       keyboardBehavior="interactive"
@@ -174,7 +185,11 @@ export default function BottomSheet({ visible, onClose, title, subtitle, kepalaT
       backgroundStyle={styles.latar}
     >
       <DalamSheet.Provider value>
-        <IsiSheet kepalaTetap={kepalaTetap} paddingBawah={insets.bottom + Spacing.lg}>
+        <IsiSheet
+          kepalaTetap={kepalaTetap}
+          paddingBawah={insets.bottom + Spacing.lg + (penuh ? tinggiKeyboard : 0)}
+          tinggiMin={penuh ? tinggiPenuh - TINGGI_KEPALA : undefined}
+        >
           {children}
         </IsiSheet>
       </DalamSheet.Provider>
