@@ -123,7 +123,7 @@ export default function ProfileScreen() {
         style={styles.latarAtas}
       />
       <LinearGradient
-        colors={['rgba(244,251,247,0)', Colors.background]}
+        colors={['rgba(255,255,255,0)', Colors.background]}
         pointerEvents="none"
         style={styles.latarAtas}
       />
@@ -178,7 +178,7 @@ export default function ProfileScreen() {
               ikon="information-outline"
               label="Tentang aplikasi"
               nilai="v1.0.0"
-              onPress={() => dialog.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.')}
+              onPress={() => dialog.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.\n\nIkon layanan: Streamline Flex oleh Streamline (streamlinehq.com), lisensi CC BY 4.0.')}
               terakhir
             />
           </View>

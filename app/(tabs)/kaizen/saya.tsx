@@ -218,7 +218,7 @@ export default function KaizenSaya() {
   );
 
   return (
-    <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
       <AppBar judul="Kaizen Saya" />
 
       {awal ? (

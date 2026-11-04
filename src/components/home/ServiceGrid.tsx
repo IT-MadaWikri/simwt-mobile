@@ -21,6 +21,7 @@ const TOMBOL_LAINNYA: ServiceItem = {
   id: 'lainnya',
   name: 'Lainnya',
   icon: 'layout-grid-circles',
+  ikonSolid: 'dashboard-3',
   backgroundColor: brand[50],
   iconColor: '#1fc2a8',
   route: '',

@@ -22,7 +22,7 @@ import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Icon from '../../src/components/common/Icon';
 import KeadaanKosong from '../../src/components/common/KeadaanKosong';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { brand, slate } from '../../constants/Colors';
+import Colors, { brand, slate, ubin } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
 import { fonts } from '../../constants/Typography';
@@ -51,8 +51,8 @@ function jarakWaktu(iso: string | null): string {
 
 type JenisKunci = 'kaizen' | 'tiket';
 const RUPA: Record<JenisKunci, { icon: string; tile: string; warna: string }> = {
-  kaizen: { icon: 'lightbulb-on-outline', tile: brand[50], warna: brand[600] },
-  tiket: { icon: 'ticket-outline', tile: Colors.serviceAmber, warna: '#b45309' },
+  kaizen: { icon: 'lightbulb-on-outline', tile: ubin.jingga.latar, warna: ubin.jingga.glif },
+  tiket: { icon: 'ticket-outline', tile: ubin.koral.latar, warna: ubin.koral.glif },
 };
 
 export default function ApprovalCenterScreen() {
@@ -146,7 +146,7 @@ export default function ApprovalCenterScreen() {
   }
 
   return (
-    <View style={[gs.screen, { backgroundColor: slate[100] }]}>
+    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
       {/* Penyaring */}
       <View style={[gs.containerX, { paddingVertical: Spacing.md }]}>
         <View style={[gs.row, gs.gapSm]}>

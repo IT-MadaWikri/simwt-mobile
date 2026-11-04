@@ -71,14 +71,32 @@ export const slate = {
   900: '#0f172a',
 } as const;
 
-/** Pasangan latar pastel + teks tegas untuk `common/Lencana` dan style `gs.badge*`. */
+/**
+ * Pasangan ubin ikon per hue: latar pastel jenuh + glif gelap sehue (gaya Streamline Flex Solid).
+ * Dipakai grid layanan (lewat `UBIN` di Services.ts), ubin ikon kecil, dan `lencana` di bawah.
+ */
+export const ubin = {
+  jingga: { latar: '#ffc857', glif: '#b86a00' },
+  koral: { latar: '#ffb59e', glif: '#e0432a' },
+  tosca: { latar: '#8eebd6', glif: '#0b7a68' },
+  ungu: { latar: '#d4c2ff', glif: '#5b2fd0' },
+  biru: { latar: '#8ad9ff', glif: '#0b4fb8' },
+  pink: { latar: '#ffb8e8', glif: '#e0167f' },
+  hijau: { latar: '#99e88a', glif: '#23801c' },
+  cyan: { latar: '#8fe6f0', glif: '#0a6e80' },
+} as const;
+
+/**
+ * Pasangan latar pastel + teks tegas untuk `common/Lencana` dan style `gs.badge*`.
+ * Latar = latar ubin grid; teks = glif ubin yang digelapkan sampai kontras >= 4.5:1 (teks kecil).
+ */
 export const lencana = {
-  hijau: { bg: brand[100], fg: brand[700] },
-  biru: { bg: '#e0f2fe', fg: '#0284c7' },
-  oranye: { bg: '#ffedd5', fg: '#ea580c' },
-  merah: { bg: '#fee2e2', fg: '#dc2626' },
-  ungu: { bg: '#ede9fe', fg: '#7c3aed' },
-  kuning: { bg: '#fef3c7', fg: '#b45309' },
+  hijau: { bg: ubin.hijau.latar, fg: '#1c6616' },
+  biru: { bg: ubin.biru.latar, fg: ubin.biru.glif },
+  oranye: { bg: '#ffc59a', fg: '#923f08' },
+  merah: { bg: ubin.koral.latar, fg: '#922c1b' },
+  ungu: { bg: ubin.ungu.latar, fg: ubin.ungu.glif },
+  kuning: { bg: ubin.jingga.latar, fg: '#814a00' },
   abu: { bg: slate[100], fg: slate[600] },
 } as const;
 
@@ -113,8 +131,8 @@ export const Colors = {
   // ── Netral ──────────────────────────────────────────────────────────
   white: '#ffffff',
   black: '#000000',
-  /** Latar halaman bersuasana brand — `.section-bg` di karir-mwt. */
-  background: '#f4fbf7',
+  /** Latar halaman: putih polos (dulu putih kehijauan `#f4fbf7`); kartu dipisahkan oleh border. */
+  background: '#ffffff',
   /** Latar putih polos, dipakai kalau konten sudah penuh kartu. */
   backgroundPlain: '#ffffff',
   card: '#ffffff',
@@ -154,7 +172,7 @@ export const Colors = {
   light: {
     text: '#0c1b1a',
     textSecondary: slate[600],
-    background: '#f4fbf7',
+    background: '#ffffff',
     card: '#ffffff',
     tint: brand[600],
     tabIconDefault: slate[400],
