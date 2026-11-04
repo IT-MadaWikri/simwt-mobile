@@ -18,6 +18,7 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { fonts } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import Button from '../../src/components/common/Button';
+import { versiAplikasi } from '../../src/utils/versiAplikasi';
 
 export default function ProfileScreen() {
   const { user, logout, login } = useAuth();
@@ -177,8 +178,8 @@ export default function ProfileScreen() {
             <BarisSetelan
               ikon="information-outline"
               label="Tentang aplikasi"
-              nilai="v1.0.0"
-              onPress={() => dialog.alert('SIMWT Mobile', 'Versi 1.0.0\nDikembangkan oleh IT Mada Wikri Tunggal.\n\nIkon layanan: Streamline Flex oleh Streamline (streamlinehq.com), lisensi CC BY 4.0.')}
+              nilai={`v${versiAplikasi}`}
+              onPress={() => dialog.alert('SIMWT Mobile', `Versi ${versiAplikasi}\nDikembangkan oleh IT Mada Wikri Tunggal.\n\nIkon layanan: Streamline Flex oleh Streamline (streamlinehq.com), lisensi CC BY 4.0.`)}
               terakhir
             />
           </View>
@@ -195,7 +196,7 @@ export default function ProfileScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>SIMWT Mobile by IT Mada Wikri Tunggal</Text>
-          <Text style={styles.footerText}>Versi 1.0.0</Text>
+          <Text style={styles.footerText}>Versi {versiAplikasi}</Text>
         </View>
       </ScrollView>
     </View>
