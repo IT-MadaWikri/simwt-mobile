@@ -57,8 +57,8 @@ export default function BirthdayBanner({ birthdays, idMengirim, sudahDiucapkan, 
           </Text>
         </View>
 
-        {/* Baris milik sendiri tidak diberi tombol. */}
-        {!item.diri &&
+        {/* Tanpa tombol untuk baris milik sendiri dan karyawan yang belum punya akun. */}
+        {!item.diri && item.punya_akun &&
           (sudahDiucapkan(item) ? (
             <Button label="Terkirim" icon="check" variant="muted" disabled />
           ) : (
