@@ -44,7 +44,14 @@ export default function ChatBaruScreen() {
     chatService
       .muatKontakPengguna(user?.id ?? 0)
       .then(setKontak)
-      .catch((err: any) => setGalat(err?.message ?? 'Gagal memuat daftar pengguna.'))
+      .catch((err: any) =>
+        setGalat(
+          // /pengguna di server butuh izin `tampilkan_menu_pengguna`; akun biasa mendapat 403.
+          err?.response?.status === 403
+            ? 'Akun Anda belum punya izin untuk melihat daftar pengguna.'
+            : err?.message ?? 'Gagal memuat daftar pengguna.'
+        )
+      )
       .finally(() => setMemuat(false));
   }, [user?.id]);
 
