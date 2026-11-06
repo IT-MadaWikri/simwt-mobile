@@ -71,13 +71,13 @@ export default function BrowserScreen() {
         kanan={
           <View style={styles.aksi}>
             <TouchableOpacity onPress={() => webView.current?.reload()} hitSlop={10} accessibilityLabel="Muat ulang">
-              <Icon name="refresh" size={20} color={Colors.white} />
+              <Icon name="refresh" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.replace('/(tabs)')} hitSlop={10} accessibilityLabel="Beranda">
-              <Icon name="home" size={20} color={Colors.white} />
+              <Icon name="home" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setMenu(true)} hitSlop={10} accessibilityLabel="Menu">
-              <Icon name="dots-vertical" size={20} color={Colors.white} />
+              <Icon name="dots-vertical" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
           </View>
         }

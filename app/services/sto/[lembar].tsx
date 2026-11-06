@@ -180,7 +180,7 @@ export default function DetailLembarStoScreen() {
           data={baris}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderBaris}
-          contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+          contentContainerStyle={[{ flexGrow: 1 }, gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
           initialNumToRender={12}
           windowSize={7}
           removeClippedSubviews

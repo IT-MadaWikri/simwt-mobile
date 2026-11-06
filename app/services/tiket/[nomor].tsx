@@ -94,7 +94,7 @@ export default function DetailTiketScreen() {
         judul={`Tiket #${tiket.noTiket}`}
         kanan={
           <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-            <Icon name="share-variant" size={20} color={Colors.white} />
+            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
         }
       />

@@ -73,7 +73,7 @@ export default function BeritaDetailScreen() {
         judul="Berita"
         kanan={
           <TouchableOpacity hitSlop={10} onPress={() => Share.share({ message: teksBagikanBerita(berita) }).catch(() => {})}>
-            <Icon name="share-variant" size={20} color={Colors.white} />
+            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
         }
       />

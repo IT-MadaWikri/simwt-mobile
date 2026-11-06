@@ -66,7 +66,7 @@ export default function DaftarPartScreen() {
           keyboardShouldPersistTaps="handled"
           onEndReached={p.muatBerikutnya}
           onEndReachedThreshold={0.4}
-          contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
           ItemSeparatorComponent={() => <View style={styles.pemisah} />}
           refreshControl={
             <RefreshControl refreshing={p.menyegarkan} onRefresh={p.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />

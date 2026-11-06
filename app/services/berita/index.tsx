@@ -53,7 +53,7 @@ export default function DaftarBeritaScreen() {
       <FlatList
         data={h.berita}
         keyExtractor={(b) => String(b.id)}
-        contentContainerStyle={[styles.isi, { paddingBottom: Spacing.xxxl + insets.bottom }]}
+        contentContainerStyle={[{ flexGrow: 1 }, styles.isi, { paddingBottom: Spacing.xxxl + insets.bottom }]}
         refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} />}
         onEndReached={h.muatBerikutnya}
         onEndReachedThreshold={0.4}

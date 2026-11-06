@@ -68,7 +68,7 @@ export default function PilihProsesScreen() {
           data={proses}
           keyExtractor={(item) => String(item.id)}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
           ItemSeparatorComponent={() => <View style={styles.pemisah} />}
           refreshControl={
             <RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />

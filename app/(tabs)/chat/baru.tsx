@@ -101,7 +101,7 @@ export default function ChatBaruScreen() {
           sections={seksi}
           keyExtractor={(item) => item.id}
           stickySectionHeadersEnabled
-          contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xxl }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
           initialNumToRender={14}
           windowSize={9}
           removeClippedSubviews

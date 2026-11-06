@@ -66,9 +66,13 @@ export default function KeadaanKosong({
 }
 
 const styles = StyleSheet.create({
+  // Memenuhi ruang yang tersisa lalu menaruh isinya di tengah vertikal. Di dalam
+  // FlatList, `contentContainerStyle` daftarnya harus punya `flexGrow: 1`.
   wadah: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: Spacing.xxl,
+    paddingVertical: Spacing.xxl,
     paddingHorizontal: Spacing.xl,
   },
   judul: {

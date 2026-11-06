@@ -37,6 +37,41 @@ const BARIS: { ikon: string; label: string; isi: keyof Pick<ItemManfaat, 'hemat'
   { ikon: 'creation', label: 'Sesudah', isi: 'sesudah' },
 ];
 
+/** Baris Penghematan / Sebelum / Sesudah + lokasi & pelaksana satu manfaat (label & isi sejajar satu baris). */
+export function RincianManfaat({ item: m }: { item: Pick<ItemManfaat, 'warna' | 'hemat' | 'sebelum' | 'sesudah' | 'area' | 'pic'> }) {
+  return (
+    <>
+      {BARIS.map((b) => (
+        <View key={b.isi} style={styles.baris}>
+          <View style={styles.kolomLabel}>
+            <Icon name={b.ikon} size={14} color={Colors.textTertiary} />
+            <Text style={styles.label} numberOfLines={1}>{b.label}</Text>
+          </View>
+          <Text style={b.isi === 'hemat' ? [styles.hemat, { color: m.warna }] : styles.teks}>
+            {m[b.isi] || (b.isi === 'hemat' ? '—' : '-')}
+          </Text>
+        </View>
+      ))}
+      {m.area || m.pic ? (
+        <View style={[gs.row, { gap: Spacing.md }]}>
+          {m.area ? (
+            <View style={styles.meta}>
+              <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
+              <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
+            </View>
+          ) : null}
+          {m.pic ? (
+            <View style={styles.meta}>
+              <Avatar nama={m.pic} ukuran={18} />
+              <Text style={styles.teksMeta} numberOfLines={1}>{m.pic}</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+    </>
+  );
+}
+
 export default function SliderManfaat({ items }: { items: ItemManfaat[] }) {
   const { width } = useWindowDimensions();
   const [aktif, setAktif] = useState(0);
@@ -68,35 +103,7 @@ export default function SliderManfaat({ items }: { items: ItemManfaat[] }) {
               ) : null}
             </View>
 
-            {/* Label & isi sejajar satu baris supaya kartu ringkas. */}
-            {BARIS.map((b) => (
-              <View key={b.isi} style={styles.baris}>
-                <View style={styles.kolomLabel}>
-                  <Icon name={b.ikon} size={14} color={Colors.textTertiary} />
-                  <Text style={styles.label} numberOfLines={1}>{b.label}</Text>
-                </View>
-                <Text style={b.isi === 'hemat' ? [styles.hemat, { color: m.warna }] : styles.teks}>
-                  {m[b.isi] || (b.isi === 'hemat' ? '—' : '-')}
-                </Text>
-              </View>
-            ))}
-
-            {m.area || m.pic ? (
-              <View style={[gs.row, { gap: Spacing.md }]}>
-                {m.area ? (
-                  <View style={styles.meta}>
-                    <Icon name="map-marker-outline" size={14} color={Colors.textTertiary} />
-                    <Text style={styles.teksMeta} numberOfLines={1}>{m.area}</Text>
-                  </View>
-                ) : null}
-                {m.pic ? (
-                  <View style={styles.meta}>
-                    <Avatar nama={m.pic} ukuran={18} />
-                    <Text style={styles.teksMeta} numberOfLines={1}>{m.pic}</Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
+            <RincianManfaat item={m} />
 
             {m.aksi}
           </View>

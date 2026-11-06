@@ -123,7 +123,7 @@ export default function HumanCapitalScreen() {
             data={filteredEmployees}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderEmployee}
-            contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
+            contentContainerStyle={[{ flexGrow: 1 }, styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <KeadaanKosong pose="mikir" judul="Tidak Ditemukan" teks="Tidak ada karyawan yang cocok dengan pencarian Anda." />

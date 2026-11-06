@@ -46,7 +46,7 @@ export default function DrafProduksiScreen() {
       <FlatList
         data={daftar ?? []}
         keyExtractor={(d) => d.id}
-        contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
+        contentContainerStyle={[{ flexGrow: 1 }, styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
         ListEmptyComponent={
           daftar ? (
             <KeadaanKosong pose="ide" judul="Belum ada draf" teks={'Tekan "Simpan draf" di form Pencapaian Produksi untuk menyimpan isian yang belum selesai.'} />

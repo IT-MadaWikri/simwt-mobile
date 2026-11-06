@@ -234,7 +234,7 @@ export default function KaizenSaya() {
               <View style={styles.pemisah} />
             </View>
           )}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 0 }]}
+          contentContainerStyle={[{ flexGrow: 1 }, styles.listContent, { paddingBottom: 0 }]}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
           onEndReached={muatBerikutnya}

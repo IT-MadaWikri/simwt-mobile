@@ -86,7 +86,7 @@ export default function TiketSayaScreen() {
           keyboardShouldPersistTaps="handled"
           onEndReached={t.muatBerikutnya}
           onEndReachedThreshold={0.4}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 96 }}
           ItemSeparatorComponent={() => <View style={styles.pemisah} />}
           refreshControl={
             <RefreshControl refreshing={t.menyegarkan} onRefresh={t.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />

@@ -39,7 +39,8 @@ import { KaizenDetail } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, teksBagikanKaizen, urlFoto, warnaStatus } from '../../../src/utils/kaizen';
 import AppBar from '../../../src/components/common/AppBar';
 import BrandSpinner from '../../../src/components/common/BrandSpinner';
-import SliderManfaat from '../../../src/components/kaizen/SliderManfaat';
+import DaftarManfaat from '../../../src/components/kaizen/DaftarManfaat';
+import RincianKartuManfaat from '../../../src/components/kaizen/RincianKartuManfaat';
 import { bagikanBuktiKaizen } from '../../../src/services/buktiKaizenService';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
 
@@ -69,6 +70,8 @@ export default function KaizenDetailScreen() {
   const [sheetTolak, setSheetTolak] = useState(false);
   // Kategori manfaat yang rinciannya sedang dibuka di sheet ('' = Manfaat tanpa kategori).
   const [sheetManfaat, setSheetManfaat] = useState<string | null>(null);
+  // Urutan manfaat (di dalam kategori itu) yang rincian Penghematan/Sebelum/Sesudah-nya dibuka.
+  const [rincianManfaat, setRincianManfaat] = useState<number | null>(null);
   // Menu Bagikan (pesan / bukti PDF); `membuatPdf` = PDF sedang dibuat.
   const [sheetBagikan, setSheetBagikan] = useState(false);
   const [membuatPdf, setMembuatPdf] = useState(false);
@@ -128,6 +131,9 @@ export default function KaizenDetailScreen() {
       .entries()
   );
   const butirSheet = sheetManfaat === null ? [] : manfaats.filter((m) => (m.manfaat_nilai?.kategori ?? '') === sheetManfaat);
+  const butirRincian = rincianManfaat === null ? undefined : butirSheet[rincianManfaat];
+  const ikonManfaat = (kat?: string | null) => LENCANA[kat ?? '']?.ikon ?? 'lightbulb-on-outline';
+  const warnaManfaat = (kat?: string | null) => LENCANA[kat ?? '']?.warna[2] ?? Colors.textSecondary;
   const warna = warnaStatus(kaizen.status);
   const k = kaizen as any;
   const departemen = kaizen.departemen?.nama || k.departemen?.nama_departemen || kaizen.nama_departemen;
@@ -231,7 +237,7 @@ export default function KaizenDetailScreen() {
         kanan={
           kaizen.status === 'DISETUJUI' ? (
             <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-              <Icon name="share-variant" size={20} color={Colors.white} />
+              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
           ) : undefined
         }
@@ -443,26 +449,39 @@ export default function KaizenDetailScreen() {
 
       <BottomSheet
         visible={sheetManfaat !== null}
-        onClose={() => setSheetManfaat(null)}
+        onClose={() => { setSheetManfaat(null); setRincianManfaat(null); }}
         title={`Manfaat ${sheetManfaat || ''}`.trim()}
         subtitle={`${butirSheet.length} manfaat`}
       >
-        <SliderManfaat
-          key={sheetManfaat}
-          items={butirSheet.map((m) => {
-            const l = LENCANA[m.manfaat_nilai?.kategori ?? ''];
-            return {
-              ikon: l?.ikon ?? 'lightbulb-on-outline',
-              warna: l?.warna[2] ?? Colors.textSecondary,
-              tipe: m.tipe_area,
-              hemat: m.hemat,
-              sebelum: m.sebelum,
-              sesudah: m.sesudah,
-              area: m.area,
-              pic: m.pic,
-            };
-          })}
+        <DaftarManfaat
+          onPilih={setRincianManfaat}
+          items={butirSheet.map((m, urut) => ({
+            judul: `${sheetManfaat || 'Manfaat'} ${urut + 1}`,
+            ikon: ikonManfaat(m.manfaat_nilai?.kategori),
+            warna: warnaManfaat(m.manfaat_nilai?.kategori),
+            tipe: m.tipe_area,
+          }))}
         />
+      </BottomSheet>
+
+      {/* Sheet kedua: menutupi daftar manfaat, isinya Penghematan/Sebelum/Sesudah satu manfaat. */}
+      <BottomSheet
+        visible={rincianManfaat !== null && butirRincian !== undefined}
+        onClose={() => setRincianManfaat(null)}
+        title={`${sheetManfaat || 'Manfaat'} ${(rincianManfaat ?? 0) + 1}`}
+      >
+        {butirRincian ? (
+          <RincianKartuManfaat
+            item={{
+              warna: warnaManfaat(butirRincian.manfaat_nilai?.kategori),
+              hemat: butirRincian.hemat,
+              sebelum: butirRincian.sebelum,
+              sesudah: butirRincian.sesudah,
+              area: butirRincian.area,
+              pic: butirRincian.pic,
+            }}
+          />
+        ) : null}
       </BottomSheet>
 
       <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen">

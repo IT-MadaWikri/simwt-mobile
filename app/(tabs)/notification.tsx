@@ -154,13 +154,13 @@ export default function NotifikasiScreen() {
           <View style={[gs.row, { gap: Spacing.lg, paddingHorizontal: Spacing.lg }]}>
             {adaBelumDibaca ? (
               <TouchableOpacity onPress={tandaiSemua}>
-                <Text style={{ color: Colors.white, fontSize: ukuranIsi, fontFamily: fonts.semibold }}>
+                <Text style={{ color: Colors.primary, fontSize: ukuranIsi, fontFamily: fonts.semibold }}>
                   Tandai semua dibaca
                 </Text>
               </TouchableOpacity>
             ) : null}
             <TouchableOpacity onPress={hapusSemua} hitSlop={10} accessibilityLabel="Hapus semua notifikasi">
-              <Icon name="delete-outline" size={18} color={Colors.white} />
+              <Icon name="delete-outline" size={18} color={Colors.textPrimary} />
             </TouchableOpacity>
           </View>
         ) : undefined

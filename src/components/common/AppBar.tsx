@@ -1,6 +1,6 @@
 /**
- * AppBar — app bar standar SIMMWT: hijau, judul putih 18px bold (`judulAppBar`), tombol
- * kembali `TombolKembali`. Satu-satunya sumber gaya header di aplikasi.
+ * AppBar — app bar standar SIMMWT: putih, judul gelap di tengah 18px bold (`judulAppBar`),
+ * tombol kembali (chevron) `TombolKembali`. Satu-satunya sumber gaya header di aplikasi.
  *
  * Di dalam layar:
  *   <AppBar judul="Data Karyawan" />
@@ -21,9 +21,11 @@ import { judulAppBar } from '../../../constants/Typography';
 
 export const gayaAppBar = {
   headerShown: true,
-  headerStyle: { backgroundColor: Colors.primary },
-  headerTintColor: Colors.white,
-  headerTitleStyle: { ...judulAppBar, color: Colors.white },
+  // Putih polos, judul di tengah, ikon gelap — sama dengan header ruang chat.
+  headerStyle: { backgroundColor: Colors.white },
+  headerTintColor: Colors.textPrimary,
+  headerTitleStyle: { ...judulAppBar, color: Colors.textPrimary },
+  headerTitleAlign: 'center' as const,
   headerShadowVisible: false,
   // Header Tabs (bukan native-stack) menaruh headerLeft menempel ke tepi
   // layar; padding ini menyamakan posisinya. Native-stack mengabaikannya.
@@ -56,7 +58,7 @@ export default function AppBar({ judul, kanan, tanpaKembali, transparan }: AppBa
           headerTransparent: true,
           headerStyle: { backgroundColor: 'transparent' },
           headerTitle: '',
-          headerLeft: tanpaKembali ? undefined : () => <TombolKembali warna={Colors.textPrimary} />,
+          headerLeft: tanpaKembali ? undefined : () => <TombolKembali warna={Colors.textPrimary} lingkaran />,
         }),
       }}
     />

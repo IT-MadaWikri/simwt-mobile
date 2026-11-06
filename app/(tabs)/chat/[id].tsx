@@ -1,15 +1,15 @@
 /**
- * Ruang percakapan — tata letak mengikuti WhatsApp.
+ * Ruang percakapan.
  *
- * Anatomi yang ditiru:
- *  - header brand berisi tombol kembali + avatar + nama + status, satu bilah
- *  - latar krem lembut khas ruang chat
- *  - gelembung: keluar hijau muda rata kanan, masuk putih rata kiri,
- *    dengan "ekor" pada gelembung pertama tiap rangkaian
+ * Anatomi:
+ *  - header terang berisi tombol kembali + avatar + nama + status
+ *  - latar abu sangat muda, datar
+ *  - pesan masuk polos tanpa gelembung (avatar + nama di awal rangkaian),
+ *    pesan keluar gelembung hijau muda rata kanan
  *  - chip tanggal (Hari Ini / Kemarin / 10 Agustus 2026) di tengah
- *  - jam kecil + tanda status di pojok gelembung keluar
+ *  - jam kecil + tanda status di pojok pesan keluar
  *    (jam pasir=menunggu, ✓=terkirim, ✓✓ hijau=dibaca, ⚠=gagal)
- *  - bilah tulis: kapsul input + lampiran, tombol kirim bulat
+ *  - bilah tulis: tombol "+" lampiran, kapsul input outline, tombol kirim bulat
  *
  * Pengiriman lewat `chatService` — Mita dijawab AI, sesama pengguna berstatus
  * jam pasir sampai server chat (WebSocket) dihidupkan. Lihat chatService.ts.
@@ -21,22 +21,25 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Image } from 'react-native';
+import Animated, { FadeInLeft, FadeInRight } from 'react-native-reanimated';
 import Icon from '../../../src/components/common/Icon';
+import Avatar from '../../../src/components/common/Avatar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import BottomSheet from '../../../src/components/common/BottomSheet';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import Typography, { fonts, ukuranIsi } from '../../../constants/Typography';
+import Typography, { fonts } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { dialog } from '../../../src/components/common/AppDialog';
 import { chatService, KONTAK_MITA } from '../../../src/services/chatService';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
+import { useTinggiKeyboard } from '../../../src/hooks/useTinggiKeyboard';
 import { PesanChat } from '../../../src/types/chat';
 
 /** Chip tanggal: "Hari Ini", "Kemarin", atau tanggal lengkap. */
@@ -54,7 +57,7 @@ function jam(waktu: number): string {
   return new Date(waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
-/** Ikon status di pojok gelembung keluar. */
+/** Ikon status di pojok pesan keluar. */
 function IkonStatus({ status }: { status: PesanChat['status'] }) {
   if (status === 'menunggu') {
     return <Icon name="clock-outline" size={13} color={Colors.textTertiary} />;
@@ -73,7 +76,7 @@ function IkonStatus({ status }: { status: PesanChat['status'] }) {
 
 /** Item render: pesan, atau penanda tanggal. */
 type Baris =
-  | { jenis: 'pesan'; pesan: PesanChat; berEkor: boolean }
+  | { jenis: 'pesan'; pesan: PesanChat; awalRangkaian: boolean }
   | { jenis: 'tanggal'; label: string; id: string };
 
 export default function RuangChatScreen() {
@@ -88,13 +91,18 @@ export default function RuangChatScreen() {
   const [ketikan, setKetikan] = useState('');
   const [lampiran, setLampiran] = useState<PesanChat['lampiran']>(null);
   const [mengirim, setMengirim] = useState(false);
+  const [pilihanLampiran, setPilihanLampiran] = useState(false);
+  const tinggiKeyboard = useTinggiKeyboard();
   const daftarRef = useRef<FlatList>(null);
+  // Pesan yang sudah ada saat riwayat dimuat tidak dianimasikan; hanya yang baru muncul sesudahnya.
+  const idLama = useRef(new Set<string>());
 
   // Membaca + mem-parse riwayat ditunda sampai animasi masuk selesai;
   // kalau tidak, keduanya berebut thread JS dan perpindahan ke ruang chat
   // terasa tersendat. Lihat src/utils/useSetelahTransisi.ts.
   useSetelahTransisi(() => {
     chatService.ambilRiwayat(idPengguna, kontak.id).then((riwayat) => {
+      riwayat.forEach((p) => idLama.current.add(p.id));
       setPesan(riwayat);
       // Lompat langsung ke pesan terakhir TANPA animasi — menganimasikan
       // gulungan sepanjang riwayat saat layar baru dibuka terasa tersendat.
@@ -106,6 +114,11 @@ export default function RuangChatScreen() {
     // Tunggu satu frame supaya FlatList sudah mengukur baris barunya.
     setTimeout(() => daftarRef.current?.scrollToEnd({ animated: true }), 80);
   }, []);
+
+  // Keyboard naik → daftar menyempit; geser ke pesan terakhir supaya tidak tertutup.
+  useEffect(() => {
+    if (tinggiKeyboard) gulirKeBawah();
+  }, [tinggiKeyboard, gulirKeBawah]);
 
   const kirim = async () => {
     const teks = ketikan.trim();
@@ -120,7 +133,7 @@ export default function RuangChatScreen() {
       lampiran,
     };
 
-    // Optimistis: langsung tampil berstatus jam pasir, seperti WhatsApp.
+    // Optimistis: langsung tampil berstatus jam pasir.
     const dgnKeluar = [...pesan, keluar];
     setPesan(dgnKeluar);
     setKetikan('');
@@ -150,7 +163,7 @@ export default function RuangChatScreen() {
     }
   };
 
-  const pilihLampiran = async () => {
+  const pilihDokumen = async () => {
     const hasil = await DocumentPicker.getDocumentAsync({
       type: '*/*',
       copyToCacheDirectory: true,
@@ -163,6 +176,36 @@ export default function RuangChatScreen() {
         tipe: berkas.mimeType || 'application/octet-stream',
       });
     }
+  };
+
+  const pilihGambar = async (sumber: 'kamera' | 'galeri') => {
+    const izin =
+      sumber === 'kamera'
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!izin.granted) {
+      dialog.alert('Izin Ditolak', `Aplikasi butuh izin ${sumber === 'kamera' ? 'kamera' : 'galeri'} untuk melampirkan gambar.`);
+      return;
+    }
+    const opsi: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.8 };
+    const hasil =
+      sumber === 'kamera'
+        ? await ImagePicker.launchCameraAsync(opsi)
+        : await ImagePicker.launchImageLibraryAsync(opsi);
+    const gambar = hasil.canceled ? null : hasil.assets[0];
+    if (gambar) {
+      setLampiran({
+        uri: gambar.uri,
+        nama: gambar.fileName || `gambar-${Date.now()}.jpg`,
+        tipe: gambar.mimeType || 'image/jpeg',
+      });
+    }
+  };
+
+  /** Tutup sheet dulu, baru buka pemilih — dua layar sekaligus sering macet di Android. */
+  const jalankanPilihan = (aksi: () => Promise<void>) => {
+    setPilihanLampiran(false);
+    setTimeout(() => void aksi(), 300);
   };
 
   const bersihkan = async () => {
@@ -178,7 +221,7 @@ export default function RuangChatScreen() {
   };
 
   // Susun baris: sisipkan chip tanggal tiap pergantian hari, dan tandai
-  // gelembung pertama tiap rangkaian pengirim untuk diberi "ekor".
+  // pesan pertama tiap rangkaian pengirim (tempat avatar + nama tampil).
   const baris: Baris[] = [];
   let hariTerakhir = '';
   pesan.forEach((item, indeks) => {
@@ -191,7 +234,8 @@ export default function RuangChatScreen() {
     baris.push({
       jenis: 'pesan',
       pesan: item,
-      berEkor: !sebelumnya || sebelumnya.pengirim !== item.pengirim || hari !== labelTanggal(sebelumnya.waktu),
+      awalRangkaian:
+        !sebelumnya || sebelumnya.pengirim !== item.pengirim || hari !== labelTanggal(sebelumnya.waktu),
     });
   });
 
@@ -207,42 +251,59 @@ export default function RuangChatScreen() {
     }
 
     const milikSaya = item.pesan.pengirim === 'saya';
-    return (
-      <View
-        style={[
-          styles.barisPesan,
-          { justifyContent: milikSaya ? 'flex-end' : 'flex-start' },
-        ]}
-      >
-        <View
-          style={[
-            styles.gelembung,
-            milikSaya ? styles.gelembungKeluar : styles.gelembungMasuk,
-            item.berEkor &&
-              (milikSaya ? styles.ekorKeluar : styles.ekorMasuk),
-          ]}
-        >
-          {item.pesan.lampiran && (
-            <View style={[gs.row, gs.gapSm, styles.lampiranBubble]}>
-              <Icon
-                name={item.pesan.lampiran.tipe.includes('image') ? 'image' : 'file-document'}
-                size={20}
-                color={brand[700]}
-              />
-              <Text style={[gs.bodySm, gs.flex1]} numberOfLines={1}>
-                {item.pesan.lampiran.nama}
-              </Text>
-            </View>
-          )}
-
-          {item.pesan.teks ? <Text style={styles.teksPesan}>{item.pesan.teks}</Text> : null}
-
-          <View style={styles.metaPesan}>
-            <Text style={styles.jam}>{jam(item.pesan.waktu)}</Text>
-            {milikSaya && <IkonStatus status={item.pesan.status} />}
-          </View>
-        </View>
+    const lampiranPesan = item.pesan.lampiran && (
+      <View style={[gs.row, gs.gapSm, styles.lampiranBubble]}>
+        <Icon
+          name={item.pesan.lampiran.tipe.includes('image') ? 'image' : 'file-document'}
+          size={20}
+          color={brand[700]}
+        />
+        <Text style={[gs.bodySm, gs.flex1]} numberOfLines={1}>
+          {item.pesan.lampiran.nama}
+        </Text>
       </View>
+    );
+
+    // Pesan baru masuk dengan geser + memudar (keluar dari kanan, masuk dari kiri).
+    const baru = !idLama.current.has(item.pesan.id);
+    const Pembungkus = baru ? Animated.View : View;
+    const masuk = baru ? (milikSaya ? FadeInRight : FadeInLeft).duration(260) : undefined;
+
+    if (milikSaya) {
+      return (
+        <Pembungkus entering={masuk} style={[styles.barisPesan, { justifyContent: 'flex-end' }]}>
+          <View style={styles.gelembungKeluar}>
+            {lampiranPesan}
+            {item.pesan.teks ? <Text style={styles.teksPesan}>{item.pesan.teks}</Text> : null}
+            <View style={styles.metaPesan}>
+              <Text style={styles.jam}>{jam(item.pesan.waktu)}</Text>
+              <IkonStatus status={item.pesan.status} />
+            </View>
+          </View>
+        </Pembungkus>
+      );
+    }
+
+    // Pesan masuk: polos; avatar + nama hanya di awal rangkaian.
+    return (
+      <Pembungkus entering={masuk} style={styles.barisPesan}>
+        <View style={styles.kolomAvatar}>
+          {item.awalRangkaian &&
+            (kontak.ai ? (
+              <View style={styles.avatarAi}>
+                <Icon name="creation" size={18} color={brand[600]} />
+              </View>
+            ) : (
+              <Avatar nama={kontak.nama} foto={kontak.foto ?? undefined} ukuran={AVATAR_PESAN} />
+            ))}
+        </View>
+        <View style={styles.isiMasuk}>
+          {item.awalRangkaian && <Text style={styles.namaPengirim}>{kontak.nama}</Text>}
+          {lampiranPesan}
+          {item.pesan.teks ? <Text style={styles.teksPesan}>{item.pesan.teks}</Text> : null}
+          <Text style={[styles.jam, { marginTop: 2 }]}>{jam(item.pesan.waktu)}</Text>
+        </View>
+      </Pembungkus>
     );
   };
 
@@ -250,34 +311,25 @@ export default function RuangChatScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <KeyboardAvoidingView
-        style={styles.layar}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        {/* ── Header ala WhatsApp ─────────────────────────────────────── */}
-        <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
+      {/* Padding bawah setinggi keyboard (bukan KeyboardAvoidingView, yang meleset di Android edge-to-edge). */}
+      <View style={[styles.layar, { paddingBottom: tinggiKeyboard }]}>
+        {/* ── Header ──────────────────────────────────────────────────── */}
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.tombolHeader}
             accessibilityLabel="Kembali"
           >
-            <Icon name="arrow-left" size={24} color={Colors.white} />
+            <Icon name="chevron-left" size={26} color={Colors.textPrimary} />
           </TouchableOpacity>
 
-          <View style={styles.avatarHeader}>
-            {kontak.ai ? (
+          {kontak.ai ? (
+            <View style={styles.avatarAiHeader}>
               <Icon name="creation" size={20} color={brand[600]} />
-            ) : (
-              <Text style={styles.avatarHeaderTeks}>
-                {kontak.nama
-                  .split(' ')
-                  .slice(0, 2)
-                  .map((kata) => kata[0] ?? '')
-                  .join('')
-                  .toUpperCase()}
-              </Text>
-            )}
-          </View>
+            </View>
+          ) : (
+            <Avatar nama={kontak.nama} foto={kontak.foto ?? undefined} ukuran={40} />
+          )}
 
           <View style={[gs.flex1, { marginLeft: Spacing.sm }]}>
             <Text style={styles.namaHeader} numberOfLines={1}>
@@ -295,17 +347,11 @@ export default function RuangChatScreen() {
             style={styles.tombolHeader}
             accessibilityLabel="Bersihkan chat"
           >
-            <Icon name="delete-outline" size={22} color={Colors.white} />
+            <Icon name="delete-outline" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
         {/* ── Percakapan ─────────────────────────────────────────────── */}
-        {/* Watermark logo samar di tengah ruang — padanan doodle latar
-            WhatsApp, memberi karakter tanpa aset gambar tambahan. */}
-        <View style={styles.watermarkWrap} pointerEvents="none">
-          <Image source={LOGO} style={styles.watermark} resizeMode="contain" />
-        </View>
-
         <FlatList
           ref={daftarRef}
           data={baris}
@@ -346,14 +392,20 @@ export default function RuangChatScreen() {
           </View>
         )}
 
-        <View style={[styles.bilahTulis, { paddingBottom: insets.bottom + Spacing.sm }]}>
+        {/* Keyboard sudah menutupi area gestur bawah, jadi inset bawah tak perlu lagi. */}
+        <View style={[styles.bilahTulis, { paddingBottom: (tinggiKeyboard ? 0 : insets.bottom) + Spacing.sm }]}>
+          <TouchableOpacity
+            style={styles.tombolTambah}
+            onPress={() => setPilihanLampiran(true)}
+            accessibilityLabel="Lampirkan berkas"
+          >
+            <Icon name="plus" size={20} color={Colors.textSecondary} />
+          </TouchableOpacity>
+
           <View style={styles.kapsulInput}>
-            <TouchableOpacity onPress={pilihLampiran} accessibilityLabel="Lampirkan berkas">
-              <Icon name="paperclip" size={20} color={Colors.textTertiary} />
-            </TouchableOpacity>
             <TextInput
               style={styles.input}
-              placeholder="Ketik pesan"
+              placeholder={`Pesan untuk ${kontak.nama}`}
               placeholderTextColor={Colors.placeholder}
               value={ketikan}
               onChangeText={setKetikan}
@@ -371,16 +423,37 @@ export default function RuangChatScreen() {
             <Icon name="send" size={18} color={Colors.white} />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </View>
+
+      <BottomSheet visible={pilihanLampiran} onClose={() => setPilihanLampiran(false)} title="Lampirkan">
+        {/* Tiga pilihan sejajar: ubin dengan ikon di atas, label di bawah. */}
+        <View style={styles.barisOpsi}>
+          {[
+            { ikon: 'file-document', label: 'Dokumen', aksi: pilihDokumen },
+            { ikon: 'image', label: 'Galeri', aksi: () => pilihGambar('galeri') },
+            { ikon: 'camera', label: 'Kamera', aksi: () => pilihGambar('kamera') },
+          ].map((opsi) => (
+            <TouchableOpacity
+              key={opsi.label}
+              style={styles.opsiLampiran}
+              activeOpacity={0.7}
+              onPress={() => jalankanPilihan(opsi.aksi)}
+            >
+              <View style={styles.ikonOpsi}>
+                <Icon name={opsi.ikon} size={22} color={brand[700]} />
+              </View>
+              <Text style={styles.labelOpsi}>{opsi.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </BottomSheet>
     </>
   );
 }
 
-/** Latar ruang chat: krem lembut khas WhatsApp, dibelokkan sedikit ke brand. */
-const LATAR_RUANG = '#eaf2ea';
-const HIJAU_KELUAR = '#d9f5dd';
-
-const LOGO = require('../../../assets/images/logo-loader.png');
+/** Latar ruang chat: abu sangat muda, datar. */
+const LATAR_RUANG = Colors.slate[50];
+const AVATAR_PESAN = 32;
 
 const styles = {
   layar: {
@@ -391,70 +464,48 @@ const styles = {
   header: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: brand[700],
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.sm,
-    paddingBottom: Spacing.md,
+    paddingBottom: Spacing.sm,
     gap: Spacing.xs,
-    // Sudut bawah membulat + bayangan supaya bilah terasa "duduk" di atas
-    // ruang percakapan, bukan garis datar yang menempel ke status bar.
-    borderBottomLeftRadius: Spacing.radius.xl,
-    borderBottomRightRadius: Spacing.radius.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderSubtle,
   },
   tombolHeader: {
     padding: Spacing.sm,
   },
-  avatarHeader: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  avatarAiHeader: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: Colors.white,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     borderWidth: 2,
     borderColor: brand[400],
   },
-  avatarHeaderTeks: {
-    fontFamily: fonts.semibold,
-    fontSize: Typography.sizes.sm,
-    color: brand[700],
-  },
   namaHeader: {
-    fontFamily: fonts.semibold,
-    fontSize: Typography.sizes.lg,
-    color: Colors.white,
+    fontFamily: fonts.bold,
+    fontSize: Typography.sizes.md,
+    color: Colors.textPrimary,
   },
   statusHeader: {
     fontFamily: fonts.regular,
     fontSize: Typography.sizes.xs,
-    color: 'rgba(255,255,255,0.75)',
+    color: Colors.textTertiary,
   },
 
   percakapan: {
     flex: 1,
     paddingHorizontal: Spacing.md,
   },
-  watermarkWrap: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  watermark: {
-    width: 220,
-    height: 220,
-    opacity: 0.05,
-    tintColor: brand[700],
-  },
   chipWrap: {
     alignItems: 'center' as const,
     marginVertical: Spacing.sm,
   },
   chip: {
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.radius.md,
+    backgroundColor: Colors.slate[100],
+    borderRadius: Spacing.radius.full,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
   },
@@ -466,32 +517,42 @@ const styles = {
 
   barisPesan: {
     flexDirection: 'row' as const,
-    marginBottom: 3,
+    marginBottom: Spacing.sm,
   },
-  // Tanpa bayangan per gelembung — menggambar bayangan untuk ratusan view
-  // sekaligus membebani render iOS; garis tepi tipis memberi pemisahan yang
-  // sama murahnya.
-  gelembung: {
+  kolomAvatar: {
+    width: AVATAR_PESAN,
+    marginRight: Spacing.sm,
+  },
+  avatarAi: {
+    width: AVATAR_PESAN,
+    height: AVATAR_PESAN,
+    borderRadius: AVATAR_PESAN / 2,
+    backgroundColor: brand[50],
+    borderWidth: 1,
+    borderColor: brand[400],
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  isiMasuk: {
+    flex: 1,
+    maxWidth: '85%' as const,
+  },
+  namaPengirim: {
+    fontFamily: fonts.bold,
+    fontSize: Typography.sizes.sm,
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  // Pesan keluar: blok hijau muda datar, tanpa bayangan.
+  gelembungKeluar: {
     maxWidth: '80%' as const,
-    borderRadius: Spacing.radius.lg,
+    backgroundColor: brand[50],
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
-  },
-  gelembungKeluar: {
-    backgroundColor: HIJAU_KELUAR,
-  },
-  gelembungMasuk: {
-    backgroundColor: Colors.white,
-  },
-  // "Ekor": pojok atas sisi pengirim dibuat lancip pada gelembung pertama
-  // tiap rangkaian — persis penanda arah di WhatsApp.
-  ekorKeluar: {
-    borderTopRightRadius: Spacing.radius.sm / 2,
-  },
-  ekorMasuk: {
-    borderTopLeftRadius: Spacing.radius.sm / 2,
+    borderColor: brand[100],
   },
   teksPesan: {
     fontFamily: fonts.regular,
@@ -508,7 +569,7 @@ const styles = {
   },
   jam: {
     fontFamily: fonts.regular,
-    fontSize: ukuranIsi,
+    fontSize: Typography.sizes.xs,
     color: Colors.textTertiary,
   },
   lampiranBubble: {
@@ -516,6 +577,34 @@ const styles = {
     borderRadius: Spacing.radius.md,
     padding: Spacing.sm,
     marginBottom: Spacing.xs,
+  },
+
+  barisOpsi: {
+    flexDirection: 'row' as const,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+  },
+  opsiLampiran: {
+    flex: 1,
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+    paddingVertical: Spacing.lg,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
+    backgroundColor: Colors.slate[50],
+  },
+  ikonOpsi: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: brand[50],
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  labelOpsi: {
+    fontFamily: fonts.medium,
+    fontSize: Typography.sizes.md,
+    color: Colors.textPrimary,
   },
 
   pratinjauLampiran: {
@@ -531,21 +620,28 @@ const styles = {
     paddingTop: Spacing.sm,
     backgroundColor: LATAR_RUANG,
   },
-  // Tinggi minimum kapsul = tinggi tombol kirim, supaya keduanya duduk
-  // sejajar rapi; saat mengetik panjang, kapsul tumbuh ke atas.
-  // Tinggi kapsul dikunci sama dengan tombol kirim (40) supaya keduanya
-  // sejajar rapi dan bilahnya tidak terlihat gemuk.
+  // Tombol "+" lingkaran outline di kiri, kapsul outline di tengah; tinggi
+  // semuanya dikunci 40 supaya sejajar.
+  tombolTambah: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.white,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
   kapsulInput: {
     flex: 1,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: Spacing.sm,
     minHeight: 40,
     backgroundColor: Colors.white,
     borderRadius: 20,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: Colors.border,
   },
   input: {
     flex: 1,
@@ -555,7 +651,6 @@ const styles = {
     lineHeight: Typography.sizes.md * 1.3,
     color: Colors.textPrimary,
     // Padding kecil saja: tinggi baris sudah dijaga `minHeight` kapsul.
-    // Sebelumnya padding besar membuat kapsul menggelembung.
     paddingVertical: Spacing.xs,
     ...inputReset,
     // Di web, TextInput multiline menjadi <textarea> yang membawa pegangan
