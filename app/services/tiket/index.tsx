@@ -10,6 +10,7 @@ import AppBar from '../../../src/components/common/AppBar';
 import BannerParalaks from '../../../src/components/common/BannerParalaks';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
+import Muncul from '../../../src/components/common/Muncul';
 import BannerMaskot from '../../../src/components/common/BannerMaskot';
 import BannerAksi from '../../../src/components/common/BannerAksi';
 import { SkeletonBaris } from '../../../src/components/common/Skeleton';
@@ -107,7 +108,7 @@ export default function MenuTiketScreen() {
           ) : terbaru.length === 0 ? (
             <Text style={[gs.emptyText, gs.containerX]}>Belum ada tiket. Laporkan masalah pertamamu.</Text>
           ) : (
-            terbaru.map((t, i) => (
+            <Muncul>{terbaru.map((t, i) => (
               <View key={t.id}>
                 {i > 0 ? <View style={styles.pemisah} /> : null}
                 <KartuTiket
@@ -121,7 +122,7 @@ export default function MenuTiketScreen() {
                   onPress={() => router.push(`/services/tiket/${t.no_ticket}` as any)}
                 />
               </View>
-            ))
+            ))}</Muncul>
           )}
         </View>
         </BannerParalaks>

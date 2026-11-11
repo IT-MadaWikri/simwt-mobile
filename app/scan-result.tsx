@@ -21,6 +21,7 @@ import { useAsetScan } from '../src/hooks/useAsetScan';
 import { statusAman, tiketAktif } from '../src/adapters/tiket';
 import { adaptasiExtraData } from '../src/adapters/aset';
 import { urlFoto } from '../src/utils/kaizen';
+import Muncul from '../src/components/common/Muncul';
 
 // Warna ikon sama dengan grid layanan; tint 12% untuk latar ubin/kapsul.
 const WARNA = { jingga: '#ff9a2e', biru: '#4a98ff', ungu: '#9a6bff', tosca: '#1fc2a8' };
@@ -113,122 +114,124 @@ export default function ScanResultScreen() {
     });
 
   return (
-    <View style={[gs.screen, { backgroundColor: Colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={adaTiketAktif ? { paddingBottom: insets.bottom } : undefined}>
-        <GaleriAset foto={foto} />
+    <Muncul style={{ flex: 1 }}>
+      <View style={[gs.screen, { backgroundColor: Colors.background }]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={adaTiketAktif ? { paddingBottom: insets.bottom } : undefined}>
+          <GaleriAset foto={foto} />
 
-        {/* Identitas */}
-        <View style={[styles.seksi, { marginTop: 0 }]}>
-          <Text style={styles.judul}>{aset.alias || aset.asset_name || '-'}</Text>
-          {aset.alias && aset.asset_name ? <Text style={styles.sub}>{aset.asset_name}</Text> : null}
-          <View style={styles.barisNomor}>
-            <Icon name="barcode" size={14} color={Colors.textTertiary} />
-            <Text style={styles.sub}>{aset.asset_number || '-'}</Text>
+          {/* Identitas */}
+          <View style={[styles.seksi, { marginTop: 0 }]}>
+            <Text style={styles.judul}>{aset.alias || aset.asset_name || '-'}</Text>
+            {aset.alias && aset.asset_name ? <Text style={styles.sub}>{aset.asset_name}</Text> : null}
+            <View style={styles.barisNomor}>
+              <Icon name="barcode" size={14} color={Colors.textTertiary} />
+              <Text style={styles.sub}>{aset.asset_number || '-'}</Text>
+            </View>
+            {chip.length > 0 ? (
+              <View style={styles.chipBaris}>
+                {chip.map((c) => (
+                  <View key={c.ikon} style={[styles.chip, { backgroundColor: tint(c.warna) }]}>
+                    <Icon name={c.ikon} size={13} color={c.warna} />
+                    <Text style={[styles.chipTeks, { color: c.warna }]} numberOfLines={1}>{c.teks}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
           </View>
-          {chip.length > 0 ? (
-            <View style={styles.chipBaris}>
-              {chip.map((c) => (
-                <View key={c.ikon} style={[styles.chip, { backgroundColor: tint(c.warna) }]}>
-                  <Icon name={c.ikon} size={13} color={c.warna} />
-                  <Text style={[styles.chipTeks, { color: c.warna }]} numberOfLines={1}>{c.teks}</Text>
+
+          {/* Ringkas: empat ubin 2×2 */}
+          <View style={styles.seksi}>
+            <View style={styles.grid}>
+              {ubin.map((u) => (
+                <View key={u.label} style={styles.ubin}>
+                  <View style={[styles.lingkar, { backgroundColor: tint(u.warna) }]}>
+                    <Icon name={u.ikon} size={15} color={u.warna} />
+                  </View>
+                  <View style={gs.flex1}>
+                    <Text style={styles.label} numberOfLines={1}>{u.label}</Text>
+                    <Text style={styles.nilai} numberOfLines={2}>{u.nilai || '-'}</Text>
+                  </View>
                 </View>
               ))}
             </View>
-          ) : null}
-        </View>
+          </View>
 
-        {/* Ringkas: empat ubin 2×2 */}
-        <View style={styles.seksi}>
-          <View style={styles.grid}>
-            {ubin.map((u) => (
-              <View key={u.label} style={styles.ubin}>
-                <View style={[styles.lingkar, { backgroundColor: tint(u.warna) }]}>
-                  <Icon name={u.ikon} size={15} color={u.warna} />
-                </View>
-                <View style={gs.flex1}>
-                  <Text style={styles.label} numberOfLines={1}>{u.label}</Text>
-                  <Text style={styles.nilai} numberOfLines={2}>{u.nilai || '-'}</Text>
-                </View>
-              </View>
+          <View style={styles.seksi}>
+            <Text style={styles.judulSeksi}>Informasi aset</Text>
+            {informasi.map((s, i) => (
+              <BarisInfo key={s.label} ikon={s.ikon} label={s.label} nilai={s.nilai} garis={i > 0} />
             ))}
           </View>
-        </View>
 
-        <View style={styles.seksi}>
-          <Text style={styles.judulSeksi}>Informasi aset</Text>
-          {informasi.map((s, i) => (
-            <BarisInfo key={s.label} ikon={s.ikon} label={s.label} nilai={s.nilai} garis={i > 0} />
-          ))}
-        </View>
-
-        {/* Data opsional yang diisi di web (Update Data aset). Seksi hanya muncul bila ada isinya. */}
-        {spekTeknis.length > 0 ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Spesifikasi teknis</Text>
-            {spekTeknis.map((s, i) => (
-              <BarisInfo key={s.label} ikon="cog-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
-            ))}
-          </View>
-        ) : null}
-
-        {tambahan.length > 0 ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Data lainnya</Text>
-            {tambahan.map((s, i) => (
-              <BarisInfo key={`${s.label}-${i}`} ikon="information-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
-            ))}
-          </View>
-        ) : null}
-
-        {aset.asset_description?.trim() ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Deskripsi</Text>
-            <Text style={styles.deskripsi}>{aset.asset_description.trim()}</Text>
-          </View>
-        ) : null}
-
-        <View style={styles.seksi}>
-          <View style={styles.judulBaris}>
-            <Text style={[styles.judulSeksi, { marginBottom: 0 }]}>Riwayat perbaikan</Text>
-            <LencanaAngka jumlah={riwayat.length} ukuran={20} warna={slate[100]} teks={Colors.textSecondary} />
-          </View>
-          {riwayat.length === 0 ? (
-            <View style={styles.kosong}>
-              <Icon name="clipboard-check-outline" size={28} color={slate[300]} />
-              <Text style={styles.sub}>Belum ada riwayat perbaikan.</Text>
+          {/* Data opsional yang diisi di web (Update Data aset). Seksi hanya muncul bila ada isinya. */}
+          {spekTeknis.length > 0 ? (
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Spesifikasi teknis</Text>
+              {spekTeknis.map((s, i) => (
+                <BarisInfo key={s.label} ikon="cog-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
+              ))}
             </View>
-          ) : (
-            riwayat.map((t, i) => (
-              <TouchableOpacity
-                key={t.no_ticket ?? i}
-                style={[styles.barisRiwayat, i > 0 && styles.garis]}
-                activeOpacity={0.6}
-                disabled={!t.no_ticket}
-                onPress={() => router.push(`/services/tiket/${t.no_ticket}` as any)}
-              >
-                <View style={[styles.lingkar, { backgroundColor: tint(WARNA.jingga) }]}>
-                  <Icon name="progress-wrench" size={16} color={WARNA.jingga} />
-                </View>
-                <View style={gs.flex1}>
-                  <Text style={styles.teksRiwayat} numberOfLines={2}>{t.judul_masalah || '-'}</Text>
-                  <Text style={styles.sub} numberOfLines={1}>
-                    {[t.no_ticket && `#${t.no_ticket}`, t.tanggal_diajukan && formatTanggal(t.tanggal_diajukan)].filter(Boolean).join(' · ')}
-                  </Text>
-                </View>
-                <LencanaStatusTiket status={statusAman(t.status_pengajuan)} />
-                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
-      </ScrollView>
+          ) : null}
 
-      {adaTiketAktif ? null : (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-          <Button icon="ticket-outline" label="Laporkan Masalah Aset" onPress={laporkan} block />
-        </View>
-      )}
-    </View>
+          {tambahan.length > 0 ? (
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Data lainnya</Text>
+              {tambahan.map((s, i) => (
+                <BarisInfo key={`${s.label}-${i}`} ikon="information-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
+              ))}
+            </View>
+          ) : null}
+
+          {aset.asset_description?.trim() ? (
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Deskripsi</Text>
+              <Text style={styles.deskripsi}>{aset.asset_description.trim()}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.seksi}>
+            <View style={styles.judulBaris}>
+              <Text style={[styles.judulSeksi, { marginBottom: 0 }]}>Riwayat perbaikan</Text>
+              <LencanaAngka jumlah={riwayat.length} ukuran={20} warna={slate[100]} teks={Colors.textSecondary} />
+            </View>
+            {riwayat.length === 0 ? (
+              <View style={styles.kosong}>
+                <Icon name="clipboard-check-outline" size={28} color={slate[300]} />
+                <Text style={styles.sub}>Belum ada riwayat perbaikan.</Text>
+              </View>
+            ) : (
+              riwayat.map((t, i) => (
+                <TouchableOpacity
+                  key={t.no_ticket ?? i}
+                  style={[styles.barisRiwayat, i > 0 && styles.garis]}
+                  activeOpacity={0.6}
+                  disabled={!t.no_ticket}
+                  onPress={() => router.push(`/services/tiket/${t.no_ticket}` as any)}
+                >
+                  <View style={[styles.lingkar, { backgroundColor: tint(WARNA.jingga) }]}>
+                    <Icon name="progress-wrench" size={16} color={WARNA.jingga} />
+                  </View>
+                  <View style={gs.flex1}>
+                    <Text style={styles.teksRiwayat} numberOfLines={2}>{t.judul_masalah || '-'}</Text>
+                    <Text style={styles.sub} numberOfLines={1}>
+                      {[t.no_ticket && `#${t.no_ticket}`, t.tanggal_diajukan && formatTanggal(t.tanggal_diajukan)].filter(Boolean).join(' · ')}
+                    </Text>
+                  </View>
+                  <LencanaStatusTiket status={statusAman(t.status_pengajuan)} />
+                  <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        </ScrollView>
+
+        {adaTiketAktif ? null : (
+          <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+            <Button icon="ticket-outline" label="Laporkan Masalah Aset" onPress={laporkan} block />
+          </View>
+        )}
+      </View>
+    </Muncul>
   );
 }
 

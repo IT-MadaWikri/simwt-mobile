@@ -11,12 +11,13 @@ import { Employee, karyawanService } from '../services/karyawanService';
 
 export function useUlangTahunHariIni() {
   const [daftar, setDaftar] = useState<Employee[]>([]);
+  const [memuat, setMemuat] = useState(true);
   const [idMengirim, setIdMengirim] = useState<number | null>(null);
   // Id yang sukses diucapkan pada sesi ini (menimpa data server yang dimuat lebih dulu).
   const [idTerkirim, setIdTerkirim] = useState<number[]>([]);
 
   useEffect(() => {
-    karyawanService.getBirthdaysToday().then(setDaftar);
+    karyawanService.getBirthdaysToday().then(setDaftar).finally(() => setMemuat(false));
   }, []);
 
   const beriSelamat = useCallback(
@@ -44,7 +45,7 @@ export function useUlangTahunHariIni() {
     [idTerkirim]
   );
 
-  return { daftar, idMengirim, sudahDiucapkan, beriSelamat };
+  return { daftar, memuat, idMengirim, sudahDiucapkan, beriSelamat };
 }
 
 export default useUlangTahunHariIni;

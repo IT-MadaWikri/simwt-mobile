@@ -15,6 +15,7 @@ import RekapBulan from '../../../src/components/kaizen/RekapBulan';
 import BannerAksi from '../../../src/components/common/BannerAksi';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
+import Muncul from '../../../src/components/common/Muncul';
 import { Skeleton, SkeletonBaris } from '../../../src/components/common/Skeleton';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
@@ -138,6 +139,7 @@ export default function MenuKaizenScreen() {
             </View>
           </View>
         ) : (
+          <Muncul>
           <View style={styles.bagian}>
             <SectionHeader title="Ringkasan" />
             <View style={[gs.card, styles.kartuRingkas]}>
@@ -167,6 +169,7 @@ export default function MenuKaizenScreen() {
               ) : null}
             </View>
           </View>
+          </Muncul>
         )}
 
         <View style={styles.bagian}>
@@ -176,7 +179,7 @@ export default function MenuKaizenScreen() {
           ) : terbaru.length === 0 ? (
             <Text style={[gs.emptyText, gs.containerX]}>Belum ada Kaizen. Ajukan ide perbaikan pertamamu.</Text>
           ) : (
-            terbaru.map((k, i) => {
+            <Muncul>{terbaru.map((k, i) => {
               const warna = warnaStatus(k.status);
               const tgl = new Date(k.created_at);
               return (
@@ -198,7 +201,7 @@ export default function MenuKaizenScreen() {
                   </TouchableOpacity>
                 </View>
               );
-            })
+            })}</Muncul>
           )}
         </View>
         <View style={styles.bagian}>
@@ -208,7 +211,7 @@ export default function MenuKaizenScreen() {
             ) : hadiahBaru.length === 0 ? (
               <Text style={[gs.emptyText, gs.containerX]}>Belum ada hadiah untuk plant kamu.</Text>
             ) : (
-              hadiahBaru.map((g, i) => {
+              <Muncul>{hadiahBaru.map((g, i) => {
                 const foto = g.gambar_url ?? urlFoto(g.gambar);
                 return (
                   <View key={g.id}>
@@ -232,7 +235,7 @@ export default function MenuKaizenScreen() {
                     </TouchableOpacity>
                   </View>
                 );
-              })
+              })}</Muncul>
             )}
         </View>
 

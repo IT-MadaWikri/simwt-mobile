@@ -31,6 +31,7 @@ import {
   langkahKeluarPabrik,
   tahapGerbang,
 } from '../../../src/adapters/keluarPabrik';
+import Muncul from '../../../src/components/common/Muncul';
 
 /** Satu baris isian: label tetap di kiri, nilai di kanan (membungkus bila panjang); null = tidak tampil. */
 function Baris({ label, nilai }: { label: string; nilai: string | null }) {
@@ -76,81 +77,83 @@ export default function DetailKeluarPabrikScreen() {
   const tahap = tahapGerbang(f);
 
   return (
-    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-      <AppBar judul="Detail Form" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.isi, { paddingBottom: (disetujui ? 0 : insets.bottom) + Spacing.xl }]}
-        refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-      >
-        <View style={styles.kepala}>
-          <View style={styles.ikon}>
-            <Icon name="logout" size={20} color={brand[700]} />
-          </View>
-          <View style={gs.flex1}>
-            <Text style={styles.judul}>Keluar Pabrik · {LABEL_JENIS[f.jenisKeluar]}</Text>
-            <View style={styles.barisStatus}>
-              <LencanaStatusKeluarPabrik status={f.status} label={f.statusLabel} />
+    <Muncul style={{ flex: 1 }}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+        <AppBar judul="Detail Form" />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.isi, { paddingBottom: (disetujui ? 0 : insets.bottom) + Spacing.xl }]}
+          refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+        >
+          <View style={styles.kepala}>
+            <View style={styles.ikon}>
+              <Icon name="logout" size={20} color={brand[700]} />
             </View>
-            <Text style={styles.nomor} selectable>{f.nomorDokumen}</Text>
+            <View style={gs.flex1}>
+              <Text style={styles.judul}>Keluar Pabrik · {LABEL_JENIS[f.jenisKeluar]}</Text>
+              <View style={styles.barisStatus}>
+                <LencanaStatusKeluarPabrik status={f.status} label={f.statusLabel} />
+              </View>
+              <Text style={styles.nomor} selectable>{f.nomorDokumen}</Text>
+            </View>
           </View>
-        </View>
 
-        {ditolak || disetujui ? (
-          <View style={[styles.catatan, { backgroundColor: ditolak ? Colors.serviceRed : brand[50] }]}>
-            <Icon name={ditolak ? 'alert-circle' : 'check-circle'} size={16} color={ditolak ? Colors.danger : brand[600]} />
-            <Text style={[styles.teksCatatan, { color: ditolak ? Colors.dangerDark : brand[700] }]}>
-              {ditolak
-                ? `Ditolak: ${f.catatanPenolakan}`
-                : `Disetujui${f.disetujuiOleh ? ` oleh ${f.disetujuiOleh}` : ''}.${f.catatanPersetujuan ? ` ${f.catatanPersetujuan}` : ''}`}
-            </Text>
+          {ditolak || disetujui ? (
+            <View style={[styles.catatan, { backgroundColor: ditolak ? Colors.serviceRed : brand[50] }]}>
+              <Icon name={ditolak ? 'alert-circle' : 'check-circle'} size={16} color={ditolak ? Colors.danger : brand[600]} />
+              <Text style={[styles.teksCatatan, { color: ditolak ? Colors.dangerDark : brand[700] }]}>
+                {ditolak
+                  ? `Ditolak: ${f.catatanPenolakan}`
+                  : `Disetujui${f.disetujuiOleh ? ` oleh ${f.disetujuiOleh}` : ''}.${f.catatanPersetujuan ? ` ${f.catatanPersetujuan}` : ''}`}
+              </Text>
+            </View>
+          ) : null}
+
+          <Text style={styles.judulBagian}>Pengajuan</Text>
+          <View>
+            <Baris label="Pemohon" nilai={f.namaUser} />
+            <Baris label="Kategori" nilai={LABEL_KATEGORI[f.kategori]} />
+            <Baris label="Unit kerja" nilai={unit || null} />
+            <Baris label="Tanggal" nilai={formatTanggalKeluar(f.tanggalKeluar)} />
+            <Baris label="Jam" nilai={formatRentangJam(f.jamKeluar, f.jamKembali)} />
+            <Baris label="Alasan" nilai={f.alasan} />
+            <Baris label="Keluar aktual" nilai={f.waktuKeluarAktual ? formatWaktuKeluarPabrik(f.waktuKeluarAktual) : null} />
+            <Baris label="Kembali aktual" nilai={f.waktuKembaliAktual ? formatWaktuKeluarPabrik(f.waktuKembaliAktual) : null} />
+            <Baris label="Diajukan" nilai={formatWaktuKeluarPabrik(f.diajukanAt)} />
+          </View>
+
+          <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
+          <LinimasaTiket langkah={langkahKeluarPabrik(f)} />
+        </ScrollView>
+
+        {/* Menempel di bawah layar (seperti footer form Kaizen), di luar ScrollView. */}
+        {disetujui ? (
+          <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+            <Button
+              label={LABEL_TAHAP_GERBANG[tahap]}
+              icon={tahap === 'selesai' ? 'check-circle' : 'qrcode-scan'}
+              disabled={tahap === 'selesai' || !f.gerbangUrl}
+              onPress={() => setQrTerbuka(true)}
+              style={gs.flex1}
+            />
           </View>
         ) : null}
 
-        <Text style={styles.judulBagian}>Pengajuan</Text>
-        <View>
-          <Baris label="Pemohon" nilai={f.namaUser} />
-          <Baris label="Kategori" nilai={LABEL_KATEGORI[f.kategori]} />
-          <Baris label="Unit kerja" nilai={unit || null} />
-          <Baris label="Tanggal" nilai={formatTanggalKeluar(f.tanggalKeluar)} />
-          <Baris label="Jam" nilai={formatRentangJam(f.jamKeluar, f.jamKembali)} />
-          <Baris label="Alasan" nilai={f.alasan} />
-          <Baris label="Keluar aktual" nilai={f.waktuKeluarAktual ? formatWaktuKeluarPabrik(f.waktuKeluarAktual) : null} />
-          <Baris label="Kembali aktual" nilai={f.waktuKembaliAktual ? formatWaktuKeluarPabrik(f.waktuKembaliAktual) : null} />
-          <Baris label="Diajukan" nilai={formatWaktuKeluarPabrik(f.diajukanAt)} />
-        </View>
-
-        <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
-        <LinimasaTiket langkah={langkahKeluarPabrik(f)} />
-      </ScrollView>
-
-      {/* Menempel di bawah layar (seperti footer form Kaizen), di luar ScrollView. */}
-      {disetujui ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-          <Button
-            label={LABEL_TAHAP_GERBANG[tahap]}
-            icon={tahap === 'selesai' ? 'check-circle' : 'qrcode-scan'}
-            disabled={tahap === 'selesai' || !f.gerbangUrl}
-            onPress={() => setQrTerbuka(true)}
-            style={gs.flex1}
-          />
-        </View>
-      ) : null}
-
-      {f.gerbangUrl ? (
-        <BottomSheet
-          visible={qrTerbuka}
-          onClose={() => {
-            setQrTerbuka(false);
-            d.segarkan(); // satpam mungkin baru memindai → tahap tombol ikut berubah
-          }}
-          title={tahap === 'kembali' ? 'QR Scan In' : 'QR Scan Out'}
-          subtitle={f.nomorDokumen}
-        >
-          <QrPassKeluarPabrik url={f.gerbangUrl} />
-        </BottomSheet>
-      ) : null}
-    </View>
+        {f.gerbangUrl ? (
+          <BottomSheet
+            visible={qrTerbuka}
+            onClose={() => {
+              setQrTerbuka(false);
+              d.segarkan(); // satpam mungkin baru memindai → tahap tombol ikut berubah
+            }}
+            title={tahap === 'kembali' ? 'QR Scan In' : 'QR Scan Out'}
+            subtitle={f.nomorDokumen}
+          >
+            <QrPassKeluarPabrik url={f.gerbangUrl} />
+          </BottomSheet>
+        ) : null}
+      </View>
+    </Muncul>
   );
 }
 

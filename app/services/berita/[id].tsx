@@ -20,6 +20,7 @@ import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/
 import { gs } from '../../../constants/GlobalStyles';
 import { tanggalBerita, teksBagikanBerita } from '../../../src/adapters/berita';
 import { useDetailBerita } from '../../../src/hooks/useDetailBerita';
+import Muncul from '../../../src/components/common/Muncul';
 
 // Gaya isi artikel: Poppins 12px seperti teks lain; judul bagian memakai varian bold.
 const baseStyle = { fontFamily: fonts.regular, fontSize: ukuranIsi, lineHeight: 20, color: Colors.textSecondary };
@@ -68,85 +69,87 @@ export default function BeritaDetailScreen() {
   }
 
   return (
-    <View style={gs.screenPlain}>
-      <AppBar
-        judul="Berita"
-        kanan={
-          <TouchableOpacity hitSlop={10} onPress={() => Share.share({ message: teksBagikanBerita(berita) }).catch(() => {})}>
-            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
-          </TouchableOpacity>
-        }
-      />
-      <ScrollView
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: Spacing.xxxl + insets.bottom }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Judul besar: pengecualian dari aturan 12px, seperti sapaan di puncak beranda. */}
-        <Text style={styles.judul}>{berita.judul}</Text>
+    <Muncul style={{ flex: 1 }}>
+      <View style={gs.screenPlain}>
+        <AppBar
+          judul="Berita"
+          kanan={
+            <TouchableOpacity hitSlop={10} onPress={() => Share.share({ message: teksBagikanBerita(berita) }).catch(() => {})}>
+              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          }
+        />
+        <ScrollView
+          contentContainerStyle={[gs.scrollContent, { paddingBottom: Spacing.xxxl + insets.bottom }]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Judul besar: pengecualian dari aturan 12px, seperti sapaan di puncak beranda. */}
+          <Text style={styles.judul}>{berita.judul}</Text>
 
-        <View style={styles.baris}>
-          <Text style={styles.meta} numberOfLines={1}>
-            {tanggalBerita(berita.terbitPada)}
-            {berita.penulis ? ' oleh ' : ''}
-            {berita.penulis ? <Text style={styles.penulis}>{berita.penulis}</Text> : null}
-          </Text>
-          <Text style={styles.meta}>{berita.menitBaca} mnt baca</Text>
-        </View>
-
-        <View style={styles.statistik}>
-          <View style={styles.butir}>
-            <Icon name="eye-outline" size={16} color={Colors.textSecondary} />
-            <Text style={styles.meta}>{berita.dilihat}</Text>
+          <View style={styles.baris}>
+            <Text style={styles.meta} numberOfLines={1}>
+              {tanggalBerita(berita.terbitPada)}
+              {berita.penulis ? ' oleh ' : ''}
+              {berita.penulis ? <Text style={styles.penulis}>{berita.penulis}</Text> : null}
+            </Text>
+            <Text style={styles.meta}>{berita.menitBaca} mnt baca</Text>
           </View>
-          <TouchableOpacity style={styles.butir} hitSlop={10} onPress={() => suka()}>
-            <Icon
-              name="heart"
-              size={16}
-              color={berita.disukai ? Colors.danger : Colors.textSecondary}
-              fill={berita.disukai ? Colors.danger : 'none'}
-            />
-            <Text style={styles.meta}>{berita.jumlahSuka}</Text>
-          </TouchableOpacity>
-        </View>
 
-        <View style={styles.foto}>
-          {berita.sampulUrl ? (
-            <Image source={{ uri: berita.sampulUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          ) : (
-            <Icon name="image" size={32} color={Colors.textTertiary} />
-          )}
-        </View>
-
-        <RenderHTML
-          contentWidth={width - Spacing.screenPadding * 2}
-          source={{ html: berita.isi }}
-          baseStyle={baseStyle}
-          tagsStyles={tagsStyles}
-          // Font Inter/Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
-          systemFonts={[fonts.regular, fonts.bold, fontsJudul.bold]}
-        />
-
-        <BagikanSosmed
-          teks={teksBagikanBerita(berita)}
-          onGagal={(nama) => dialog.alert('Gagal Membuka', `${nama} tidak bisa dibuka di perangkat ini.`, 'danger')}
-        />
-
-        {berita.terkait.length > 0 ? (
-          <View style={styles.terkait}>
-            <Text style={styles.judulTerkait}>Mungkin Anda suka</Text>
-            {berita.terkait.map((t) => (
-              <BarisBerita
-                key={t.id}
-                berita={t}
-                onPress={() => router.push(`/services/berita/${t.id}` as any)}
-                onSuka={() => sukaTerkait(t.id)}
-                onBagikan={() => Share.share({ message: teksBagikanBerita(t) }).catch(() => {})}
+          <View style={styles.statistik}>
+            <View style={styles.butir}>
+              <Icon name="eye-outline" size={16} color={Colors.textSecondary} />
+              <Text style={styles.meta}>{berita.dilihat}</Text>
+            </View>
+            <TouchableOpacity style={styles.butir} hitSlop={10} onPress={() => suka()}>
+              <Icon
+                name="heart"
+                size={16}
+                color={berita.disukai ? Colors.danger : Colors.textSecondary}
+                fill={berita.disukai ? Colors.danger : 'none'}
               />
-            ))}
+              <Text style={styles.meta}>{berita.jumlahSuka}</Text>
+            </TouchableOpacity>
           </View>
-        ) : null}
-      </ScrollView>
-    </View>
+
+          <View style={styles.foto}>
+            {berita.sampulUrl ? (
+              <Image source={{ uri: berita.sampulUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            ) : (
+              <Icon name="image" size={32} color={Colors.textTertiary} />
+            )}
+          </View>
+
+          <RenderHTML
+            contentWidth={width - Spacing.screenPadding * 2}
+            source={{ html: berita.isi }}
+            baseStyle={baseStyle}
+            tagsStyles={tagsStyles}
+            // Font Inter/Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
+            systemFonts={[fonts.regular, fonts.bold, fontsJudul.bold]}
+          />
+
+          <BagikanSosmed
+            teks={teksBagikanBerita(berita)}
+            onGagal={(nama) => dialog.alert('Gagal Membuka', `${nama} tidak bisa dibuka di perangkat ini.`, 'danger')}
+          />
+
+          {berita.terkait.length > 0 ? (
+            <View style={styles.terkait}>
+              <Text style={styles.judulTerkait}>Mungkin Anda suka</Text>
+              {berita.terkait.map((t) => (
+                <BarisBerita
+                  key={t.id}
+                  berita={t}
+                  onPress={() => router.push(`/services/berita/${t.id}` as any)}
+                  onSuka={() => sukaTerkait(t.id)}
+                  onBagikan={() => Share.share({ message: teksBagikanBerita(t) }).catch(() => {})}
+                />
+              ))}
+            </View>
+          ) : null}
+        </ScrollView>
+      </View>
+    </Muncul>
   );
 }
 

@@ -26,6 +26,7 @@ import { useDetailTiket } from '../../../src/hooks/useDetailTiket';
 import { useKonfirmasiTiket } from '../../../src/hooks/useKonfirmasiTiket';
 import { teksBagikanTiket } from '../../../src/adapters/tiket';
 import { bagikanBuktiTiket } from '../../../src/services/buktiTiketService';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function DetailTiketScreen() {
   const { nomor } = useLocalSearchParams<{ nomor: string }>();
@@ -89,96 +90,98 @@ export default function DetailTiketScreen() {
   const adaFoto = !!(tiket.fotoSebelum || tiket.fotoSesudah);
 
   return (
-    <>
-      <AppBar
-        judul={`Tiket #${tiket.noTiket}`}
-        kanan={
-          <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
-          </TouchableOpacity>
-        }
-      />
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: tiket.bisaKonfirmasi ? 0 : insets.bottom }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
-        }
-      >
-        {/* Kartu metrik langsung di atas latar layar (tanpa pembungkus putih). */}
-        <View style={styles.metrik}>
-          <MetrikTiket metrik={tiket.metrik} />
-        </View>
+    <Muncul style={{ flex: 1 }}>
+      <>
+        <AppBar
+          judul={`Tiket #${tiket.noTiket}`}
+          kanan={
+            <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
+              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          }
+        />
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: tiket.bisaKonfirmasi ? 0 : insets.bottom }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+          }
+        >
+          {/* Kartu metrik langsung di atas latar layar (tanpa pembungkus putih). */}
+          <View style={styles.metrik}>
+            <MetrikTiket metrik={tiket.metrik} />
+          </View>
 
-        <View style={styles.seksi}>
-          <RingkasanTiket
-            noTiket={tiket.noTiket}
-            judul={tiket.judul}
-            status={tiket.status}
-            jenis={tiket.jenis}
-            plant={tiket.plant}
-            diajukanOleh={tiket.diajukanOleh}
-            pic={tiket.pic}
-            departemen={tiket.departemen}
-            aset={tiket.aset}
-          />
-        </View>
-
-        <View style={styles.seksi}>
-          <Text style={styles.judulSeksi}>Detail masalah</Text>
-          <Text style={styles.teks}>{tiket.detail || '-'}</Text>
-        </View>
-
-        {adaFoto ? (
           <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Foto</Text>
-            <FotoTiket fotoSebelum={tiket.fotoSebelum} fotoSesudah={tiket.fotoSesudah} />
+            <RingkasanTiket
+              noTiket={tiket.noTiket}
+              judul={tiket.judul}
+              status={tiket.status}
+              jenis={tiket.jenis}
+              plant={tiket.plant}
+              diajukanOleh={tiket.diajukanOleh}
+              pic={tiket.pic}
+              departemen={tiket.departemen}
+              aset={tiket.aset}
+            />
+          </View>
+
+          <View style={styles.seksi}>
+            <Text style={styles.judulSeksi}>Detail masalah</Text>
+            <Text style={styles.teks}>{tiket.detail || '-'}</Text>
+          </View>
+
+          {adaFoto ? (
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Foto</Text>
+              <FotoTiket fotoSebelum={tiket.fotoSebelum} fotoSesudah={tiket.fotoSesudah} />
+            </View>
+          ) : null}
+
+          <View style={[styles.seksi, { marginBottom: 0 }]}>
+            <Text style={styles.judulSeksi}>Progres penanganan</Text>
+            {/* Tinggi dibatasi: progres panjang digulir di dalam kotak ini, bukan memanjangkan halaman. */}
+            <ScrollView style={styles.linimasa} nestedScrollEnabled showsVerticalScrollIndicator>
+              <LinimasaTiket langkah={tiket.linimasa} />
+            </ScrollView>
+          </View>
+        </ScrollView>
+
+        {/* Di luar ScrollView supaya tetap menempel di bawah saat halaman digulir. */}
+        {tiket.bisaKonfirmasi ? (
+          <View style={[styles.konfirmasi, { paddingBottom: insets.bottom + Spacing.md }]}>
+            <View style={gs.flex1}>
+              <Text style={styles.judulKonfirmasi}>Menunggu konfirmasi Anda</Text>
+              <Text style={styles.teks}>Teknisi sudah menyelesaikan perbaikan. Apakah masalahnya sudah teratasi?</Text>
+            </View>
+            <Button label="Konfirmasi" icon="check-circle" onPress={bukaSheet} />
           </View>
         ) : null}
 
-        <View style={[styles.seksi, { marginBottom: 0 }]}>
-          <Text style={styles.judulSeksi}>Progres penanganan</Text>
-          {/* Tinggi dibatasi: progres panjang digulir di dalam kotak ini, bukan memanjangkan halaman. */}
-          <ScrollView style={styles.linimasa} nestedScrollEnabled showsVerticalScrollIndicator>
-            <LinimasaTiket langkah={tiket.linimasa} />
-          </ScrollView>
-        </View>
-      </ScrollView>
+        <SheetBagikanTiket
+          visible={sheetBagikan}
+          adaBukti={tiket.status === 'RESOLVED' || tiket.status === 'OK'}
+          membuatPdf={membuatPdf}
+          onBagikanPesan={bagikanPesan}
+          onBagikanPdf={bagikanPdf}
+          onClose={() => setSheetBagikan(false)}
+        />
 
-      {/* Di luar ScrollView supaya tetap menempel di bawah saat halaman digulir. */}
-      {tiket.bisaKonfirmasi ? (
-        <View style={[styles.konfirmasi, { paddingBottom: insets.bottom + Spacing.md }]}>
-          <View style={gs.flex1}>
-            <Text style={styles.judulKonfirmasi}>Menunggu konfirmasi Anda</Text>
-            <Text style={styles.teks}>Teknisi sudah menyelesaikan perbaikan. Apakah masalahnya sudah teratasi?</Text>
-          </View>
-          <Button label="Konfirmasi" icon="check-circle" onPress={bukaSheet} />
-        </View>
-      ) : null}
-
-      <SheetBagikanTiket
-        visible={sheetBagikan}
-        adaBukti={tiket.status === 'RESOLVED' || tiket.status === 'OK'}
-        membuatPdf={membuatPdf}
-        onBagikanPesan={bagikanPesan}
-        onBagikanPdf={bagikanPdf}
-        onClose={() => setSheetBagikan(false)}
-      />
-
-      <SheetKonfirmasiTiket
-        visible={sheetKonfirmasi}
-        noTiket={tiket.noTiket}
-        tanggalSelesai={tiket.tanggalSelesai}
-        batasKonfirmasi={tiket.batasKonfirmasi}
-        mengirim={aksi.mengirim}
-        galat={aksi.galat}
-        onKonfirmasi={async () => selesaiAksi(await aksi.konfirmasi(), 'Tiket Selesai', 'Terima kasih! Tiket telah dikonfirmasi selesai.')}
-        onReopen={async (alasan) =>
-          selesaiAksi(await aksi.reopen(alasan), 'Tiket Dibuka Kembali', 'Tiket dikembalikan ke teknisi untuk perbaikan ulang.')
-        }
-        onClose={() => setSheetKonfirmasi(false)}
-      />
-    </>
+        <SheetKonfirmasiTiket
+          visible={sheetKonfirmasi}
+          noTiket={tiket.noTiket}
+          tanggalSelesai={tiket.tanggalSelesai}
+          batasKonfirmasi={tiket.batasKonfirmasi}
+          mengirim={aksi.mengirim}
+          galat={aksi.galat}
+          onKonfirmasi={async () => selesaiAksi(await aksi.konfirmasi(), 'Tiket Selesai', 'Terima kasih! Tiket telah dikonfirmasi selesai.')}
+          onReopen={async (alasan) =>
+            selesaiAksi(await aksi.reopen(alasan), 'Tiket Dibuka Kembali', 'Tiket dikembalikan ke teknisi untuk perbaikan ulang.')
+          }
+          onClose={() => setSheetKonfirmasi(false)}
+        />
+      </>
+    </Muncul>
   );
 }
 

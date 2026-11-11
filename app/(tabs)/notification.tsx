@@ -26,6 +26,7 @@ import {
 import { kaizenService } from '../../src/services/kaizenService';
 import { jalankanSetelahTransisi } from '../../src/utils/useSetelahTransisi';
 import { SkeletonBaris } from '../../src/components/common/Skeleton';
+import Muncul from '../../src/components/common/Muncul';
 
 /** "Baru saja" / "3 jam lalu" / tanggal. */
 function jarakWaktu(iso: string | null): string {
@@ -222,79 +223,81 @@ export default function NotifikasiScreen() {
   }
 
   return (
-    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-      {appBar}
-      <FlatList
-        data={daftar}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={menyegarkan}
-            onRefresh={() => {
-              setMenyegarkan(true);
-              muat();
-            }}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
-          />
-        }
-        ItemSeparatorComponent={() => (
-          <View style={styles.wadahPemisah}>
-            <View style={styles.pemisah} />
-          </View>
-        )}
-        ListEmptyComponent={
-          <KeadaanKosong
-            pose={galat ? 'mikir' : 'salam'}
-            judul={galat ? 'Gagal memuat' : 'Belum ada notifikasi'}
-            teks={galat ?? 'Pemberitahuan untuk Anda akan tampil di sini.'}
-          />
-        }
-        renderItem={({ item }) => {
-          const rupa = rupaNotifikasi(item.tipe);
-          const warna = WARNA[rupa.warna];
+    <Muncul style={{ flex: 1 }}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+        {appBar}
+        <FlatList
+          data={daftar}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={menyegarkan}
+              onRefresh={() => {
+                setMenyegarkan(true);
+                muat();
+              }}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+          ItemSeparatorComponent={() => (
+            <View style={styles.wadahPemisah}>
+              <View style={styles.pemisah} />
+            </View>
+          )}
+          ListEmptyComponent={
+            <KeadaanKosong
+              pose={galat ? 'mikir' : 'salam'}
+              judul={galat ? 'Gagal memuat' : 'Belum ada notifikasi'}
+              teks={galat ?? 'Pemberitahuan untuk Anda akan tampil di sini.'}
+            />
+          }
+          renderItem={({ item }) => {
+            const rupa = rupaNotifikasi(item.tipe);
+            const warna = WARNA[rupa.warna];
 
-          return (
-            <Swipeable
-              overshootRight={false}
-              renderRightActions={(_progres, _geser, metode) => aksiGeser(item, metode.close)}
-            >
-            <TouchableOpacity
-              style={styles.baris}
-              activeOpacity={item.tautan || adaTujuan(item) ? 0.6 : 1}
-              disabled={!item.tautan && !adaTujuan(item)}
-              onPress={() => buka(item)}
-            >
-              <View style={[styles.logo, { backgroundColor: warna.tile }]}>
-                <Icon name={rupa.icon as any} size={18} color={warna.icon} />
-              </View>
-
-              <View style={gs.flex1}>
-                <Text style={[styles.judul, !item.dibaca && { fontFamily: fonts.bold }]} numberOfLines={2}>
-                  {item.judul}
-                </Text>
-                {item.pesan ? (
-                  <Text style={styles.sub} numberOfLines={2}>
-                    {item.pesan}
-                  </Text>
-                ) : null}
-              </View>
-
-              <View style={styles.kanan}>
-                <Text style={styles.waktu} numberOfLines={1}>{jarakWaktu(item.waktu)}</Text>
-                <View style={styles.penanda}>
-                  {item.tautan && !adaTujuan(item) ? <Icon name="open-in-new" size={12} color={brand[600]} /> : null}
-                  {!item.dibaca ? <View style={styles.titikBaru} /> : null}
+            return (
+              <Swipeable
+                overshootRight={false}
+                renderRightActions={(_progres, _geser, metode) => aksiGeser(item, metode.close)}
+              >
+              <TouchableOpacity
+                style={styles.baris}
+                activeOpacity={item.tautan || adaTujuan(item) ? 0.6 : 1}
+                disabled={!item.tautan && !adaTujuan(item)}
+                onPress={() => buka(item)}
+              >
+                <View style={[styles.logo, { backgroundColor: warna.tile }]}>
+                  <Icon name={rupa.icon as any} size={18} color={warna.icon} />
                 </View>
-              </View>
-            </TouchableOpacity>
-            </Swipeable>
-          );
-        }}
-      />
-    </View>
+
+                <View style={gs.flex1}>
+                  <Text style={[styles.judul, !item.dibaca && { fontFamily: fonts.bold }]} numberOfLines={2}>
+                    {item.judul}
+                  </Text>
+                  {item.pesan ? (
+                    <Text style={styles.sub} numberOfLines={2}>
+                      {item.pesan}
+                    </Text>
+                  ) : null}
+                </View>
+
+                <View style={styles.kanan}>
+                  <Text style={styles.waktu} numberOfLines={1}>{jarakWaktu(item.waktu)}</Text>
+                  <View style={styles.penanda}>
+                    {item.tautan && !adaTujuan(item) ? <Icon name="open-in-new" size={12} color={brand[600]} /> : null}
+                    {!item.dibaca ? <View style={styles.titikBaru} /> : null}
+                  </View>
+                </View>
+              </TouchableOpacity>
+              </Swipeable>
+            );
+          }}
+        />
+      </View>
+    </Muncul>
   );
 }
 

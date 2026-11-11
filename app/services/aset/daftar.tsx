@@ -15,6 +15,7 @@ import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useDaftarAset } from '../../../src/hooks/useDaftarAset';
 import { StatusAset } from '../../../src/types/aset';
+import Muncul from '../../../src/components/common/Muncul';
 
 const JUDUL: Record<StatusAset, string> = { maintenance: 'Aset Maintenance', tidak_aktif: 'Aset Tidak Aktif' };
 
@@ -61,35 +62,37 @@ export default function DaftarAsetScreen() {
         ) : error && aset.length === 0 ? (
           <Text style={[gs.emptyText, gs.containerX]}>{error}</Text>
         ) : (
-          <FlatList
-            data={aset}
-            keyExtractor={(a) => a.asset_number}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
-            refreshControl={<RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-            onEndReached={muatLebihBanyak}
-            onEndReachedThreshold={0.4}
-            ItemSeparatorComponent={() => <View style={styles.pemisah} />}
-            ListEmptyComponent={
-              <KeadaanKosong
-                pose="mikir"
-                judul="Aset tidak ditemukan"
-                teks={kataKunci || kategoriId ? 'Tidak ada aset yang cocok dengan pencarian atau filtermu.' : status ? 'Tidak ada aset dengan status ini.' : 'Belum ada aset di departemenmu.'}
-              />
-            }
-            ListFooterComponent={memuatLebih ? <ActivityIndicator style={{ marginVertical: Spacing.lg }} color={Colors.primary} /> : null}
-            renderItem={({ item }) => (
-              <BarisAset
-                nama={item.alias || item.asset_name}
-                nomor={item.asset_number}
-                keterangan={[item.kategori, item.asset_pic].filter(Boolean).join(' · ')}
-                lokasi={[item.plant, item.departemen].filter(Boolean).join(' · ')}
-                ikon={item.ikon ?? undefined}
-                onPress={() => router.push({ pathname: '/scan-result', params: { nomor: item.asset_number } })}
-              />
-            )}
-          />
+          <Muncul style={{ flex: 1 }}>
+            <FlatList
+              data={aset}
+              keyExtractor={(a) => a.asset_number}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
+              refreshControl={<RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+              onEndReached={muatLebihBanyak}
+              onEndReachedThreshold={0.4}
+              ItemSeparatorComponent={() => <View style={styles.pemisah} />}
+              ListEmptyComponent={
+                <KeadaanKosong
+                  pose="mikir"
+                  judul="Aset tidak ditemukan"
+                  teks={kataKunci || kategoriId ? 'Tidak ada aset yang cocok dengan pencarian atau filtermu.' : status ? 'Tidak ada aset dengan status ini.' : 'Belum ada aset di departemenmu.'}
+                />
+              }
+              ListFooterComponent={memuatLebih ? <ActivityIndicator style={{ marginVertical: Spacing.lg }} color={Colors.primary} /> : null}
+              renderItem={({ item }) => (
+                <BarisAset
+                  nama={item.alias || item.asset_name}
+                  nomor={item.asset_number}
+                  keterangan={[item.kategori, item.asset_pic].filter(Boolean).join(' · ')}
+                  lokasi={[item.plant, item.departemen].filter(Boolean).join(' · ')}
+                  ikon={item.ikon ?? undefined}
+                  onPress={() => router.push({ pathname: '/scan-result', params: { nomor: item.asset_number } })}
+                />
+              )}
+            />
+          </Muncul>
         )}
       </View>
 

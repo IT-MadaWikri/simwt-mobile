@@ -21,6 +21,7 @@ import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenGift, KaizenPoin } from '../../../src/types/kaizen';
 import { relatif, urlFoto } from '../../../src/utils/kaizen';
 import { SkeletonDasbor } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 const WARNA_REDEEM: Record<string, { bg: string; fg: string }> = {
   Diproses: lencana.kuning,
@@ -75,73 +76,75 @@ export default function RedeemPoin() {
   const poin = data?.poin ?? 0;
 
   return (
-    <ScrollView
-      style={gs.screen}
-      contentContainerStyle={{ padding: Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); muat(); }} colors={[Colors.primary]} tintColor={Colors.primary} />}
-    >
-      {error ? <Text style={[styles.isi, { color: Colors.danger, marginBottom: Spacing.sm }]}>{error}</Text> : null}
-
-      <LinearGradient
-        colors={[...gradasiPalet]}
-        start={{ x: 0, y: 0.5 }}
-        end={{ x: 1, y: 0.5 }}
-        style={styles.kartuPoin}
+    <Muncul style={{ flex: 1 }}>
+      <ScrollView
+        style={gs.screen}
+        contentContainerStyle={{ padding: Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); muat(); }} colors={[Colors.primary]} tintColor={Colors.primary} />}
       >
-        <View style={styles.ikonPoin}>
-          <Icon name="star-circle-outline" size={20} color={Colors.ink} />
-        </View>
-        <View>
-          <Text style={styles.labelPoin}>Poin Kaizen kamu</Text>
-          <Text style={styles.nilaiPoin}>{angka(poin)} poin</Text>
-        </View>
-      </LinearGradient>
+        {error ? <Text style={[styles.isi, { color: Colors.danger, marginBottom: Spacing.sm }]}>{error}</Text> : null}
 
-      <Text style={styles.judul}>Pilih gift</Text>
-      {data && data.gifts.length === 0 ? <Text style={styles.kosong}>Belum ada gift untuk plant kamu.</Text> : null}
-      <View style={styles.grid}>
-        {data?.gifts.map((g) => {
-          const cukup = poin >= g.harga_gift;
-          const foto = g.gambar_url ?? urlFoto(g.gambar);
-          return (
-            <View key={g.id} style={styles.gift}>
-              <View style={styles.fotoGift}>
-                {foto ? <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : <Icon name="gift" size={28} color={Colors.textTertiary} />}
+        <LinearGradient
+          colors={[...gradasiPalet]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={styles.kartuPoin}
+        >
+          <View style={styles.ikonPoin}>
+            <Icon name="star-circle-outline" size={20} color={Colors.ink} />
+          </View>
+          <View>
+            <Text style={styles.labelPoin}>Poin Kaizen kamu</Text>
+            <Text style={styles.nilaiPoin}>{angka(poin)} poin</Text>
+          </View>
+        </LinearGradient>
+
+        <Text style={styles.judul}>Pilih gift</Text>
+        {data && data.gifts.length === 0 ? <Text style={styles.kosong}>Belum ada gift untuk plant kamu.</Text> : null}
+        <View style={styles.grid}>
+          {data?.gifts.map((g) => {
+            const cukup = poin >= g.harga_gift;
+            const foto = g.gambar_url ?? urlFoto(g.gambar);
+            return (
+              <View key={g.id} style={styles.gift}>
+                <View style={styles.fotoGift}>
+                  {foto ? <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : <Icon name="gift" size={28} color={Colors.textTertiary} />}
+                </View>
+                <Text style={styles.namaGift} numberOfLines={2}>{g.nama_gift}</Text>
+                <Text style={styles.harga}>{angka(g.harga_gift)} poin</Text>
+                <Button
+                  label={cukup ? 'Redeem' : 'Poin kurang'}
+                  variant={cukup ? 'primary' : 'muted'}
+                  onPress={() => redeem(g)}
+                  loading={mengirim === g.id}
+                  disabled={!cukup || mengirim !== null}
+                  block
+                  style={{ marginTop: 6 }}
+                />
               </View>
-              <Text style={styles.namaGift} numberOfLines={2}>{g.nama_gift}</Text>
-              <Text style={styles.harga}>{angka(g.harga_gift)} poin</Text>
-              <Button
-                label={cukup ? 'Redeem' : 'Poin kurang'}
-                variant={cukup ? 'primary' : 'muted'}
-                onPress={() => redeem(g)}
-                loading={mengirim === g.id}
-                disabled={!cukup || mengirim !== null}
-                block
-                style={{ marginTop: 6 }}
-              />
+            );
+          })}
+        </View>
+
+        <Text style={styles.judul}>Riwayat redeem</Text>
+        {data && data.riwayat.length === 0 ? <Text style={styles.kosong}>Belum pernah redeem.</Text> : null}
+        {data?.riwayat.map((r) => {
+          const w = WARNA_REDEEM[r.status_redeem] ?? lencana.abu;
+          return (
+            <View key={r.id} style={styles.riwayat}>
+              <View style={gs.flex1}>
+                <Text style={styles.namaGift} numberOfLines={1}>{r.gift?.nama_gift ?? 'Gift'}</Text>
+                <Text style={styles.caption}>Kode {r.kode_redeem} · {relatif(r.created_at)}</Text>
+                {r.status_redeem === 'Dibatalkan' && r.alasan_dibatalkan ? (
+                  <Text style={[styles.caption, { color: Colors.dangerDark }]}>{r.alasan_dibatalkan}</Text>
+                ) : null}
+              </View>
+              <Lencana label={r.status_redeem} warna={w} />
             </View>
           );
         })}
-      </View>
-
-      <Text style={styles.judul}>Riwayat redeem</Text>
-      {data && data.riwayat.length === 0 ? <Text style={styles.kosong}>Belum pernah redeem.</Text> : null}
-      {data?.riwayat.map((r) => {
-        const w = WARNA_REDEEM[r.status_redeem] ?? lencana.abu;
-        return (
-          <View key={r.id} style={styles.riwayat}>
-            <View style={gs.flex1}>
-              <Text style={styles.namaGift} numberOfLines={1}>{r.gift?.nama_gift ?? 'Gift'}</Text>
-              <Text style={styles.caption}>Kode {r.kode_redeem} · {relatif(r.created_at)}</Text>
-              {r.status_redeem === 'Dibatalkan' && r.alasan_dibatalkan ? (
-                <Text style={[styles.caption, { color: Colors.dangerDark }]}>{r.alasan_dibatalkan}</Text>
-              ) : null}
-            </View>
-            <Lencana label={r.status_redeem} warna={w} />
-          </View>
-        );
-      })}
-    </ScrollView>
+      </ScrollView>
+    </Muncul>
   );
 }
 

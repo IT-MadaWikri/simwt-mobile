@@ -15,6 +15,7 @@ import Spacing from '../../../../constants/Spacing';
 import { fonts, ukuranIsi, ukuranCatatan } from '../../../../constants/Typography';
 import { gs, inputReset } from '../../../../constants/GlobalStyles';
 import { useDetailPart } from '../../../../src/hooks/useDetailPart';
+import Muncul from '../../../../src/components/common/Muncul';
 
 export default function PilihProsesScreen() {
   const router = useRouter();
@@ -64,43 +65,45 @@ export default function PilihProsesScreen() {
       {d.memuat ? (
         <SkeletonBaris jumlah={4} />
       ) : (
-        <FlatList
-          data={proses}
-          keyExtractor={(item) => String(item.id)}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
-          ItemSeparatorComponent={() => <View style={styles.pemisah} />}
-          refreshControl={
-            <RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
-          }
-          ListEmptyComponent={
-            <KeadaanKosong
-              pose="mikir"
-              judul={d.error ? 'Gagal memuat' : kata.trim() ? 'Proses tidak ditemukan' : 'Belum ada proses'}
-              teks={d.error ?? (kata.trim() ? 'Coba kata cari lain.' : 'Proses untuk part ini belum tersedia.')}
-            >
-              {d.error ? <Button label="Coba Lagi" onPress={d.segarkan} style={{ marginTop: Spacing.lg }} /> : null}
-            </KeadaanKosong>
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.baris}
-              activeOpacity={0.6}
-              onPress={() =>
-                router.push({ pathname: '/services/pengukuran/input' as any, params: { idPart: id, idProses: String(item.id) } })
-              }
-            >
-              <View style={styles.logo}>
-                <Icon name="cog-outline" size={20} color={brand[700]} />
-              </View>
-              <View style={gs.flex1}>
-                <Text style={styles.nama}>{item.proses}</Text>
-                <Text style={styles.sub}>{item.titik} titik pengukuran</Text>
-              </View>
-              <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
-            </TouchableOpacity>
-          )}
-        />
+        <Muncul style={{ flex: 1 }}>
+          <FlatList
+            data={proses}
+            keyExtractor={(item) => String(item.id)}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
+            ItemSeparatorComponent={() => <View style={styles.pemisah} />}
+            refreshControl={
+              <RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+            }
+            ListEmptyComponent={
+              <KeadaanKosong
+                pose="mikir"
+                judul={d.error ? 'Gagal memuat' : kata.trim() ? 'Proses tidak ditemukan' : 'Belum ada proses'}
+                teks={d.error ?? (kata.trim() ? 'Coba kata cari lain.' : 'Proses untuk part ini belum tersedia.')}
+              >
+                {d.error ? <Button label="Coba Lagi" onPress={d.segarkan} style={{ marginTop: Spacing.lg }} /> : null}
+              </KeadaanKosong>
+            }
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.baris}
+                activeOpacity={0.6}
+                onPress={() =>
+                  router.push({ pathname: '/services/pengukuran/input' as any, params: { idPart: id, idProses: String(item.id) } })
+                }
+              >
+                <View style={styles.logo}>
+                  <Icon name="cog-outline" size={20} color={brand[700]} />
+                </View>
+                <View style={gs.flex1}>
+                  <Text style={styles.nama}>{item.proses}</Text>
+                  <Text style={styles.sub}>{item.titik} titik pengukuran</Text>
+                </View>
+                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+              </TouchableOpacity>
+            )}
+          />
+        </Muncul>
       )}
     </View>
   );

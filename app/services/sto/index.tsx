@@ -20,6 +20,7 @@ import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
 import AppBar from '../../../src/components/common/AppBar';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 /** Rupa lencana per status periode. */
 const STATUS: Record<string, { label: string; badge: any; text: any }> = {
@@ -101,159 +102,161 @@ export default function StoScreen() {
   }
 
   return (
-    <>
-      {layar}
-      <ScrollView
-        style={gs.screen}
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
-        refreshControl={
-          <RefreshControl
-            refreshing={menyegarkan}
-            onRefresh={() => {
-              setMenyegarkan(true);
-              muat();
-            }}
-            colors={[Colors.primary]}
-          />
-        }
-      >
-        {galat ? (
-          <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={galat}>
-            <Button label="Coba Lagi" onPress={muat} style={{ marginTop: Spacing.lg }} />
-          </KeadaanKosong>
-        ) : periode.length === 0 ? (
-          <KeadaanKosong pose="persilakan" judul="Belum ada periode" teks="Belum ada dokumen Stok Opname untuk plant Anda." />
-        ) : (
-          <>
-            <Text style={gs.sectionEyebrow}>Periode</Text>
-            <Text style={gs.sectionTitle}>Dokumen Stok Opname</Text>
+    <Muncul style={{ flex: 1 }}>
+      <>
+        {layar}
+        <ScrollView
+          style={gs.screen}
+          contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+          refreshControl={
+            <RefreshControl
+              refreshing={menyegarkan}
+              onRefresh={() => {
+                setMenyegarkan(true);
+                muat();
+              }}
+              colors={[Colors.primary]}
+            />
+          }
+        >
+          {galat ? (
+            <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={galat}>
+              <Button label="Coba Lagi" onPress={muat} style={{ marginTop: Spacing.lg }} />
+            </KeadaanKosong>
+          ) : periode.length === 0 ? (
+            <KeadaanKosong pose="persilakan" judul="Belum ada periode" teks="Belum ada dokumen Stok Opname untuk plant Anda." />
+          ) : (
+            <>
+              <Text style={gs.sectionEyebrow}>Periode</Text>
+              <Text style={gs.sectionTitle}>Dokumen Stok Opname</Text>
 
-            {periode.map((item) => {
-              const aktif = item.id === dipilih;
-              const status = STATUS[item.status] ?? STATUS.draft;
+              {periode.map((item) => {
+                const aktif = item.id === dipilih;
+                const status = STATUS[item.status] ?? STATUS.draft;
 
-              return (
-                <TouchableOpacity
-                  key={item.id}
-                  activeOpacity={0.85}
-                  onPress={() => pilihPeriode(item)}
-                  style={[
-                    gs.card,
-                    { marginBottom: Spacing.md },
-                    aktif && { borderColor: brand[300], backgroundColor: brand[50] },
-                  ]}
-                >
-                  <View style={gs.rowBetween}>
-                    <Text style={[gs.title, gs.flex1]} numberOfLines={1}>
-                      {item.judul}
-                    </Text>
-                    <View style={[gs.badge, status.badge]}>
-                      <Text style={[gs.badgeText, status.text]}>{status.label}</Text>
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    activeOpacity={0.85}
+                    onPress={() => pilihPeriode(item)}
+                    style={[
+                      gs.card,
+                      { marginBottom: Spacing.md },
+                      aktif && { borderColor: brand[300], backgroundColor: brand[50] },
+                    ]}
+                  >
+                    <View style={gs.rowBetween}>
+                      <Text style={[gs.title, gs.flex1]} numberOfLines={1}>
+                        {item.judul}
+                      </Text>
+                      <View style={[gs.badge, status.badge]}>
+                        <Text style={[gs.badgeText, status.text]}>{status.label}</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <Text style={[gs.bodySm, { marginTop: Spacing.xs }]}>
-                    {item.plant?.nama ?? 'Plant tidak diketahui'}
-                    {item.departemen ? ` · ${item.departemen}` : ''}
+                    <Text style={[gs.bodySm, { marginTop: Spacing.xs }]}>
+                      {item.plant?.nama ?? 'Plant tidak diketahui'}
+                      {item.departemen ? ` · ${item.departemen}` : ''}
+                    </Text>
+
+                    <View style={[gs.rowWrap, gs.gapMd, { marginTop: Spacing.md }]}>
+                      <Ringkas label="Lembar" nilai={String(item.jumlah_lembar)} />
+                      <Ringkas label="Item" nilai={item.total_item?.toLocaleString('id-ID') ?? '-'} />
+                      <Ringkas
+                        label="Akurasi"
+                        nilai={item.akurasi !== null ? `${item.akurasi}%` : '-'}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {dipilih !== null && (
+                <>
+                  <Text style={[gs.sectionTitle, { marginTop: Spacing.lg }]}>
+                    Lembar & Progres
                   </Text>
 
-                  <View style={[gs.rowWrap, gs.gapMd, { marginTop: Spacing.md }]}>
-                    <Ringkas label="Lembar" nilai={String(item.jumlah_lembar)} />
-                    <Ringkas label="Item" nilai={item.total_item?.toLocaleString('id-ID') ?? '-'} />
-                    <Ringkas
-                      label="Akurasi"
-                      nilai={item.akurasi !== null ? `${item.akurasi}%` : '-'}
-                    />
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+                  {lembar.length === 0 ? (
+                    <Text style={gs.emptyText}>Periode ini belum punya lembar.</Text>
+                  ) : (
+                    lembar.map((item) => {
+                      const persen =
+                        item.jumlah_baris > 0
+                          ? Math.round((item.sudah_dihitung / item.jumlah_baris) * 100)
+                          : 0;
 
-            {dipilih !== null && (
-              <>
-                <Text style={[gs.sectionTitle, { marginTop: Spacing.lg }]}>
-                  Lembar & Progres
-                </Text>
-
-                {lembar.length === 0 ? (
-                  <Text style={gs.emptyText}>Periode ini belum punya lembar.</Text>
-                ) : (
-                  lembar.map((item) => {
-                    const persen =
-                      item.jumlah_baris > 0
-                        ? Math.round((item.sudah_dihitung / item.jumlah_baris) * 100)
-                        : 0;
-
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={[gs.card, { marginBottom: Spacing.md }]}
-                        activeOpacity={0.75}
-                        onPress={() => router.push(`/services/sto/${item.id}` as any)}
-                      >
-                        <View style={gs.rowBetween}>
-                          <View style={[gs.row, gs.gapMd, gs.flex1]}>
-                            <View style={gs.iconTile}>
-                              <Icon
-                                name="file-table-outline"
-                                size={20}
-                                color={brand[600]}
-                              />
-                            </View>
-                            <View style={gs.flex1}>
-                              <Text style={gs.title}>{item.kode}</Text>
-                              <Text style={gs.caption} numberOfLines={1}>
-                                {item.kode_gudang ?? item.nama ?? '—'}
-                              </Text>
-                            </View>
-                          </View>
-                          <Text style={[gs.metric, { fontSize: ukuranIsi }]}>{persen}%</Text>
-                        </View>
-
-                        {/* Bilah progres — sepadan dengan yang ada di web,
-                            supaya PIC melihat angka yang sama di dua tempat. */}
-                        <View
-                          style={{
-                            height: 6,
-                            borderRadius: Spacing.radius.full,
-                            backgroundColor: Colors.borderSubtle,
-                            marginTop: Spacing.md,
-                            overflow: 'hidden',
-                          }}
+                      return (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={[gs.card, { marginBottom: Spacing.md }]}
+                          activeOpacity={0.75}
+                          onPress={() => router.push(`/services/sto/${item.id}` as any)}
                         >
+                          <View style={gs.rowBetween}>
+                            <View style={[gs.row, gs.gapMd, gs.flex1]}>
+                              <View style={gs.iconTile}>
+                                <Icon
+                                  name="file-table-outline"
+                                  size={20}
+                                  color={brand[600]}
+                                />
+                              </View>
+                              <View style={gs.flex1}>
+                                <Text style={gs.title}>{item.kode}</Text>
+                                <Text style={gs.caption} numberOfLines={1}>
+                                  {item.kode_gudang ?? item.nama ?? '—'}
+                                </Text>
+                              </View>
+                            </View>
+                            <Text style={[gs.metric, { fontSize: ukuranIsi }]}>{persen}%</Text>
+                          </View>
+
+                          {/* Bilah progres — sepadan dengan yang ada di web,
+                              supaya PIC melihat angka yang sama di dua tempat. */}
                           <View
                             style={{
-                              width: `${persen}%`,
-                              height: '100%',
-                              backgroundColor: brand[500],
+                              height: 6,
+                              borderRadius: Spacing.radius.full,
+                              backgroundColor: Colors.borderSubtle,
+                              marginTop: Spacing.md,
+                              overflow: 'hidden',
                             }}
-                          />
-                        </View>
+                          >
+                            <View
+                              style={{
+                                width: `${persen}%`,
+                                height: '100%',
+                                backgroundColor: brand[500],
+                              }}
+                            />
+                          </View>
 
-                        <View style={[gs.rowBetween, { marginTop: Spacing.sm }]}>
-                          <Text style={[gs.bodySm, gs.flex1]}>
-                            Dihitung {item.sudah_dihitung.toLocaleString('id-ID')} dari{' '}
-                            {item.jumlah_baris.toLocaleString('id-ID')} baris
-                            {item.belum_dihitung > 0
-                              ? ` · ${item.belum_dihitung.toLocaleString('id-ID')} belum dihitung`
-                              : ''}
-                          </Text>
-                          <Icon
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.textTertiary}
-                          />
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })
-                )}
-              </>
-            )}
-          </>
-        )}
-      </ScrollView>
-    </>
+                          <View style={[gs.rowBetween, { marginTop: Spacing.sm }]}>
+                            <Text style={[gs.bodySm, gs.flex1]}>
+                              Dihitung {item.sudah_dihitung.toLocaleString('id-ID')} dari{' '}
+                              {item.jumlah_baris.toLocaleString('id-ID')} baris
+                              {item.belum_dihitung > 0
+                                ? ` · ${item.belum_dihitung.toLocaleString('id-ID')} belum dihitung`
+                                : ''}
+                            </Text>
+                            <Icon
+                              name="chevron-right"
+                              size={20}
+                              color={Colors.textTertiary}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </ScrollView>
+      </>
+    </Muncul>
   );
 }
 

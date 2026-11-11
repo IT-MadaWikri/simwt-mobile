@@ -23,6 +23,7 @@ import { gs } from '../../constants/GlobalStyles';
 import AppBar from '../../src/components/common/AppBar';
 import ServiceIcon from '../../src/components/common/ServiceIcon';
 import SectionHeader from '../../src/components/common/SectionHeader';
+import Muncul from '../../src/components/common/Muncul';
 import BannerMaskot from '../../src/components/common/BannerMaskot';
 import BarisAsetTiketAktif from '../../src/components/aset/BarisAsetTiketAktif';
 import RingkasanAset from '../../src/components/aset/RingkasanAset';
@@ -77,7 +78,7 @@ function HistoriLayanan({ judul, rute, memuat, error, kosong, children }: {
       ) : !adaIsi ? (
         <Text style={[gs.emptyText, gs.containerX]}>{kosong}</Text>
       ) : (
-        <View style={styles.histori}>{children}</View>
+        <Muncul style={styles.histori}>{children}</Muncul>
       )}
     </View>
   );
@@ -245,7 +246,7 @@ export default function ServiceDetailScreen() {
             ) : tiketAktif.aset.length === 0 ? (
               <Text style={[gs.emptyText, gs.containerX]}>Tidak ada aset yang sedang diperbaiki.</Text>
             ) : (
-              tiketAktif.aset.map((a, i) => (
+              <Muncul>{tiketAktif.aset.map((a, i) => (
                 <View key={a.asset_number}>
                   {i > 0 ? <View style={styles.pemisah} /> : null}
                   <BarisAsetTiketAktif
@@ -257,7 +258,7 @@ export default function ServiceDetailScreen() {
                     onPress={() => router.push({ pathname: '/scan-result', params: { nomor: a.asset_number } })}
                   />
                 </View>
-              ))
+              ))}</Muncul>
             )}
           </View>
         ) : null}

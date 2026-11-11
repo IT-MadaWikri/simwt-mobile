@@ -21,6 +21,7 @@ import { gs } from '../../../constants/GlobalStyles';
 import { stoService, StoPaket, StoBaris } from '../../../src/services/stoService';
 import AppBar from '../../../src/components/common/AppBar';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Saring = 'semua' | 'belum' | 'selisih';
 
@@ -153,44 +154,46 @@ export default function DetailLembarStoScreen() {
   );
 
   return (
-    <>
-      <AppBar judul={`${paket.lembar.kode} · ${paket.periode.judul}`} />
+    <Muncul style={{ flex: 1 }}>
+      <>
+        <AppBar judul={`${paket.lembar.kode} · ${paket.periode.judul}`} />
 
-      <View style={gs.screen}>
-        <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
-          <View style={[gs.searchBar, { paddingVertical: Spacing.xs }]}>
-            <Icon name="magnify" size={20} color={Colors.textTertiary} />
-            <TextInput
-              style={gs.fieldInner}
-              placeholder="Cari kode part, nama, atau lokasi..."
-              placeholderTextColor={Colors.placeholder}
-              value={cari}
-              onChangeText={setCari}
-            />
+        <View style={gs.screen}>
+          <View style={[gs.containerX, { paddingTop: Spacing.md }]}>
+            <View style={[gs.searchBar, { paddingVertical: Spacing.xs }]}>
+              <Icon name="magnify" size={20} color={Colors.textTertiary} />
+              <TextInput
+                style={gs.fieldInner}
+                placeholder="Cari kode part, nama, atau lokasi..."
+                placeholderTextColor={Colors.placeholder}
+                value={cari}
+                onChangeText={setCari}
+              />
+            </View>
+
+            <View style={[gs.row, gs.gapSm, { marginTop: Spacing.md }]}>
+              <Chip nilai="semua" label={`Semua (${paket.jumlah_baris})`} />
+              <Chip nilai="belum" label="Belum dihitung" />
+              <Chip nilai="selisih" label="Ada selisih" />
+            </View>
           </View>
 
-          <View style={[gs.row, gs.gapSm, { marginTop: Spacing.md }]}>
-            <Chip nilai="semua" label={`Semua (${paket.jumlah_baris})`} />
-            <Chip nilai="belum" label="Belum dihitung" />
-            <Chip nilai="selisih" label="Ada selisih" />
-          </View>
+          <FlatList
+            data={baris}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderBaris}
+            contentContainerStyle={[{ flexGrow: 1 }, gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+            initialNumToRender={12}
+            windowSize={7}
+            removeClippedSubviews
+            ListEmptyComponent={
+              <Text style={[gs.emptyText, { marginTop: Spacing.xl }]}>
+                Tidak ada baris yang cocok dengan saringan.
+              </Text>
+            }
+          />
         </View>
-
-        <FlatList
-          data={baris}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={renderBaris}
-          contentContainerStyle={[{ flexGrow: 1 }, gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
-          initialNumToRender={12}
-          windowSize={7}
-          removeClippedSubviews
-          ListEmptyComponent={
-            <Text style={[gs.emptyText, { marginTop: Spacing.xl }]}>
-              Tidak ada baris yang cocok dengan saringan.
-            </Text>
-          }
-        />
-      </View>
-    </>
+      </>
+    </Muncul>
   );
 }

@@ -12,6 +12,7 @@ import AppBar from '../../../src/components/common/AppBar';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { inputReset } from '../../../constants/GlobalStyles';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function HumanCapitalScreen() {
   const router = useRouter();
@@ -119,16 +120,18 @@ export default function HumanCapitalScreen() {
         {loading ? (
           <SkeletonDaftar avatar="bulat" />
         ) : (
-          <FlatList
-            data={filteredEmployees}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderEmployee}
-            contentContainerStyle={[{ flexGrow: 1 }, styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <KeadaanKosong pose="mikir" judul="Tidak Ditemukan" teks="Tidak ada karyawan yang cocok dengan pencarian Anda." />
-            }
-          />
+          <Muncul style={{ flex: 1 }}>
+            <FlatList
+              data={filteredEmployees}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderEmployee}
+              contentContainerStyle={[{ flexGrow: 1 }, styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <KeadaanKosong pose="mikir" judul="Tidak Ditemukan" teks="Tidak ada karyawan yang cocok dengan pencarian Anda." />
+              }
+            />
+          </Muncul>
         )}
       </View>
     </>

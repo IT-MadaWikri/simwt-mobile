@@ -20,6 +20,7 @@ import { chatService } from '../../../src/services/chatService';
 import { KontakChat } from '../../../src/types/chat';
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 function inisial(nama: string): string {
   return nama
@@ -104,42 +105,44 @@ export default function ChatBaruScreen() {
       {memuat ? (
         <SkeletonDaftar avatar="bulat" />
       ) : (
-        <SectionList
-          sections={seksi}
-          keyExtractor={(item) => item.id}
-          stickySectionHeadersEnabled
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
-          initialNumToRender={14}
-          windowSize={9}
-          removeClippedSubviews
-          renderSectionHeader={({ section }) => (
-            <View style={styles.kepalaSeksi}>
-              <Text style={styles.hurufSeksi}>{section.title}</Text>
-            </View>
-          )}
-          ListEmptyComponent={
-            <View style={[gs.center, { marginTop: Spacing.xxl }]}>
-              <Text style={gs.emptyText}>
-                {galat ?? 'Tidak ada pengguna yang cocok.'}
-              </Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.baris} activeOpacity={0.7} onPress={() => mulai(item)}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarInisial}>{inisial(item.nama)}</Text>
+        <Muncul style={{ flex: 1 }}>
+          <SectionList
+            sections={seksi}
+            keyExtractor={(item) => item.id}
+            stickySectionHeadersEnabled
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
+            initialNumToRender={14}
+            windowSize={9}
+            removeClippedSubviews
+            renderSectionHeader={({ section }) => (
+              <View style={styles.kepalaSeksi}>
+                <Text style={styles.hurufSeksi}>{section.title}</Text>
               </View>
-              <View style={[gs.flex1, { marginLeft: Spacing.md }]}>
-                <Text style={styles.nama} numberOfLines={1}>
-                  {item.nama}
-                </Text>
-                <Text style={gs.bodySm} numberOfLines={1}>
-                  {item.keterangan}
+            )}
+            ListEmptyComponent={
+              <View style={[gs.center, { marginTop: Spacing.xxl }]}>
+                <Text style={gs.emptyText}>
+                  {galat ?? 'Tidak ada pengguna yang cocok.'}
                 </Text>
               </View>
-            </TouchableOpacity>
-          )}
-        />
+            }
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.baris} activeOpacity={0.7} onPress={() => mulai(item)}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarInisial}>{inisial(item.nama)}</Text>
+                </View>
+                <View style={[gs.flex1, { marginLeft: Spacing.md }]}>
+                  <Text style={styles.nama} numberOfLines={1}>
+                    {item.nama}
+                  </Text>
+                  <Text style={gs.bodySm} numberOfLines={1}>
+                    {item.keterangan}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        </Muncul>
       )}
     </View>
   );

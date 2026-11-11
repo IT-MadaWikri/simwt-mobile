@@ -25,6 +25,7 @@ import { gs } from '../../../constants/GlobalStyles';
 import { useTinggiKeyboard } from '../../../src/hooks/useTinggiKeyboard';
 import { useBuatKeluarPabrik } from '../../../src/hooks/useBuatKeluarPabrik';
 import { LABEL_JENIS, LABEL_KATEGORI, hariIni } from '../../../src/adapters/keluarPabrik';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Sheet = 'plant' | 'departemen' | 'sub' | null;
 
@@ -110,114 +111,116 @@ export default function KeluarPabrikScreen() {
   const g = diperiksa ? r.galat : {};
 
   return (
-    // Diangkat setinggi keyboard (bukan KeyboardAvoidingView, yang meleset di Android edge-to-edge).
-    <View style={[gs.screen, { backgroundColor: Colors.white, paddingBottom: tinggiKeyboard }]}>
-      <AppBar judul="Form Keluar Pabrik" />
+    <Muncul style={{ flex: 1 }}>
+      // Diangkat setinggi keyboard (bukan KeyboardAvoidingView, yang meleset di Android edge-to-edge).
+      <View style={[gs.screen, { backgroundColor: Colors.white, paddingBottom: tinggiKeyboard }]}>
+        <AppBar judul="Form Keluar Pabrik" />
 
-      <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text style={styles.judulBagian}>Pemohon</Text>
-        <View style={[styles.bagian, styles.pemohon]}>
-          <View style={styles.ikonPemohon}>
-            <Icon name="account-outline" size={18} color={brand[700]} />
+        <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Text style={styles.judulBagian}>Pemohon</Text>
+          <View style={[styles.bagian, styles.pemohon]}>
+            <View style={styles.ikonPemohon}>
+              <Icon name="account-outline" size={18} color={brand[700]} />
+            </View>
+            <View style={gs.flex1}>
+              <Text style={styles.namaPemohon}>{opsi.pemohon?.nama}</Text>
+              <Text style={styles.redup}>{opsi.pemohon?.nik}</Text>
+            </View>
           </View>
-          <View style={gs.flex1}>
-            <Text style={styles.namaPemohon}>{opsi.pemohon?.nama}</Text>
-            <Text style={styles.redup}>{opsi.pemohon?.nik}</Text>
+
+          <Text style={styles.judulBagian}>Kategori Pemohon</Text>
+          <View style={styles.bagian}>
+            <PilihanKartu
+              daftar={(Object.keys(LABEL_KATEGORI) as (keyof typeof LABEL_KATEGORI)[]).map((k) => ({ nilai: k, label: LABEL_KATEGORI[k] }))}
+              nilai={form.kategori}
+              onPilih={(v) => r.ubah('kategori', v)}
+            />
+            <Text style={[styles.redup, { marginTop: Spacing.xs }]}>
+              {form.kategori === 'kabag'
+                ? 'Kabag: cukup disetujui Manager Plant atau HRD.'
+                : 'Staff/Magang/PKL: cukup disetujui Leader, Kabag, atau HRD.'}
+            </Text>
           </View>
-        </View>
 
-        <Text style={styles.judulBagian}>Kategori Pemohon</Text>
-        <View style={styles.bagian}>
-          <PilihanKartu
-            daftar={(Object.keys(LABEL_KATEGORI) as (keyof typeof LABEL_KATEGORI)[]).map((k) => ({ nilai: k, label: LABEL_KATEGORI[k] }))}
-            nilai={form.kategori}
-            onPilih={(v) => r.ubah('kategori', v)}
-          />
-          <Text style={[styles.redup, { marginTop: Spacing.xs }]}>
-            {form.kategori === 'kabag'
-              ? 'Kabag: cukup disetujui Manager Plant atau HRD.'
-              : 'Staff/Magang/PKL: cukup disetujui Leader, Kabag, atau HRD.'}
-          </Text>
-        </View>
-
-        <Text style={styles.judulBagian}>Unit Kerja</Text>
-        <View style={styles.bagian}>
-          <FieldPilihan label="Plant" wajib nilai={r.opsiPlant.find((o) => o.id === form.idPlant)?.label ?? null} galat={g.plant} onPress={() => setSheet('plant')} />
-          <FieldPilihan
-            label="Departemen"
-            wajib
-            nilai={r.opsiDepartemen.find((o) => o.id === form.idDepartemen)?.label ?? null}
-            galat={g.departemen}
-            onPress={() => setSheet('departemen')}
-          />
-          {r.opsiSub.length > 0 ? (
+          <Text style={styles.judulBagian}>Unit Kerja</Text>
+          <View style={styles.bagian}>
+            <FieldPilihan label="Plant" wajib nilai={r.opsiPlant.find((o) => o.id === form.idPlant)?.label ?? null} galat={g.plant} onPress={() => setSheet('plant')} />
             <FieldPilihan
-              label="Sub Departemen"
+              label="Departemen"
               wajib
-              nilai={r.opsiSub.find((o) => o.id === form.subDepartemen)?.label ?? null}
-              galat={g.sub}
-              onPress={() => setSheet('sub')}
+              nilai={r.opsiDepartemen.find((o) => o.id === form.idDepartemen)?.label ?? null}
+              galat={g.departemen}
+              onPress={() => setSheet('departemen')}
             />
+            {r.opsiSub.length > 0 ? (
+              <FieldPilihan
+                label="Sub Departemen"
+                wajib
+                nilai={r.opsiSub.find((o) => o.id === form.subDepartemen)?.label ?? null}
+                galat={g.sub}
+                onPress={() => setSheet('sub')}
+              />
+            ) : null}
+          </View>
+
+          <Text style={styles.judulBagian}>Waktu Keluar</Text>
+          <View style={styles.bagian}>
+            <FieldTanggal label="Tanggal" value={form.tanggal} onChange={(v) => r.ubah('tanggal', v)} min={hariIni()} />
+            <View style={styles.barisJam}>
+              <View style={gs.flex1}>
+                <FieldJam label="Jam Keluar" value={form.jamKeluar} onChange={(v) => r.ubah('jamKeluar', v)} />
+              </View>
+              <View style={gs.flex1}>
+                <FieldJam label="Jam Kembali" value={form.jamKembali} onChange={(v) => r.ubah('jamKembali', v)} />
+              </View>
+            </View>
+            {form.jamKembali ? (
+              <TouchableOpacity onPress={() => r.ubah('jamKembali', '')} style={styles.hapusJam}>
+                <Text style={styles.tautan}>Tidak kembali ke pabrik</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.redup}>Kosongkan jam kembali bila tidak kembali ke pabrik.</Text>
+            )}
+          </View>
+
+          <Text style={styles.judulBagian}>Keperluan</Text>
+          <View style={styles.bagian}>
+            <PilihanKartu
+              daftar={(Object.keys(LABEL_JENIS) as (keyof typeof LABEL_JENIS)[]).map((k) => ({ nilai: k, label: LABEL_JENIS[k] }))}
+              nilai={form.jenis}
+              onPilih={(v) => r.ubah('jenis', v)}
+            />
+            {g.jenis ? <Text style={[styles.galat, { marginTop: Spacing.xs }]}>{g.jenis}</Text> : null}
+            <View style={{ marginTop: Spacing.md }}>
+              <FieldTeks
+                label="Alasan / Tujuan Keluar Pabrik"
+                wajib
+                nilai={form.alasan}
+                onUbah={(t) => r.ubah('alasan', t)}
+                galat={g.alasan}
+                multiline
+                placeholder="Tuliskan tujuan atau alasan spesifik keluar pabrik"
+              />
+            </View>
+          </View>
+
+          {r.galatServer ? (
+            <View style={styles.galatServer} accessibilityRole="alert">
+              <Icon name="alert-circle" size={18} color={Colors.danger} />
+              <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{r.galatServer}</Text>
+            </View>
           ) : null}
+        </ScrollView>
+
+        <View style={[styles.footer, { paddingBottom: (tinggiKeyboard ? 0 : insets.bottom) + Spacing.sm }]}>
+          <Button label="Ajukan Form" iconRight="send" onPress={kirim} loading={r.mengirim} style={gs.flex1} />
         </View>
 
-        <Text style={styles.judulBagian}>Waktu Keluar</Text>
-        <View style={styles.bagian}>
-          <FieldTanggal label="Tanggal" value={form.tanggal} onChange={(v) => r.ubah('tanggal', v)} min={hariIni()} />
-          <View style={styles.barisJam}>
-            <View style={gs.flex1}>
-              <FieldJam label="Jam Keluar" value={form.jamKeluar} onChange={(v) => r.ubah('jamKeluar', v)} />
-            </View>
-            <View style={gs.flex1}>
-              <FieldJam label="Jam Kembali" value={form.jamKembali} onChange={(v) => r.ubah('jamKembali', v)} />
-            </View>
-          </View>
-          {form.jamKembali ? (
-            <TouchableOpacity onPress={() => r.ubah('jamKembali', '')} style={styles.hapusJam}>
-              <Text style={styles.tautan}>Tidak kembali ke pabrik</Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={styles.redup}>Kosongkan jam kembali bila tidak kembali ke pabrik.</Text>
-          )}
-        </View>
-
-        <Text style={styles.judulBagian}>Keperluan</Text>
-        <View style={styles.bagian}>
-          <PilihanKartu
-            daftar={(Object.keys(LABEL_JENIS) as (keyof typeof LABEL_JENIS)[]).map((k) => ({ nilai: k, label: LABEL_JENIS[k] }))}
-            nilai={form.jenis}
-            onPilih={(v) => r.ubah('jenis', v)}
-          />
-          {g.jenis ? <Text style={[styles.galat, { marginTop: Spacing.xs }]}>{g.jenis}</Text> : null}
-          <View style={{ marginTop: Spacing.md }}>
-            <FieldTeks
-              label="Alasan / Tujuan Keluar Pabrik"
-              wajib
-              nilai={form.alasan}
-              onUbah={(t) => r.ubah('alasan', t)}
-              galat={g.alasan}
-              multiline
-              placeholder="Tuliskan tujuan atau alasan spesifik keluar pabrik"
-            />
-          </View>
-        </View>
-
-        {r.galatServer ? (
-          <View style={styles.galatServer} accessibilityRole="alert">
-            <Icon name="alert-circle" size={18} color={Colors.danger} />
-            <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{r.galatServer}</Text>
-          </View>
-        ) : null}
-      </ScrollView>
-
-      <View style={[styles.footer, { paddingBottom: (tinggiKeyboard ? 0 : insets.bottom) + Spacing.sm }]}>
-        <Button label="Ajukan Form" iconRight="send" onPress={kirim} loading={r.mengirim} style={gs.flex1} />
+        <SheetPilihan visible={sheet === 'plant'} judul="Plant" opsi={r.opsiPlant} terpilih={form.idPlant} onPilih={(id) => r.ubah('idPlant', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={r.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => r.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'sub'} judul="Sub Departemen" opsi={r.opsiSub} terpilih={form.subDepartemen} onPilih={(id) => r.ubah('subDepartemen', id)} onClose={() => setSheet(null)} />
       </View>
-
-      <SheetPilihan visible={sheet === 'plant'} judul="Plant" opsi={r.opsiPlant} terpilih={form.idPlant} onPilih={(id) => r.ubah('idPlant', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={r.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => r.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'sub'} judul="Sub Departemen" opsi={r.opsiSub} terpilih={form.subDepartemen} onPilih={(id) => r.ubah('subDepartemen', id)} onClose={() => setSheet(null)} />
-    </View>
+    </Muncul>
   );
 }
 

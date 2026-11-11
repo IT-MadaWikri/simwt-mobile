@@ -43,6 +43,7 @@ import DaftarManfaat from '../../../src/components/kaizen/DaftarManfaat';
 import RincianKartuManfaat from '../../../src/components/kaizen/RincianKartuManfaat';
 import { bagikanBuktiKaizen } from '../../../src/services/buktiKaizenService';
 import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 const PQCDSM = ['Productivity', 'Quality', 'Cost', 'Delivery', 'Safety', 'Morale'];
 
@@ -230,301 +231,303 @@ export default function KaizenDetailScreen() {
   ];
 
   return (
-    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-      {/* Hanya Kaizen yang sudah disetujui yang layak dibagikan. Share sheet bawaan OS (WA, FB, dll). */}
-      <AppBar
-        judul="Detail Kaizen"
-        kanan={
-          kaizen.status === 'DISETUJUI' ? (
-            <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
-            </TouchableOpacity>
-          ) : undefined
-        }
-      />
-      <ScrollView
-        contentContainerStyle={styles.isi}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); muat(); }} colors={[Colors.primary]} tintColor={Colors.primary} />
-        }
-      >
-        {/* Ringkasan */}
-        <View style={styles.kartu}>
-          <View style={gs.rowBetween}>
-            <View style={[styles.pil, { backgroundColor: warna.bg }]}>
-              <Text style={[styles.teksPil, { color: warna.fg }]}>{warna.label}</Text>
-            </View>
-            <Text style={styles.kecil}>{kaizen.nomor || `#${kaizen.id}`}</Text>
-          </View>
-          <Text style={styles.tema}>{kaizen.tema || 'Tanpa tema'}</Text>
-          {tags.length ? <Text style={styles.kecil}>{tags.join('  ·  ')}</Text> : null}
-
-          <View style={styles.garis} />
-          <View style={[gs.row, { gap: Spacing.sm }]}>
-            <Avatar nama={kaizen.nama_pelaksana} ukuran={34} />
-            <View style={gs.flex1}>
-              <Text style={styles.nama} numberOfLines={1}>{kaizen.nama_pelaksana || '-'}</Text>
-              <Text style={styles.kecil} numberOfLines={1}>Pelaksana · {kaizen.nik_nama_pelaksana || '-'}</Text>
-            </View>
-          </View>
-          {kaizen.disarankan_oleh ? (
-            <View style={[gs.row, { gap: 6, marginTop: Spacing.sm }]}>
-              <Icon name="lightbulb-on-outline" size={14} color={Colors.textTertiary} />
-              <Text style={styles.kecil}>Disarankan oleh {kaizen.disarankan_oleh}</Text>
-            </View>
-          ) : null}
-        </View>
-
-        {/* Jejak keputusan */}
-        <View style={styles.kartu}>
-          {jejak.map((j, i) => (
-            <View key={i} style={styles.jejak}>
-              <View style={styles.kolomJejak}>
-                <Icon name={j.ikon} size={16} color={j.warna} />
-                {i < jejak.length - 1 ? <View style={styles.tiangJejak} /> : null}
-              </View>
-              <View style={[gs.flex1, { paddingBottom: i < jejak.length - 1 ? Spacing.md : 0 }]}>
-                <Text style={styles.judulJejak}>{j.judul}</Text>
-                {j.ket ? <Text style={styles.kecil}>{j.ket}</Text> : null}
-              </View>
-            </View>
-          ))}
-          {kaizen.status === 'DITOLAK' && kaizen.alasan ? (
-            <View style={styles.alasan}>
-              <Text style={styles.judulAlasan}>Alasan ditolak</Text>
-              <Text style={styles.teksAlasan}>{kaizen.alasan}</Text>
-            </View>
-          ) : null}
-        </View>
-
-        {/* Foto */}
-        <View style={styles.kartu}>
-        <Text style={styles.judulSeksi}>Foto</Text>
-        <View style={[gs.row, { gap: Spacing.sm }]}>
-          {fotos.map((f) => (
-            <TouchableOpacity
-              key={f.label}
-              style={styles.ubinFoto}
-              activeOpacity={0.85}
-              disabled={!f.uri}
-              onPress={() => setFotoBesar(f.uri)}
-            >
-              {f.uri ? (
-                <Image source={{ uri: f.uri }} style={styles.gambar} resizeMode="cover" />
-              ) : (
-                <View style={[styles.gambar, gs.centerFill]}>
-                  <Icon name="image" size={22} color={Colors.textTertiary} />
-                  <Text style={[styles.kecil, { marginTop: 4 }]}>Tidak ada foto</Text>
-                </View>
-              )}
-              <View style={[styles.tagFoto, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
-                <Text style={styles.teksTagFoto}>{f.label}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-        </View>
-
-        {/* Kondisi */}
-        <View style={styles.kartu}>
-          <Text style={styles.judulSeksi}>Kondisi</Text>
-          {[
-            { label: 'Sebelum Kaizen', warna: Colors.danger, teks: teksSebelum },
-            { label: 'Sesudah Kaizen', warna: brand[600], teks: teksSesudah },
-          ].map((s, i) => (
-            <View key={s.label} style={i > 0 ? { marginTop: Spacing.md } : null}>
-              <View style={[gs.row, { gap: 6, marginBottom: 4 }]}>
-                <View style={[styles.titik, { backgroundColor: s.warna }]} />
-                <Text style={styles.labelKondisi}>{s.label}</Text>
-              </View>
-              <Text style={styles.teks}>{s.teks || '-'}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Manfaat */}
-        <View style={styles.kartu}>
-          <Text style={styles.judulSeksi}>Manfaat ({manfaats.length})</Text>
-          {manfaats.length === 0 ? <Text style={[styles.teks, styles.kosong]}>Belum ada manfaat.</Text> : null}
-          {kelompokManfaat.map(([kat, butir]) => {
-            const l = LENCANA[kat];
-            return (
-              <TouchableOpacity key={kat || 'x'} style={styles.kartuManfaat} activeOpacity={0.6} onPress={() => setSheetManfaat(kat)}>
-                <View style={[styles.logoManfaat, { backgroundColor: l?.warna[1] ?? slate[400] }]}>
-                  <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
-                </View>
-                <Text style={[styles.nama, gs.flex1]} numberOfLines={1}>{kat || 'Manfaat'}</Text>
-                <LencanaAngka jumlah={butir.length} ukuran={24} warna={brand[50]} teks={brand[700]} />
-                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+    <Muncul style={{ flex: 1 }}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+        {/* Hanya Kaizen yang sudah disetujui yang layak dibagikan. Share sheet bawaan OS (WA, FB, dll). */}
+        <AppBar
+          judul="Detail Kaizen"
+          kanan={
+            kaizen.status === 'DISETUJUI' ? (
+              <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
+                <Icon name="share-variant" size={20} color={Colors.textPrimary} />
               </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Penilaian — hanya untuk Kaizen yang disetujui, seperti website */}
-        {kaizen.status === 'DISETUJUI' ? (
-          <>
-            <View style={styles.kartu}>
-            <View style={[gs.rowBetween, { alignItems: 'flex-end' }]}>
-              <Text style={styles.judulSeksi}>Nilai PQCDSM</Text>
-              <Text style={[styles.kecil, { marginBottom: Spacing.sm }]}>Total +{totalKategoriNilai || 0} poin</Text>
-            </View>
-            <View style={styles.gridNilai}>
-              {PQCDSM.map((kat) => {
-                const l = LENCANA[kat];
-                const v = kategoriNilai[kat] ?? 0;
-                return (
-                  <View key={kat} style={styles.petak}>
-                    <View style={[styles.logoManfaat, { backgroundColor: v > 0 ? l.warna[1] : slate[200] }]}>
-                      <Icon name={l.ikon} size={14} color={v > 0 ? Colors.white : Colors.textTertiary} />
-                    </View>
-                    <Text style={[styles.angka, v === 0 && { color: Colors.textTertiary }]}>{v > 0 ? `+${v}` : '—'}</Text>
-                    <Text style={styles.kecil} numberOfLines={1}>{kat}</Text>
-                  </View>
-                );
-              })}
-            </View>
-
-            </View>
-
-            <View style={styles.kartu}>
-              <Text style={styles.judulSeksi}>Penilaian komite</Text>
-              {nilaiPanitia ? (
-                <>
-                  {[
-                    { label: 'Nilai PQCDSM', nilai: totalKategoriNilai || 0 },
-                    { label: 'Nilai komite', nilai: nilaiPanitia.nilai_panitia },
-                    ...(nilaiPelaksanaan ? [{ label: 'Nilai pelaksanaan', nilai: nilaiPelaksanaan }] : []),
-                  ].map((b, i) => (
-                    <View key={b.label} style={[gs.rowBetween, i > 0 && { marginTop: 6 }]}>
-                      <Text style={styles.teks}>{b.label}</Text>
-                      <Text style={styles.nama}>+{b.nilai} poin</Text>
-                    </View>
-                  ))}
-                  <View style={[styles.garis, { marginVertical: Spacing.sm }]} />
-                  <View style={gs.rowBetween}>
-                    <Text style={styles.nama}>Poin didapat</Text>
-                    <Text style={[styles.nama, { color: brand[700] }]}>+{totalPoin} poin</Text>
-                  </View>
-                </>
-              ) : (
-                <Text style={[styles.teks, styles.kosong]}>Belum dinilai oleh komite. Penilaian dilakukan lewat website SIMWT.</Text>
-              )}
-            </View>
-          </>
-        ) : null}
-        {/* Menutup celah abu-abu di bawah seksi terakhir (marginBottom-nya dibatalkan). */}
-        <View style={{ marginTop: -Spacing.sm, height: bisaPutus ? 0 : insets.bottom, backgroundColor: Colors.white }} />
-      </ScrollView>
-
-      {bisaPutus ? (
-        <View style={[styles.bawah, { paddingBottom: insets.bottom + Spacing.sm }]}>
-          <Button variant="dangerOutline" label="Tolak" onPress={() => setSheetTolak(true)} disabled={!!proses} style={gs.flex1} />
-          <Button label="Setujui" onPress={setujui} loading={proses === 'setuju'} disabled={!!proses} style={gs.flex1} />
-        </View>
-      ) : null}
-
-      <BottomSheet visible={sheetBagikan} onClose={() => (membuatPdf ? null : setSheetBagikan(false))} title="Bagikan Kaizen">
-        <TouchableOpacity style={styles.opsiBagikan} onPress={bagikanPesan} disabled={membuatPdf} activeOpacity={0.7}>
-          <View style={styles.ikonBagikan}>
-            <Icon name="chat-outline" size={18} color={brand[700]} />
-          </View>
-          <View style={gs.flex1}>
-            <Text style={styles.judulBagikan}>Bagikan sebagai pesan</Text>
-            <Text style={styles.ketBagikan}>Teks ringkas ke WhatsApp, Facebook, dan lainnya</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.opsiBagikan} onPress={bagikanPdf} disabled={membuatPdf} activeOpacity={0.7}>
-          <View style={styles.ikonBagikan}>
-            {membuatPdf ? <BrandSpinner size={18} color={brand[700]} /> : <Icon name="file-document" size={18} color={brand[700]} />}
-          </View>
-          <View style={gs.flex1}>
-            <Text style={styles.judulBagikan}>{membuatPdf ? 'Membuat PDF…' : 'Bagikan bukti Kaizen (PDF)'}</Text>
-            <Text style={styles.ketBagikan}>Formulir Bukti Kaizen Digital berisi foto dan penilaian</Text>
-          </View>
-        </TouchableOpacity>
-      </BottomSheet>
-
-      <BottomSheet
-        visible={sheetManfaat !== null}
-        onClose={() => { setSheetManfaat(null); setRincianManfaat(null); }}
-        title={`Manfaat ${sheetManfaat || ''}`.trim()}
-        subtitle={`${butirSheet.length} manfaat`}
-      >
-        <DaftarManfaat
-          onPilih={setRincianManfaat}
-          items={butirSheet.map((m, urut) => ({
-            judul: `${sheetManfaat || 'Manfaat'} ${urut + 1}`,
-            ikon: ikonManfaat(m.manfaat_nilai?.kategori),
-            warna: warnaManfaat(m.manfaat_nilai?.kategori),
-            tipe: m.tipe_area,
-          }))}
+            ) : undefined
+          }
         />
-      </BottomSheet>
+        <ScrollView
+          contentContainerStyle={styles.isi}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); muat(); }} colors={[Colors.primary]} tintColor={Colors.primary} />
+          }
+        >
+          {/* Ringkasan */}
+          <View style={styles.kartu}>
+            <View style={gs.rowBetween}>
+              <View style={[styles.pil, { backgroundColor: warna.bg }]}>
+                <Text style={[styles.teksPil, { color: warna.fg }]}>{warna.label}</Text>
+              </View>
+              <Text style={styles.kecil}>{kaizen.nomor || `#${kaizen.id}`}</Text>
+            </View>
+            <Text style={styles.tema}>{kaizen.tema || 'Tanpa tema'}</Text>
+            {tags.length ? <Text style={styles.kecil}>{tags.join('  ·  ')}</Text> : null}
 
-      {/* Sheet kedua: menutupi daftar manfaat, isinya Penghematan/Sebelum/Sesudah satu manfaat. */}
-      <BottomSheet
-        visible={rincianManfaat !== null && butirRincian !== undefined}
-        onClose={() => setRincianManfaat(null)}
-        title={`${sheetManfaat || 'Manfaat'} ${(rincianManfaat ?? 0) + 1}`}
-      >
-        {butirRincian ? (
-          <RincianKartuManfaat
-            item={{
-              warna: warnaManfaat(butirRincian.manfaat_nilai?.kategori),
-              hemat: butirRincian.hemat,
-              sebelum: butirRincian.sebelum,
-              sesudah: butirRincian.sesudah,
-              area: butirRincian.area,
-              pic: butirRincian.pic,
-            }}
-          />
+            <View style={styles.garis} />
+            <View style={[gs.row, { gap: Spacing.sm }]}>
+              <Avatar nama={kaizen.nama_pelaksana} ukuran={34} />
+              <View style={gs.flex1}>
+                <Text style={styles.nama} numberOfLines={1}>{kaizen.nama_pelaksana || '-'}</Text>
+                <Text style={styles.kecil} numberOfLines={1}>Pelaksana · {kaizen.nik_nama_pelaksana || '-'}</Text>
+              </View>
+            </View>
+            {kaizen.disarankan_oleh ? (
+              <View style={[gs.row, { gap: 6, marginTop: Spacing.sm }]}>
+                <Icon name="lightbulb-on-outline" size={14} color={Colors.textTertiary} />
+                <Text style={styles.kecil}>Disarankan oleh {kaizen.disarankan_oleh}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Jejak keputusan */}
+          <View style={styles.kartu}>
+            {jejak.map((j, i) => (
+              <View key={i} style={styles.jejak}>
+                <View style={styles.kolomJejak}>
+                  <Icon name={j.ikon} size={16} color={j.warna} />
+                  {i < jejak.length - 1 ? <View style={styles.tiangJejak} /> : null}
+                </View>
+                <View style={[gs.flex1, { paddingBottom: i < jejak.length - 1 ? Spacing.md : 0 }]}>
+                  <Text style={styles.judulJejak}>{j.judul}</Text>
+                  {j.ket ? <Text style={styles.kecil}>{j.ket}</Text> : null}
+                </View>
+              </View>
+            ))}
+            {kaizen.status === 'DITOLAK' && kaizen.alasan ? (
+              <View style={styles.alasan}>
+                <Text style={styles.judulAlasan}>Alasan ditolak</Text>
+                <Text style={styles.teksAlasan}>{kaizen.alasan}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Foto */}
+          <View style={styles.kartu}>
+          <Text style={styles.judulSeksi}>Foto</Text>
+          <View style={[gs.row, { gap: Spacing.sm }]}>
+            {fotos.map((f) => (
+              <TouchableOpacity
+                key={f.label}
+                style={styles.ubinFoto}
+                activeOpacity={0.85}
+                disabled={!f.uri}
+                onPress={() => setFotoBesar(f.uri)}
+              >
+                {f.uri ? (
+                  <Image source={{ uri: f.uri }} style={styles.gambar} resizeMode="cover" />
+                ) : (
+                  <View style={[styles.gambar, gs.centerFill]}>
+                    <Icon name="image" size={22} color={Colors.textTertiary} />
+                    <Text style={[styles.kecil, { marginTop: 4 }]}>Tidak ada foto</Text>
+                  </View>
+                )}
+                <View style={[styles.tagFoto, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
+                  <Text style={styles.teksTagFoto}>{f.label}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+          </View>
+
+          {/* Kondisi */}
+          <View style={styles.kartu}>
+            <Text style={styles.judulSeksi}>Kondisi</Text>
+            {[
+              { label: 'Sebelum Kaizen', warna: Colors.danger, teks: teksSebelum },
+              { label: 'Sesudah Kaizen', warna: brand[600], teks: teksSesudah },
+            ].map((s, i) => (
+              <View key={s.label} style={i > 0 ? { marginTop: Spacing.md } : null}>
+                <View style={[gs.row, { gap: 6, marginBottom: 4 }]}>
+                  <View style={[styles.titik, { backgroundColor: s.warna }]} />
+                  <Text style={styles.labelKondisi}>{s.label}</Text>
+                </View>
+                <Text style={styles.teks}>{s.teks || '-'}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Manfaat */}
+          <View style={styles.kartu}>
+            <Text style={styles.judulSeksi}>Manfaat ({manfaats.length})</Text>
+            {manfaats.length === 0 ? <Text style={[styles.teks, styles.kosong]}>Belum ada manfaat.</Text> : null}
+            {kelompokManfaat.map(([kat, butir]) => {
+              const l = LENCANA[kat];
+              return (
+                <TouchableOpacity key={kat || 'x'} style={styles.kartuManfaat} activeOpacity={0.6} onPress={() => setSheetManfaat(kat)}>
+                  <View style={[styles.logoManfaat, { backgroundColor: l?.warna[1] ?? slate[400] }]}>
+                    <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
+                  </View>
+                  <Text style={[styles.nama, gs.flex1]} numberOfLines={1}>{kat || 'Manfaat'}</Text>
+                  <LencanaAngka jumlah={butir.length} ukuran={24} warna={brand[50]} teks={brand[700]} />
+                  <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Penilaian — hanya untuk Kaizen yang disetujui, seperti website */}
+          {kaizen.status === 'DISETUJUI' ? (
+            <>
+              <View style={styles.kartu}>
+              <View style={[gs.rowBetween, { alignItems: 'flex-end' }]}>
+                <Text style={styles.judulSeksi}>Nilai PQCDSM</Text>
+                <Text style={[styles.kecil, { marginBottom: Spacing.sm }]}>Total +{totalKategoriNilai || 0} poin</Text>
+              </View>
+              <View style={styles.gridNilai}>
+                {PQCDSM.map((kat) => {
+                  const l = LENCANA[kat];
+                  const v = kategoriNilai[kat] ?? 0;
+                  return (
+                    <View key={kat} style={styles.petak}>
+                      <View style={[styles.logoManfaat, { backgroundColor: v > 0 ? l.warna[1] : slate[200] }]}>
+                        <Icon name={l.ikon} size={14} color={v > 0 ? Colors.white : Colors.textTertiary} />
+                      </View>
+                      <Text style={[styles.angka, v === 0 && { color: Colors.textTertiary }]}>{v > 0 ? `+${v}` : '—'}</Text>
+                      <Text style={styles.kecil} numberOfLines={1}>{kat}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+              </View>
+
+              <View style={styles.kartu}>
+                <Text style={styles.judulSeksi}>Penilaian komite</Text>
+                {nilaiPanitia ? (
+                  <>
+                    {[
+                      { label: 'Nilai PQCDSM', nilai: totalKategoriNilai || 0 },
+                      { label: 'Nilai komite', nilai: nilaiPanitia.nilai_panitia },
+                      ...(nilaiPelaksanaan ? [{ label: 'Nilai pelaksanaan', nilai: nilaiPelaksanaan }] : []),
+                    ].map((b, i) => (
+                      <View key={b.label} style={[gs.rowBetween, i > 0 && { marginTop: 6 }]}>
+                        <Text style={styles.teks}>{b.label}</Text>
+                        <Text style={styles.nama}>+{b.nilai} poin</Text>
+                      </View>
+                    ))}
+                    <View style={[styles.garis, { marginVertical: Spacing.sm }]} />
+                    <View style={gs.rowBetween}>
+                      <Text style={styles.nama}>Poin didapat</Text>
+                      <Text style={[styles.nama, { color: brand[700] }]}>+{totalPoin} poin</Text>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={[styles.teks, styles.kosong]}>Belum dinilai oleh komite. Penilaian dilakukan lewat website SIMWT.</Text>
+                )}
+              </View>
+            </>
+          ) : null}
+          {/* Menutup celah abu-abu di bawah seksi terakhir (marginBottom-nya dibatalkan). */}
+          <View style={{ marginTop: -Spacing.sm, height: bisaPutus ? 0 : insets.bottom, backgroundColor: Colors.white }} />
+        </ScrollView>
+
+        {bisaPutus ? (
+          <View style={[styles.bawah, { paddingBottom: insets.bottom + Spacing.sm }]}>
+            <Button variant="dangerOutline" label="Tolak" onPress={() => setSheetTolak(true)} disabled={!!proses} style={gs.flex1} />
+            <Button label="Setujui" onPress={setujui} loading={proses === 'setuju'} disabled={!!proses} style={gs.flex1} />
+          </View>
         ) : null}
-      </BottomSheet>
 
-      <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen">
-        <View style={{ paddingHorizontal: Spacing.lg }}>
-          <Text style={[styles.teks, { marginBottom: Spacing.sm }]}>
-            Alasan ini dikirim ke pelaksana supaya Kaizen-nya bisa diperbaiki dan diajukan ulang.
-          </Text>
-          <TextInput
-            style={[styles.input, { minHeight: 110, textAlignVertical: 'top' }]}
-            multiline
-            maxLength={255}
-            placeholder="Tulis alasan penolakan"
-            placeholderTextColor={Colors.placeholder}
-            value={alasan}
-            onChangeText={setAlasan}
-            autoFocus
-          />
-          <Text style={[styles.kecil, { textAlign: 'right', marginTop: 4 }]}>{alasan.length}/255</Text>
-          <Button
-            variant="danger"
-            label="Tolak Kaizen"
-            onPress={tolak}
-            loading={proses === 'tolak'}
-            disabled={!!proses}
-            block
-            style={{ marginTop: Spacing.md }}
-          />
-        </View>
-      </BottomSheet>
-
-      <Modal visible={!!fotoBesar} transparent animationType="fade" onRequestClose={() => setFotoBesar(null)} statusBarTranslucent>
-        <View style={styles.latarFoto}>
-          {fotoBesar ? <Image source={{ uri: fotoBesar }} style={StyleSheet.absoluteFill} resizeMode="contain" /> : null}
-          <TouchableOpacity
-            style={[styles.tutupFoto, { top: insets.top + Spacing.md }]}
-            onPress={() => setFotoBesar(null)}
-            accessibilityLabel="Tutup foto"
-          >
-            <Icon name="close" size={20} color={Colors.white} />
+        <BottomSheet visible={sheetBagikan} onClose={() => (membuatPdf ? null : setSheetBagikan(false))} title="Bagikan Kaizen">
+          <TouchableOpacity style={styles.opsiBagikan} onPress={bagikanPesan} disabled={membuatPdf} activeOpacity={0.7}>
+            <View style={styles.ikonBagikan}>
+              <Icon name="chat-outline" size={18} color={brand[700]} />
+            </View>
+            <View style={gs.flex1}>
+              <Text style={styles.judulBagikan}>Bagikan sebagai pesan</Text>
+              <Text style={styles.ketBagikan}>Teks ringkas ke WhatsApp, Facebook, dan lainnya</Text>
+            </View>
           </TouchableOpacity>
-        </View>
-      </Modal>
-    </View>
+          <TouchableOpacity style={styles.opsiBagikan} onPress={bagikanPdf} disabled={membuatPdf} activeOpacity={0.7}>
+            <View style={styles.ikonBagikan}>
+              {membuatPdf ? <BrandSpinner size={18} color={brand[700]} /> : <Icon name="file-document" size={18} color={brand[700]} />}
+            </View>
+            <View style={gs.flex1}>
+              <Text style={styles.judulBagikan}>{membuatPdf ? 'Membuat PDF…' : 'Bagikan bukti Kaizen (PDF)'}</Text>
+              <Text style={styles.ketBagikan}>Formulir Bukti Kaizen Digital berisi foto dan penilaian</Text>
+            </View>
+          </TouchableOpacity>
+        </BottomSheet>
+
+        <BottomSheet
+          visible={sheetManfaat !== null}
+          onClose={() => { setSheetManfaat(null); setRincianManfaat(null); }}
+          title={`Manfaat ${sheetManfaat || ''}`.trim()}
+          subtitle={`${butirSheet.length} manfaat`}
+        >
+          <DaftarManfaat
+            onPilih={setRincianManfaat}
+            items={butirSheet.map((m, urut) => ({
+              judul: `${sheetManfaat || 'Manfaat'} ${urut + 1}`,
+              ikon: ikonManfaat(m.manfaat_nilai?.kategori),
+              warna: warnaManfaat(m.manfaat_nilai?.kategori),
+              tipe: m.tipe_area,
+            }))}
+          />
+        </BottomSheet>
+
+        {/* Sheet kedua: menutupi daftar manfaat, isinya Penghematan/Sebelum/Sesudah satu manfaat. */}
+        <BottomSheet
+          visible={rincianManfaat !== null && butirRincian !== undefined}
+          onClose={() => setRincianManfaat(null)}
+          title={`${sheetManfaat || 'Manfaat'} ${(rincianManfaat ?? 0) + 1}`}
+        >
+          {butirRincian ? (
+            <RincianKartuManfaat
+              item={{
+                warna: warnaManfaat(butirRincian.manfaat_nilai?.kategori),
+                hemat: butirRincian.hemat,
+                sebelum: butirRincian.sebelum,
+                sesudah: butirRincian.sesudah,
+                area: butirRincian.area,
+                pic: butirRincian.pic,
+              }}
+            />
+          ) : null}
+        </BottomSheet>
+
+        <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen">
+          <View style={{ paddingHorizontal: Spacing.lg }}>
+            <Text style={[styles.teks, { marginBottom: Spacing.sm }]}>
+              Alasan ini dikirim ke pelaksana supaya Kaizen-nya bisa diperbaiki dan diajukan ulang.
+            </Text>
+            <TextInput
+              style={[styles.input, { minHeight: 110, textAlignVertical: 'top' }]}
+              multiline
+              maxLength={255}
+              placeholder="Tulis alasan penolakan"
+              placeholderTextColor={Colors.placeholder}
+              value={alasan}
+              onChangeText={setAlasan}
+              autoFocus
+            />
+            <Text style={[styles.kecil, { textAlign: 'right', marginTop: 4 }]}>{alasan.length}/255</Text>
+            <Button
+              variant="danger"
+              label="Tolak Kaizen"
+              onPress={tolak}
+              loading={proses === 'tolak'}
+              disabled={!!proses}
+              block
+              style={{ marginTop: Spacing.md }}
+            />
+          </View>
+        </BottomSheet>
+
+        <Modal visible={!!fotoBesar} transparent animationType="fade" onRequestClose={() => setFotoBesar(null)} statusBarTranslucent>
+          <View style={styles.latarFoto}>
+            {fotoBesar ? <Image source={{ uri: fotoBesar }} style={StyleSheet.absoluteFill} resizeMode="contain" /> : null}
+            <TouchableOpacity
+              style={[styles.tutupFoto, { top: insets.top + Spacing.md }]}
+              onPress={() => setFotoBesar(null)}
+              accessibilityLabel="Tutup foto"
+            >
+              <Icon name="close" size={20} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </View>
+    </Muncul>
   );
 }
 

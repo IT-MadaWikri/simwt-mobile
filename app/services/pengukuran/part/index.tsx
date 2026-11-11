@@ -21,6 +21,7 @@ import { gs, inputReset } from '../../../../constants/GlobalStyles';
 import { buatUrlStorageApi } from '../../../../src/utils/storageApi';
 import { useDaftarPart } from '../../../../src/hooks/useDaftarPart';
 import { useOpsiFilterPart } from '../../../../src/hooks/useOpsiFilterPart';
+import Muncul from '../../../../src/components/common/Muncul';
 
 export default function DaftarPartScreen() {
   const router = useRouter();
@@ -60,39 +61,41 @@ export default function DaftarPartScreen() {
       {p.memuat ? (
         <SkeletonBaris jumlah={6} />
       ) : (
-        <FlatList
-          data={p.part}
-          keyExtractor={(item) => String(item.id)}
-          keyboardShouldPersistTaps="handled"
-          onEndReached={p.muatBerikutnya}
-          onEndReachedThreshold={0.4}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
-          ItemSeparatorComponent={() => <View style={styles.pemisah} />}
-          refreshControl={
-            <RefreshControl refreshing={p.menyegarkan} onRefresh={p.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
-          }
-          ListFooterComponent={p.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
-          ListEmptyComponent={
-            <KeadaanKosong
-              pose={p.error || p.adaFilter ? 'mikir' : 'persilakan'}
-              judul={p.error ? 'Gagal memuat' : p.adaFilter ? 'Tidak ditemukan' : 'Belum ada part'}
-              teks={p.error ?? (p.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Part produksi di plant kamu akan tampil di sini.')}
-            >
-              {p.error ? <Button label="Coba Lagi" onPress={p.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
-            </KeadaanKosong>
-          }
-          renderItem={({ item }) => (
-            <KartuPart
-              id={item.id}
-              nama={item.nama}
-              kode={item.kode}
-              bisnisPartner={item.nama_customer}
-              jumlahProses={item.proses?.length ?? 0}
-              gambarUrl={item.gambar_part ? buatUrlStorageApi(item.gambar_part) : null}
-              onPress={bukaPart}
-            />
-          )}
-        />
+        <Muncul style={{ flex: 1 }}>
+          <FlatList
+            data={p.part}
+            keyExtractor={(item) => String(item.id)}
+            keyboardShouldPersistTaps="handled"
+            onEndReached={p.muatBerikutnya}
+            onEndReachedThreshold={0.4}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
+            ItemSeparatorComponent={() => <View style={styles.pemisah} />}
+            refreshControl={
+              <RefreshControl refreshing={p.menyegarkan} onRefresh={p.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+            }
+            ListFooterComponent={p.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
+            ListEmptyComponent={
+              <KeadaanKosong
+                pose={p.error || p.adaFilter ? 'mikir' : 'persilakan'}
+                judul={p.error ? 'Gagal memuat' : p.adaFilter ? 'Tidak ditemukan' : 'Belum ada part'}
+                teks={p.error ?? (p.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Part produksi di plant kamu akan tampil di sini.')}
+              >
+                {p.error ? <Button label="Coba Lagi" onPress={p.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
+              </KeadaanKosong>
+            }
+            renderItem={({ item }) => (
+              <KartuPart
+                id={item.id}
+                nama={item.nama}
+                kode={item.kode}
+                bisnisPartner={item.nama_customer}
+                jumlahProses={item.proses?.length ?? 0}
+                gambarUrl={item.gambar_part ? buatUrlStorageApi(item.gambar_part) : null}
+                onPress={bukaPart}
+              />
+            )}
+          />
+        </Muncul>
       )}
 
       <SheetFilterPart

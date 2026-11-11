@@ -20,6 +20,7 @@ import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailRequestAkun } from '../../../src/hooks/useDetailRequestAkun';
 import { LABEL_METODE, formatWaktuRequest, langkahRequestAkun } from '../../../src/adapters/requestAkun';
+import Muncul from '../../../src/components/common/Muncul';
 
 /** Satu baris isian: label tetap di kiri, nilai di kanan (membungkus bila panjang); null = tidak tampil. */
 function Baris({ label, nilai }: { label: string; nilai: string | null }) {
@@ -63,57 +64,59 @@ export default function DetailRequestAkunScreen() {
   const ditolak = r.status === 'ditolak' && !!r.catatanPenolakan;
 
   return (
-    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-      <AppBar judul="Detail Request" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
-        refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-      >
-        <View style={styles.kepala}>
-          <View style={styles.ikon}>
-            <Icon name="account-cog-outline" size={20} color={brand[700]} />
-          </View>
-          <View style={gs.flex1}>
-            <Text style={styles.judul}>{r.jenisPermintaan}</Text>
-            <View style={styles.barisSistem}>
-              <Text style={[styles.sistem, styles.flexMenyusut]}>{r.sistem}</Text>
-              <LencanaStatusRequestAkun status={r.status} label={r.statusLabel} />
+    <Muncul style={{ flex: 1 }}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+        <AppBar judul="Detail Request" />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
+          refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+        >
+          <View style={styles.kepala}>
+            <View style={styles.ikon}>
+              <Icon name="account-cog-outline" size={20} color={brand[700]} />
             </View>
-            <Text style={styles.nomor} selectable>{r.nomorDokumen}</Text>
+            <View style={gs.flex1}>
+              <Text style={styles.judul}>{r.jenisPermintaan}</Text>
+              <View style={styles.barisSistem}>
+                <Text style={[styles.sistem, styles.flexMenyusut]}>{r.sistem}</Text>
+                <LencanaStatusRequestAkun status={r.status} label={r.statusLabel} />
+              </View>
+              <Text style={styles.nomor} selectable>{r.nomorDokumen}</Text>
+            </View>
           </View>
-        </View>
 
-        {ditolak || selesai ? (
-          <View style={[styles.catatan, { backgroundColor: ditolak ? Colors.serviceRed : brand[50] }]}>
-            <Icon name={ditolak ? 'alert-circle' : 'check-circle'} size={16} color={ditolak ? Colors.danger : brand[600]} />
-            <Text style={[styles.teksCatatan, { color: ditolak ? Colors.dangerDark : brand[700] }]}>
-              {ditolak
-                ? `Ditolak: ${r.catatanPenolakan}`
-                : r.metodePenyerahan === 'email'
-                  ? 'Selesai. Detail akun dikirim ke email Anda.'
-                  : 'Selesai. Akun diserahkan langsung oleh Tim IT.'}
-            </Text>
+          {ditolak || selesai ? (
+            <View style={[styles.catatan, { backgroundColor: ditolak ? Colors.serviceRed : brand[50] }]}>
+              <Icon name={ditolak ? 'alert-circle' : 'check-circle'} size={16} color={ditolak ? Colors.danger : brand[600]} />
+              <Text style={[styles.teksCatatan, { color: ditolak ? Colors.dangerDark : brand[700] }]}>
+                {ditolak
+                  ? `Ditolak: ${r.catatanPenolakan}`
+                  : r.metodePenyerahan === 'email'
+                    ? 'Selesai. Detail akun dikirim ke email Anda.'
+                    : 'Selesai. Akun diserahkan langsung oleh Tim IT.'}
+              </Text>
+            </View>
+          ) : null}
+
+          <Text style={styles.judulBagian}>Permintaan</Text>
+          <View>
+            <Baris label="Pemohon" nilai={r.namaUser} />
+            <Baris label="Tujuan" nilai={tujuan || null} />
+            <Baris label="Username" nilai={r.usernameAkun} />
+            <Baris label="Gmail" nilai={r.emailDiminta} />
+            <Baris label="Detail akses" nilai={r.detailAkses} />
+            <Baris label="Keterangan" nilai={r.keterangan} />
+            <Baris label="Alasan" nilai={r.alasan} />
+            <Baris label="Penyerahan" nilai={r.metodePreferensi ? LABEL_METODE[r.metodePreferensi] ?? r.metodePreferensi : null} />
+            <Baris label="Diajukan" nilai={formatWaktuRequest(r.diajukanAt)} />
           </View>
-        ) : null}
 
-        <Text style={styles.judulBagian}>Permintaan</Text>
-        <View>
-          <Baris label="Pemohon" nilai={r.namaUser} />
-          <Baris label="Tujuan" nilai={tujuan || null} />
-          <Baris label="Username" nilai={r.usernameAkun} />
-          <Baris label="Gmail" nilai={r.emailDiminta} />
-          <Baris label="Detail akses" nilai={r.detailAkses} />
-          <Baris label="Keterangan" nilai={r.keterangan} />
-          <Baris label="Alasan" nilai={r.alasan} />
-          <Baris label="Penyerahan" nilai={r.metodePreferensi ? LABEL_METODE[r.metodePreferensi] ?? r.metodePreferensi : null} />
-          <Baris label="Diajukan" nilai={formatWaktuRequest(r.diajukanAt)} />
-        </View>
-
-        <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
-        <LinimasaTiket langkah={langkahRequestAkun(r)} />
-      </ScrollView>
-    </View>
+          <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
+          <LinimasaTiket langkah={langkahRequestAkun(r)} />
+        </ScrollView>
+      </View>
+    </Muncul>
   );
 }
 

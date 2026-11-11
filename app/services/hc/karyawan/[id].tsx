@@ -11,6 +11,7 @@ import Spacing from '../../../../constants/Spacing';
 import { fonts, fontsJudul, judulAppBar, ukuranIsi } from '../../../../constants/Typography';
 import AppBar from '../../../../src/components/common/AppBar';
 import { SkeletonDetail } from '../../../../src/components/common/Skeleton';
+import Muncul from '../../../../src/components/common/Muncul';
 
 // Gojek-style primary colors
 const GOJEK_GREEN = brand[600];
@@ -108,168 +109,170 @@ export default function EmployeeDetailScreen() {
   };
 
   return (
-    <>
-      <AppBar judul={'Detail Karyawan'} />
+    <Muncul style={{ flex: 1 }}>
+      <>
+        <AppBar judul={'Detail Karyawan'} />
 
-      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Main Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.profileHeader}>
-            {/* Avatar */}
-            <View style={styles.avatarContainer}>
-              {employee.foto_profil ? (
-                <Image
-                  source={{ uri: employee.foto_profil.startsWith('http') ? employee.foto_profil : `https://mwtpart.co.id/storage/${employee.foto_profil}` }}
-                  style={styles.avatarImage}
-                />
-              ) : (
-                <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarText}>{initial}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Basic Info */}
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName} numberOfLines={2}>{fullName}</Text>
-              
-              <View style={styles.badgesColumn}>
-                {employee.nik && (
-                  <Lencana label={employee.nik} ikon="card-account-details-outline" warna={lencana.biru} style={{ alignSelf: 'flex-start' }} />
+        <ScrollView 
+          style={styles.container} 
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Main Profile Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.profileHeader}>
+              {/* Avatar */}
+              <View style={styles.avatarContainer}>
+                {employee.foto_profil ? (
+                  <Image
+                    source={{ uri: employee.foto_profil.startsWith('http') ? employee.foto_profil : `https://mwtpart.co.id/storage/${employee.foto_profil}` }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <View style={styles.avatarFallback}>
+                    <Text style={styles.avatarText}>{initial}</Text>
+                  </View>
                 )}
-                <View style={styles.badgesRowHorizontal}>
-                  <Lencana label={roleName || 'Staff'} ikon="account-tie-outline" warna={lencana.hijau} />
-                  <View style={[styles.badge, styles.badgeGreenSolid]}>
-                    <View style={[styles.dot, { backgroundColor: isActive ? Colors.white : GOJEK_GREY }]} />
-                    <Text style={[styles.badgeText, { color: Colors.white }]}>{status}</Text>
+              </View>
+
+              {/* Basic Info */}
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileName} numberOfLines={2}>{fullName}</Text>
+              
+                <View style={styles.badgesColumn}>
+                  {employee.nik && (
+                    <Lencana label={employee.nik} ikon="card-account-details-outline" warna={lencana.biru} style={{ alignSelf: 'flex-start' }} />
+                  )}
+                  <View style={styles.badgesRowHorizontal}>
+                    <Lencana label={roleName || 'Staff'} ikon="account-tie-outline" warna={lencana.hijau} />
+                    <View style={[styles.badge, styles.badgeGreenSolid]}>
+                      <View style={[styles.dot, { backgroundColor: isActive ? Colors.white : GOJEK_GREY }]} />
+                      <Text style={[styles.badgeText, { color: Colors.white }]}>{status}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
             </View>
+
+            {/* Additional Info Row (Masa Kerja & Usia) */}
+            <View style={styles.summaryRow}>
+              <View style={styles.summaryBox}>
+                <View style={styles.summaryLabelRow}>
+                  <Icon name="briefcase-outline" size={14} color={Colors.textTertiary} />
+                  <Text style={styles.summaryLabel}>MASA KERJA</Text>
+                </View>
+                <Text style={styles.summaryValue}>{calculateMasaKerja(employee.tanggal_masuk_kerja)}</Text>
+              </View>
+              <View style={styles.summaryBox}>
+                <View style={styles.summaryLabelRow}>
+                  <Icon name="cake-variant-outline" size={14} color={Colors.textTertiary} />
+                  <Text style={styles.summaryLabel}>USIA</Text>
+                </View>
+                <Text style={styles.summaryValue}>{employee.umur ? `${employee.umur} Tahun` : '-'}</Text>
+              </View>
+            </View>
           </View>
 
-          {/* Additional Info Row (Masa Kerja & Usia) */}
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryBox}>
-              <View style={styles.summaryLabelRow}>
-                <Icon name="briefcase-outline" size={14} color={Colors.textTertiary} />
-                <Text style={styles.summaryLabel}>MASA KERJA</Text>
+          {/* Informasi Pribadi */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconBg}>
+                <Icon name="account-outline" size={20} color={GOJEK_GREEN} />
               </View>
-              <Text style={styles.summaryValue}>{calculateMasaKerja(employee.tanggal_masuk_kerja)}</Text>
+              <Text style={styles.sectionTitle}>INFORMASI PRIBADI</Text>
+              <View style={{ flex: 1 }} />
+              <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
             </View>
-            <View style={styles.summaryBox}>
-              <View style={styles.summaryLabelRow}>
-                <Icon name="cake-variant-outline" size={14} color={Colors.textTertiary} />
-                <Text style={styles.summaryLabel}>USIA</Text>
-              </View>
-              <Text style={styles.summaryValue}>{employee.umur ? `${employee.umur} Tahun` : '-'}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Informasi Pribadi */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIconBg}>
-              <Icon name="account-outline" size={20} color={GOJEK_GREEN} />
-            </View>
-            <Text style={styles.sectionTitle}>INFORMASI PRIBADI</Text>
-            <View style={{ flex: 1 }} />
-            <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
-          </View>
           
-          <View style={styles.gridContainer}>
-            <View style={styles.gridItem}>
-              <View style={styles.infoLabelRow}>
-                <Icon name="card-account-details-outline" size={16} color={GOJEK_GREEN} />
-                <Text style={styles.infoLabel}>NIK</Text>
+            <View style={styles.gridContainer}>
+              <View style={styles.gridItem}>
+                <View style={styles.infoLabelRow}>
+                  <Icon name="card-account-details-outline" size={16} color={GOJEK_GREEN} />
+                  <Text style={styles.infoLabel}>NIK</Text>
+                </View>
+                <Text style={styles.infoValue}>{employee.nik || '-'}</Text>
               </View>
-              <Text style={styles.infoValue}>{employee.nik || '-'}</Text>
+              <View style={styles.gridItem}>
+                <View style={styles.infoLabelRow}>
+                  <Icon name="account-details-outline" size={16} color={GOJEK_GREEN} />
+                  <Text style={styles.infoLabel}>NAMA LENGKAP</Text>
+                </View>
+                <Text style={styles.infoValue}>{fullName}</Text>
+              </View>
+              <View style={styles.gridItem}>
+                <View style={styles.infoLabelRow}>
+                  <Icon name="calendar-blank-outline" size={16} color={GOJEK_GREEN} />
+                  <Text style={styles.infoLabel}>TANGGAL LAHIR</Text>
+                </View>
+                <Text style={styles.infoValue}>{formatDate(employee.tanggal_lahir)}</Text>
+              </View>
+              <View style={styles.gridItem}>
+                <View style={styles.infoLabelRow}>
+                  <Icon name="map-marker-outline" size={16} color={GOJEK_GREEN} />
+                  <Text style={styles.infoLabel}>TEMPAT LAHIR</Text>
+                </View>
+                <Text style={styles.infoValue}>{employee.tempat_lahir || '-'}</Text>
+              </View>
             </View>
-            <View style={styles.gridItem}>
+
+            <View style={styles.fullWidthItem}>
               <View style={styles.infoLabelRow}>
-                <Icon name="account-details-outline" size={16} color={GOJEK_GREEN} />
-                <Text style={styles.infoLabel}>NAMA LENGKAP</Text>
+                <Icon name="home-outline" size={16} color={GOJEK_GREEN} />
+                <Text style={styles.infoLabel}>ALAMAT DOMISILI</Text>
               </View>
-              <Text style={styles.infoValue}>{fullName}</Text>
-            </View>
-            <View style={styles.gridItem}>
-              <View style={styles.infoLabelRow}>
-                <Icon name="calendar-blank-outline" size={16} color={GOJEK_GREEN} />
-                <Text style={styles.infoLabel}>TANGGAL LAHIR</Text>
-              </View>
-              <Text style={styles.infoValue}>{formatDate(employee.tanggal_lahir)}</Text>
-            </View>
-            <View style={styles.gridItem}>
-              <View style={styles.infoLabelRow}>
-                <Icon name="map-marker-outline" size={16} color={GOJEK_GREEN} />
-                <Text style={styles.infoLabel}>TEMPAT LAHIR</Text>
-              </View>
-              <Text style={styles.infoValue}>{employee.tempat_lahir || '-'}</Text>
+              <Text style={styles.infoValue}>{employee.alamat || '-'}</Text>
             </View>
           </View>
 
-          <View style={styles.fullWidthItem}>
-            <View style={styles.infoLabelRow}>
-              <Icon name="home-outline" size={16} color={GOJEK_GREEN} />
-              <Text style={styles.infoLabel}>ALAMAT DOMISILI</Text>
+          {/* Informasi Kepegawaian */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconBg}>
+                <Icon name="briefcase-outline" size={20} color={GOJEK_GREEN} />
+              </View>
+              <Text style={styles.sectionTitle}>INFORMASI KEPEGAWAIAN</Text>
+              <View style={{ flex: 1 }} />
+              <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
             </View>
-            <Text style={styles.infoValue}>{employee.alamat || '-'}</Text>
-          </View>
-        </View>
-
-        {/* Informasi Kepegawaian */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIconBg}>
-              <Icon name="briefcase-outline" size={20} color={GOJEK_GREEN} />
-            </View>
-            <Text style={styles.sectionTitle}>INFORMASI KEPEGAWAIAN</Text>
-            <View style={{ flex: 1 }} />
-            <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
-          </View>
           
-          <View style={styles.gridContainer}>
-            <View style={styles.gridItem}>
-              <View style={styles.infoLabelRow}>
-                <Icon name="account-tie-outline" size={16} color={GOJEK_GREEN} />
-                <Text style={styles.infoLabel}>JABATAN</Text>
+            <View style={styles.gridContainer}>
+              <View style={styles.gridItem}>
+                <View style={styles.infoLabelRow}>
+                  <Icon name="account-tie-outline" size={16} color={GOJEK_GREEN} />
+                  <Text style={styles.infoLabel}>JABATAN</Text>
+                </View>
+                <Text style={styles.infoValue}>{roleName || '-'}</Text>
               </View>
-              <Text style={styles.infoValue}>{roleName || '-'}</Text>
-            </View>
-            <View style={styles.gridItem}>
-              <View style={styles.infoLabelRow}>
-                <Icon name="calendar-check-outline" size={16} color={GOJEK_GREEN} />
-                <Text style={styles.infoLabel}>TANGGAL MASUK KERJA</Text>
+              <View style={styles.gridItem}>
+                <View style={styles.infoLabelRow}>
+                  <Icon name="calendar-check-outline" size={16} color={GOJEK_GREEN} />
+                  <Text style={styles.infoLabel}>TANGGAL MASUK KERJA</Text>
+                </View>
+                <Text style={styles.infoValue}>{formatDate(employee.tanggal_masuk_kerja)}</Text>
               </View>
-              <Text style={styles.infoValue}>{formatDate(employee.tanggal_masuk_kerja)}</Text>
             </View>
           </View>
-        </View>
 
-        {/* Status Keaktifan */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIconBg}>
-              <Icon name="check-circle-outline" size={20} color={GOJEK_GREEN} />
+          {/* Status Keaktifan */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconBg}>
+                <Icon name="check-circle-outline" size={20} color={GOJEK_GREEN} />
+              </View>
+              <Text style={styles.sectionTitle}>STATUS KEAKTIFAN</Text>
+              <View style={{ flex: 1 }} />
+              <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
             </View>
-            <Text style={styles.sectionTitle}>STATUS KEAKTIFAN</Text>
-            <View style={{ flex: 1 }} />
-            <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
-          </View>
           
-          <View style={styles.fullWidthItem}>
-            <Text style={styles.infoLabel}>STATUS SAAT INI</Text>
-            <Lencana label={status} titik warna={lencana.hijau} style={{ alignSelf: 'flex-start', marginTop: 6 }} />
+            <View style={styles.fullWidthItem}>
+              <Text style={styles.infoLabel}>STATUS SAAT INI</Text>
+              <Lencana label={status} titik warna={lencana.hijau} style={{ alignSelf: 'flex-start', marginTop: 6 }} />
+            </View>
           </View>
-        </View>
 
-      </ScrollView>
-    </>
+        </ScrollView>
+      </>
+    </Muncul>
   );
 }
 

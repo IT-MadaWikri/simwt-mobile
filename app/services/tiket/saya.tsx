@@ -21,6 +21,7 @@ import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useTiketSaya } from '../../../src/hooks/useTiketSaya';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function TiketSayaScreen() {
   const router = useRouter();
@@ -80,40 +81,42 @@ export default function TiketSayaScreen() {
       {t.memuat ? (
         <SkeletonBaris jumlah={6} />
       ) : (
-        <FlatList
-          data={t.tiket}
-          keyExtractor={(item) => String(item.id)}
-          keyboardShouldPersistTaps="handled"
-          onEndReached={t.muatBerikutnya}
-          onEndReachedThreshold={0.4}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 96 }}
-          ItemSeparatorComponent={() => <View style={styles.pemisah} />}
-          refreshControl={
-            <RefreshControl refreshing={t.menyegarkan} onRefresh={t.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
-          }
-          ListFooterComponent={t.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
-          ListEmptyComponent={
-            <KeadaanKosong
-              pose={t.error || t.adaFilter ? 'mikir' : 'persilakan'}
-              judul={t.error ? 'Gagal memuat' : t.adaFilter ? 'Tidak ditemukan' : 'Belum ada tiket'}
-              teks={t.error ?? (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Tiket yang kamu ajukan akan tampil di sini.')}
-            >
-              {t.error ? <Button label="Coba Lagi" onPress={t.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
-            </KeadaanKosong>
-          }
-          renderItem={({ item }) => (
-            <KartuTiket
-              noTiket={item.no_ticket}
-              judul={item.judul_masalah}
-              status={item.status_pengajuan}
-              jenis={item.jenis}
-              plant={item.plant}
-              tanggalDiajukan={item.tanggal_diajukan}
-              tanggalSelesai={item.tanggal_selesai}
-              onPress={() => router.push(`/services/tiket/${item.no_ticket}` as any)}
-            />
-          )}
-        />
+        <Muncul style={{ flex: 1 }}>
+          <FlatList
+            data={t.tiket}
+            keyExtractor={(item) => String(item.id)}
+            keyboardShouldPersistTaps="handled"
+            onEndReached={t.muatBerikutnya}
+            onEndReachedThreshold={0.4}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 96 }}
+            ItemSeparatorComponent={() => <View style={styles.pemisah} />}
+            refreshControl={
+              <RefreshControl refreshing={t.menyegarkan} onRefresh={t.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+            }
+            ListFooterComponent={t.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
+            ListEmptyComponent={
+              <KeadaanKosong
+                pose={t.error || t.adaFilter ? 'mikir' : 'persilakan'}
+                judul={t.error ? 'Gagal memuat' : t.adaFilter ? 'Tidak ditemukan' : 'Belum ada tiket'}
+                teks={t.error ?? (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Tiket yang kamu ajukan akan tampil di sini.')}
+              >
+                {t.error ? <Button label="Coba Lagi" onPress={t.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
+              </KeadaanKosong>
+            }
+            renderItem={({ item }) => (
+              <KartuTiket
+                noTiket={item.no_ticket}
+                judul={item.judul_masalah}
+                status={item.status_pengajuan}
+                jenis={item.jenis}
+                plant={item.plant}
+                tanggalDiajukan={item.tanggal_diajukan}
+                tanggalSelesai={item.tanggal_selesai}
+                onPress={() => router.push(`/services/tiket/${item.no_ticket}` as any)}
+              />
+            )}
+          />
+        </Muncul>
       )}
 
       <Button

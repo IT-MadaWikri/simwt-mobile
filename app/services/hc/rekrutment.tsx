@@ -32,6 +32,7 @@ import {
 import { useSetelahTransisi } from '../../../src/utils/useSetelahTransisi';
 import AppBar from '../../../src/components/common/AppBar';
 import { SkeletonDasbor } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 /** Urutan & warna tahap pipeline — tahap akhir diberi warna tegas. */
 const WARNA_TAHAP: Record<string, string> = {
@@ -109,184 +110,186 @@ export default function RekrutmentScreen() {
   const totalPipeline = pipeline.reduce((jumlah, tahap) => jumlah + tahap.jumlah, 0);
 
   return (
-    <>
-      {layar}
-      <ScrollView
-        style={gs.screen}
-        contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={menyegarkan}
-            onRefresh={() => {
-              setMenyegarkan(true);
-              muat();
-            }}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
-          />
-        }
-      >
-        {/* ── Angka utama: grid 2×2 kartu metrik ─────────────────────── */}
-        <View style={[gs.row, gs.gapMd]}>
-          <Metrik
-            icon="briefcase-outline"
-            nilai={ringkasan.lowongan_aktif}
-            label="Lowongan Aktif"
-          />
-          <Metrik
-            icon="account-group-outline"
-            nilai={ringkasan.pelamar_total}
-            label="Total Pelamar"
-          />
-        </View>
-        <View style={[gs.row, gs.gapMd, { marginTop: Spacing.md }]}>
-          <Metrik
-            icon="calendar-clock-outline"
-            nilai={ringkasan.jadwal_hari_ini}
-            label="Jadwal Hari Ini"
-          />
-          <Metrik
-            icon="email-alert-outline"
-            nilai={ringkasan.surat_belum_terkirim}
-            label="Surat Belum Terkirim"
-            genting={ringkasan.surat_belum_terkirim > 0}
-          />
-        </View>
-
-        {/* Rincian surat hanya muncul kalau memang ada yang menunggak. */}
-        {ringkasan.surat_belum_terkirim > 0 && (
-          <View style={[gs.cardBrand, gs.row, gs.gapSm, { marginTop: Spacing.md }]}>
-            <Icon name="information-outline" size={18} color={brand[700]} />
-            <Text style={[gs.bodySm, gs.flex1, { color: brand[800] }]}>
-              Interview {surat_belum_terkirim.interview} surat · PKWT{' '}
-              {surat_belum_terkirim.pkwt} surat. Pengiriman dilakukan dari SIMWT web.
-            </Text>
+    <Muncul style={{ flex: 1 }}>
+      <>
+        {layar}
+        <ScrollView
+          style={gs.screen}
+          contentContainerStyle={[gs.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={menyegarkan}
+              onRefresh={() => {
+                setMenyegarkan(true);
+                muat();
+              }}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+        >
+          {/* ── Angka utama: grid 2×2 kartu metrik ─────────────────────── */}
+          <View style={[gs.row, gs.gapMd]}>
+            <Metrik
+              icon="briefcase-outline"
+              nilai={ringkasan.lowongan_aktif}
+              label="Lowongan Aktif"
+            />
+            <Metrik
+              icon="account-group-outline"
+              nilai={ringkasan.pelamar_total}
+              label="Total Pelamar"
+            />
           </View>
-        )}
+          <View style={[gs.row, gs.gapMd, { marginTop: Spacing.md }]}>
+            <Metrik
+              icon="calendar-clock-outline"
+              nilai={ringkasan.jadwal_hari_ini}
+              label="Jadwal Hari Ini"
+            />
+            <Metrik
+              icon="email-alert-outline"
+              nilai={ringkasan.surat_belum_terkirim}
+              label="Surat Belum Terkirim"
+              genting={ringkasan.surat_belum_terkirim > 0}
+            />
+          </View>
 
-        {/* ── Pipeline sebagai bilah proporsi ────────────────────────── */}
-        {totalPipeline > 0 && (
-          <View style={[gs.card, { marginTop: Spacing.sectionGap }]}>
-            <View style={gs.rowBetween}>
-              <Text style={gs.title}>Pipeline Lamaran</Text>
-              <Text style={gs.caption}>
-                {totalPipeline.toLocaleString('id-ID')} lamaran ·{' '}
-                {ringkasan.pelamar_30_hari} dalam 30 hari
+          {/* Rincian surat hanya muncul kalau memang ada yang menunggak. */}
+          {ringkasan.surat_belum_terkirim > 0 && (
+            <View style={[gs.cardBrand, gs.row, gs.gapSm, { marginTop: Spacing.md }]}>
+              <Icon name="information-outline" size={18} color={brand[700]} />
+              <Text style={[gs.bodySm, gs.flex1, { color: brand[800] }]}>
+                Interview {surat_belum_terkirim.interview} surat · PKWT{' '}
+                {surat_belum_terkirim.pkwt} surat. Pengiriman dilakukan dari SIMWT web.
               </Text>
             </View>
+          )}
 
-            {/* Bilah gabungan: tiap tahap selebar porsinya. */}
-            <View style={styles.bilah}>
+          {/* ── Pipeline sebagai bilah proporsi ────────────────────────── */}
+          {totalPipeline > 0 && (
+            <View style={[gs.card, { marginTop: Spacing.sectionGap }]}>
+              <View style={gs.rowBetween}>
+                <Text style={gs.title}>Pipeline Lamaran</Text>
+                <Text style={gs.caption}>
+                  {totalPipeline.toLocaleString('id-ID')} lamaran ·{' '}
+                  {ringkasan.pelamar_30_hari} dalam 30 hari
+                </Text>
+              </View>
+
+              {/* Bilah gabungan: tiap tahap selebar porsinya. */}
+              <View style={styles.bilah}>
+                {pipeline.map((tahap) => (
+                  <View
+                    key={tahap.status}
+                    style={{
+                      flex: tahap.jumlah,
+                      backgroundColor: WARNA_TAHAP[tahap.status] ?? brand[300],
+                    }}
+                  />
+                ))}
+              </View>
+
               {pipeline.map((tahap) => (
-                <View
-                  key={tahap.status}
-                  style={{
-                    flex: tahap.jumlah,
-                    backgroundColor: WARNA_TAHAP[tahap.status] ?? brand[300],
-                  }}
-                />
+                <View key={tahap.status} style={[gs.rowBetween, { marginTop: Spacing.sm }]}>
+                  <View style={[gs.row, gs.gapSm]}>
+                    <View
+                      style={[
+                        styles.titik,
+                        { backgroundColor: WARNA_TAHAP[tahap.status] ?? brand[300] },
+                      ]}
+                    />
+                    <Text style={gs.bodySm}>{tahap.status}</Text>
+                  </View>
+                  <Text style={[gs.bodySm, gs.textSemibold, { color: Colors.textPrimary }]}>
+                    {tahap.jumlah.toLocaleString('id-ID')}
+                  </Text>
+                </View>
               ))}
             </View>
+          )}
 
-            {pipeline.map((tahap) => (
-              <View key={tahap.status} style={[gs.rowBetween, { marginTop: Spacing.sm }]}>
-                <View style={[gs.row, gs.gapSm]}>
-                  <View
-                    style={[
-                      styles.titik,
-                      { backgroundColor: WARNA_TAHAP[tahap.status] ?? brand[300] },
-                    ]}
-                  />
-                  <Text style={gs.bodySm}>{tahap.status}</Text>
-                </View>
-                <Text style={[gs.bodySm, gs.textSemibold, { color: Colors.textPrimary }]}>
-                  {tahap.jumlah.toLocaleString('id-ID')}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* ── Jadwal hari ini ────────────────────────────────────────── */}
-        <Text style={[gs.sectionTitle, { marginTop: Spacing.sectionGap }]}>Jadwal Hari Ini</Text>
-        {jadwal_hari_ini.length === 0 ? (
-          <View style={[gs.card, gs.row, gs.gapMd]}>
-            <View style={gs.iconTile}>
-              <Icon name="calendar-check" size={20} color={brand[600]} />
-            </View>
-            <Text style={[gs.bodySm, gs.flex1]}>
-              Tidak ada jadwal psikotes atau wawancara hari ini.
-            </Text>
-          </View>
-        ) : (
-          jadwal_hari_ini.map((jadwal) => (
-            <View key={jadwal.id} style={[gs.card, gs.row, gs.gapMd, { marginBottom: Spacing.sm }]}>
+          {/* ── Jadwal hari ini ────────────────────────────────────────── */}
+          <Text style={[gs.sectionTitle, { marginTop: Spacing.sectionGap }]}>Jadwal Hari Ini</Text>
+          {jadwal_hari_ini.length === 0 ? (
+            <View style={[gs.card, gs.row, gs.gapMd]}>
               <View style={gs.iconTile}>
-                <Icon
-                  name={jadwal.metode === 'Online' ? 'video-outline' : 'map-marker-outline'}
-                  size={20}
-                  color={brand[600]}
-                />
+                <Icon name="calendar-check" size={20} color={brand[600]} />
               </View>
-              <View style={gs.flex1}>
-                <Text style={gs.title} numberOfLines={1}>
-                  {jadwal.judul}
-                </Text>
-                <Text style={gs.caption}>
-                  {jadwal.kategori} · {jadwal.metode}
-                </Text>
-              </View>
-              <View style={[gs.badge, gs.badgeBrand]}>
-                <Text style={[gs.badgeText, gs.badgeTextBrand]}>{jadwal.status}</Text>
-              </View>
+              <Text style={[gs.bodySm, gs.flex1]}>
+                Tidak ada jadwal psikotes atau wawancara hari ini.
+              </Text>
             </View>
-          ))
-        )}
-
-        {/* ── Lowongan terbanyak pelamar ─────────────────────────────── */}
-        {lowongan_teratas.length > 0 && (
-          <>
-            <Text style={[gs.sectionTitle, { marginTop: Spacing.sectionGap }]}>
-              Lowongan Terbanyak Pelamar
-            </Text>
-            {lowongan_teratas.map((lowongan) => {
-              const capai =
-                lowongan.kebutuhan > 0
-                  ? Math.min(100, Math.round((lowongan.jumlah_pelamar / lowongan.kebutuhan) * 100))
-                  : 0;
-
-              return (
-                <View key={lowongan.id} style={[gs.card, { marginBottom: Spacing.sm }]}>
-                  <View style={gs.rowBetween}>
-                    <Text style={[gs.title, gs.flex1]} numberOfLines={1}>
-                      {lowongan.judul_lowongan}
-                    </Text>
-                    <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>
-                      {lowongan.jumlah_pelamar}/{lowongan.kebutuhan}
-                    </Text>
-                  </View>
-                  {lowongan.departemen ? (
-                    <Text style={gs.caption}>{lowongan.departemen}</Text>
-                  ) : null}
-
-                  <View style={[styles.bilah, { marginTop: Spacing.sm }]}>
-                    <View style={{ flex: capai, backgroundColor: brand[500] }} />
-                    <View style={{ flex: 100 - capai, backgroundColor: 'transparent' }} />
-                  </View>
+          ) : (
+            jadwal_hari_ini.map((jadwal) => (
+              <View key={jadwal.id} style={[gs.card, gs.row, gs.gapMd, { marginBottom: Spacing.sm }]}>
+                <View style={gs.iconTile}>
+                  <Icon
+                    name={jadwal.metode === 'Online' ? 'video-outline' : 'map-marker-outline'}
+                    size={20}
+                    color={brand[600]}
+                  />
                 </View>
-              );
-            })}
-          </>
-        )}
+                <View style={gs.flex1}>
+                  <Text style={gs.title} numberOfLines={1}>
+                    {jadwal.judul}
+                  </Text>
+                  <Text style={gs.caption}>
+                    {jadwal.kategori} · {jadwal.metode}
+                  </Text>
+                </View>
+                <View style={[gs.badge, gs.badgeBrand]}>
+                  <Text style={[gs.badgeText, gs.badgeTextBrand]}>{jadwal.status}</Text>
+                </View>
+              </View>
+            ))
+          )}
 
-        {/* Alur kerja HR memang bukan di aplikasi ini — katakan apa adanya,
-            jangan pajang tombol yang tidak menuju ke mana pun. */}
-        <Text style={[gs.caption, gs.textCenter, { marginTop: Spacing.xl }]}>
-          Kelola lowongan, pelamar, dan jadwal melalui SIMWT versi web.
-        </Text>
-      </ScrollView>
-    </>
+          {/* ── Lowongan terbanyak pelamar ─────────────────────────────── */}
+          {lowongan_teratas.length > 0 && (
+            <>
+              <Text style={[gs.sectionTitle, { marginTop: Spacing.sectionGap }]}>
+                Lowongan Terbanyak Pelamar
+              </Text>
+              {lowongan_teratas.map((lowongan) => {
+                const capai =
+                  lowongan.kebutuhan > 0
+                    ? Math.min(100, Math.round((lowongan.jumlah_pelamar / lowongan.kebutuhan) * 100))
+                    : 0;
+
+                return (
+                  <View key={lowongan.id} style={[gs.card, { marginBottom: Spacing.sm }]}>
+                    <View style={gs.rowBetween}>
+                      <Text style={[gs.title, gs.flex1]} numberOfLines={1}>
+                        {lowongan.judul_lowongan}
+                      </Text>
+                      <Text style={[gs.bodySm, gs.textSemibold, gs.textBrand]}>
+                        {lowongan.jumlah_pelamar}/{lowongan.kebutuhan}
+                      </Text>
+                    </View>
+                    {lowongan.departemen ? (
+                      <Text style={gs.caption}>{lowongan.departemen}</Text>
+                    ) : null}
+
+                    <View style={[styles.bilah, { marginTop: Spacing.sm }]}>
+                      <View style={{ flex: capai, backgroundColor: brand[500] }} />
+                      <View style={{ flex: 100 - capai, backgroundColor: 'transparent' }} />
+                    </View>
+                  </View>
+                );
+              })}
+            </>
+          )}
+
+          {/* Alur kerja HR memang bukan di aplikasi ini — katakan apa adanya,
+              jangan pajang tombol yang tidak menuju ke mana pun. */}
+          <Text style={[gs.caption, gs.textCenter, { marginTop: Spacing.xl }]}>
+            Kelola lowongan, pelamar, dan jadwal melalui SIMWT versi web.
+          </Text>
+        </ScrollView>
+      </>
+    </Muncul>
   );
 }
 

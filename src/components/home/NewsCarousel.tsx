@@ -10,6 +10,7 @@ import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { Berita } from '../../types/berita';
 import BarisBerita from '../berita/BarisBerita';
 import Button from '../common/Button';
+import Muncul from '../common/Muncul';
 import SectionHeader from '../common/SectionHeader';
 import { SkeletonDaftar } from '../common/Skeleton';
 
@@ -51,15 +52,17 @@ export default function NewsCarousel({
             <Text style={styles.teksKosong}>Belum ada berita.</Text>
           </View>
         ) : (
-          berita.map((b) => (
-            <BarisBerita
-              key={b.id}
-              berita={b}
-              onPress={() => onBuka(b.id)}
-              onSuka={() => onSuka(b.id)}
-              onBagikan={() => onBagikan(b)}
-            />
-          ))
+          <Muncul>
+            {berita.map((b) => (
+              <BarisBerita
+                key={b.id}
+                berita={b}
+                onPress={() => onBuka(b.id)}
+                onSuka={() => onSuka(b.id)}
+                onBagikan={() => onBagikan(b)}
+              />
+            ))}
+          </Muncul>
         )}
       </View>
     </View>
