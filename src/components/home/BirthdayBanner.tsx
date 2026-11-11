@@ -18,6 +18,7 @@ import Spacing from '../../../constants/Spacing';
 import { fonts, ukuranCatatan, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import type { Employee } from '../../services/karyawanService';
+import { buatUrlStorageWeb } from '../../utils/storageApi';
 
 interface BirthdayBannerProps {
   birthdays: Employee[];
@@ -50,13 +51,7 @@ export default function BirthdayBanner({ birthdays, memuat, idMengirim, sudahDiu
         <Avatar
           nama={item.nama_lengkap}
           ukuran={40}
-          foto={
-            item.foto_profil
-              ? item.foto_profil.startsWith('http')
-                ? item.foto_profil
-                : `https://mwtpart.co.id/storage/${item.foto_profil}`
-              : undefined
-          }
+          foto={item.foto_profil ? buatUrlStorageWeb(item.foto_profil) : undefined}
         />
 
         <View style={gs.flex1}>

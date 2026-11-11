@@ -13,6 +13,7 @@ import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { inputReset } from '../../../constants/GlobalStyles';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
 import Muncul from '../../../src/components/common/Muncul';
+import { buatUrlStorageWeb } from '../../../src/utils/storageApi';
 
 export default function HumanCapitalScreen() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function HumanCapitalScreen() {
     >
       {item.foto_profil ? (
         <Image
-          source={{ uri: item.foto_profil.startsWith('http') ? item.foto_profil : `https://mwtpart.co.id/storage/${item.foto_profil}` }}
+          source={{ uri: buatUrlStorageWeb(item.foto_profil) }}
           style={styles.avatar}
         />
       ) : (

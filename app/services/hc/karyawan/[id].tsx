@@ -12,6 +12,7 @@ import { fonts, fontsJudul, judulAppBar, ukuranIsi } from '../../../../constants
 import AppBar from '../../../../src/components/common/AppBar';
 import SkeletonDetailKaryawan from '../../../../src/components/hc/SkeletonDetailKaryawan';
 import Muncul from '../../../../src/components/common/Muncul';
+import { buatUrlStorageWeb } from '../../../../src/utils/storageApi';
 
 // Gojek-style primary colors
 const GOJEK_GREEN = brand[600];
@@ -125,7 +126,7 @@ export default function EmployeeDetailScreen() {
               <View style={styles.avatarContainer}>
                 {employee.foto_profil ? (
                   <Image
-                    source={{ uri: employee.foto_profil.startsWith('http') ? employee.foto_profil : `https://mwtpart.co.id/storage/${employee.foto_profil}` }}
+                    source={{ uri: buatUrlStorageWeb(employee.foto_profil) }}
                     style={styles.avatarImage}
                   />
                 ) : (

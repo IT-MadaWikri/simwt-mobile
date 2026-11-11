@@ -20,6 +20,13 @@ export const API_CONFIG = {
 
   TIMEOUT: Number(process.env.EXPO_PUBLIC_API_TIMEOUT) || 30000,
 
+  /**
+   * Host storage web SIMWT (sim-mwt): foto Kaizen lama, foto profil karyawan, sampul berita.
+   * Path relatif dari server dilayani dari `{host}/storage/{path}`. Bukan mwtpart.co.id
+   * (itu situs profil perusahaan, tidak menyimpan berkas SIMWT).
+   */
+  STORAGE_WEB_URL: (process.env.EXPO_PUBLIC_STORAGE_WEB_URL || 'https://sim.madawikri.co.id').replace(/\/+$/, ''),
+
   ENDPOINTS: {
     // Auth
     LOGIN: '/login',
