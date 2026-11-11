@@ -83,7 +83,6 @@ const styles = StyleSheet.create({
   pembungkus: {
     marginHorizontal: Spacing.screenPadding,
     marginTop: Spacing.xxxl,
-    marginBottom: Spacing.lg,
   },
   kartu: {
     minHeight: 120,

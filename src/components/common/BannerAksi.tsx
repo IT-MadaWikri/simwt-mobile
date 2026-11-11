@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.md,
     marginHorizontal: Spacing.screenPadding,
-    marginBottom: Spacing.lg,
+    marginTop: Spacing.sectionGap,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: Spacing.radius.xl,

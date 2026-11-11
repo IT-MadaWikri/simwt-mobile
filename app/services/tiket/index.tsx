@@ -131,7 +131,8 @@ export default function MenuTiketScreen() {
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
-  bagian: { marginTop: Spacing.xl },
+  // marginBottom negatif: baris ikon membawa margin bawah sendiri, dibatalkan agar jarak antar section rata.
+  grid: { marginBottom: -Spacing.xl, flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.md },
+  bagian: { marginTop: Spacing.sectionGap },
   pemisah: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginHorizontal: Spacing.screenPadding },
 });

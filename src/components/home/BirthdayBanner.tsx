@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   banner: {
     marginHorizontal: Spacing.screenPadding,
     marginTop: Spacing.xxl - Spacing.xs,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.sectionGap,
   },
   kartu: {
     minHeight: 112,

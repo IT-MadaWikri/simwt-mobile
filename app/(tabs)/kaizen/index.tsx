@@ -102,7 +102,7 @@ export default function MenuKaizenScreen() {
         </View>
 
         {(bisaApprove && menunggu > 0) || jumlahDraf > 0 ? (
-        <View style={styles.bagian}>
+        <View>
           {bisaApprove && menunggu > 0 ? (
             <BannerAksi
               tokoh="putra"
@@ -244,12 +244,14 @@ export default function MenuKaizenScreen() {
 
 const styles = StyleSheet.create({
   grid: {
+    // Baris ikon membawa margin bawah sendiri; dibatalkan agar jarak antar section rata.
+    marginBottom: -Spacing.xl,
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: Spacing.md,
   },
   bagian: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.sectionGap,
   },
   kartuRingkas: {
     marginHorizontal: Spacing.lg,

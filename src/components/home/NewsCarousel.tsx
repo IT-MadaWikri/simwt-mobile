@@ -68,7 +68,7 @@ export default function NewsCarousel({
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: Spacing.lg,
+    marginTop: Spacing.sectionGap,
   },
   daftar: {
     paddingHorizontal: Spacing.screenPadding,
