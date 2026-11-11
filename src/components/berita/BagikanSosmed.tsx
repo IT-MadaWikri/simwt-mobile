@@ -6,6 +6,7 @@
  */
 import { Linking, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
+import Icon from '../common/Icon';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
@@ -46,7 +47,7 @@ export default function BagikanSosmed({ teks, onGagal }: BagikanSosmedProps) {
           onPress={() => Share.share({ message: teks }).catch(() => {})}
           accessibilityLabel="Bagikan lewat aplikasi lain"
         >
-          <FontAwesome6 name="share-nodes" size={18} color={Colors.white} />
+          <Icon name="share-variant" size={20} color={Colors.white} />
         </TouchableOpacity>
       </View>
     </View>

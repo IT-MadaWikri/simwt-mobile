@@ -153,10 +153,8 @@ export default function NotifikasiScreen() {
         daftar.length > 0 ? (
           <View style={[gs.row, { gap: Spacing.lg, paddingHorizontal: Spacing.lg }]}>
             {adaBelumDibaca ? (
-              <TouchableOpacity onPress={tandaiSemua}>
-                <Text style={{ color: Colors.primary, fontSize: ukuranIsi, fontFamily: fonts.semibold }}>
-                  Tandai semua dibaca
-                </Text>
+              <TouchableOpacity onPress={tandaiSemua} hitSlop={10} accessibilityLabel="Tandai semua dibaca">
+                <Icon name="check-all" size={20} color={Colors.primary} />
               </TouchableOpacity>
             ) : null}
             <TouchableOpacity onPress={hapusSemua} hitSlop={10} accessibilityLabel="Hapus semua notifikasi">

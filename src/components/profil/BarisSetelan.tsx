@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
-    fontFamily: fonts.semibold,
+    fontFamily: fonts.regular,
     fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
