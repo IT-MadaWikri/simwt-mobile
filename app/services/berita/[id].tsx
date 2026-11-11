@@ -13,7 +13,7 @@ import AppBar from '../../../src/components/common/AppBar';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailBerita from '../../../src/components/berita/SkeletonDetailBerita';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
@@ -50,7 +50,7 @@ export default function BeritaDetailScreen() {
     return (
       <View style={gs.screenPlain}>
         <AppBar judul="Berita" />
-        <SkeletonDetail />
+        <SkeletonDetailBerita />
       </View>
     );
   }
@@ -69,21 +69,21 @@ export default function BeritaDetailScreen() {
   }
 
   return (
-    <Muncul style={{ flex: 1 }}>
-      <View style={gs.screenPlain}>
-        <AppBar
-          judul="Berita"
-          kanan={
-            <TouchableOpacity hitSlop={10} onPress={() => Share.share({ message: teksBagikanBerita(berita) }).catch(() => {})}>
-              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
-            </TouchableOpacity>
-          }
-        />
-        <ScrollView
-          contentContainerStyle={[gs.scrollContent, { paddingBottom: Spacing.xxxl + insets.bottom }]}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Judul besar: pengecualian dari aturan 12px, seperti sapaan di puncak beranda. */}
+    <View style={gs.screenPlain}>
+      <AppBar
+        judul="Berita"
+        kanan={
+          <TouchableOpacity hitSlop={10} onPress={() => Share.share({ message: teksBagikanBerita(berita) }).catch(() => {})}>
+            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        }
+      />
+      <ScrollView
+        contentContainerStyle={[gs.scrollContent, { paddingBottom: Spacing.xxxl + insets.bottom }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Judul besar: pengecualian dari aturan 12px, seperti sapaan di puncak beranda. */}
+        <Muncul jeda={0}>
           <Text style={styles.judul}>{berita.judul}</Text>
 
           <View style={styles.baris}>
@@ -110,7 +110,9 @@ export default function BeritaDetailScreen() {
               <Text style={styles.meta}>{berita.jumlahSuka}</Text>
             </TouchableOpacity>
           </View>
+        </Muncul>
 
+        <Muncul jeda={70}>
           <View style={styles.foto}>
             {berita.sampulUrl ? (
               <Image source={{ uri: berita.sampulUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -118,7 +120,9 @@ export default function BeritaDetailScreen() {
               <Icon name="image" size={32} color={Colors.textTertiary} />
             )}
           </View>
+        </Muncul>
 
+        <Muncul jeda={140}>
           <RenderHTML
             contentWidth={width - Spacing.screenPadding * 2}
             source={{ html: berita.isi }}
@@ -132,8 +136,10 @@ export default function BeritaDetailScreen() {
             teks={teksBagikanBerita(berita)}
             onGagal={(nama) => dialog.alert('Gagal Membuka', `${nama} tidak bisa dibuka di perangkat ini.`, 'danger')}
           />
+        </Muncul>
 
-          {berita.terkait.length > 0 ? (
+        {berita.terkait.length > 0 ? (
+          <Muncul jeda={210}>
             <View style={styles.terkait}>
               <Text style={styles.judulTerkait}>Mungkin Anda suka</Text>
               {berita.terkait.map((t) => (
@@ -146,10 +152,10 @@ export default function BeritaDetailScreen() {
                 />
               ))}
             </View>
-          ) : null}
-        </ScrollView>
-      </View>
-    </Muncul>
+          </Muncul>
+        ) : null}
+      </ScrollView>
+    </View>
   );
 }
 

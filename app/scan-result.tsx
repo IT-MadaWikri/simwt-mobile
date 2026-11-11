@@ -12,7 +12,7 @@ import Icon from '../src/components/common/Icon';
 import Button from '../src/components/common/Button';
 import GaleriAset from '../src/components/aset/GaleriAset';
 import LencanaStatusTiket from '../src/components/tiket/LencanaStatusTiket';
-import { SkeletonDetail } from '../src/components/common/Skeleton';
+import SkeletonDetailAset from '../src/components/aset/SkeletonDetailAset';
 import Colors, { slate } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
 import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../constants/Typography';
@@ -59,7 +59,7 @@ export default function ScanResultScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: Colors.white }}>
-        <SkeletonDetail />
+        <SkeletonDetailAset />
       </View>
     );
   }
@@ -114,12 +114,14 @@ export default function ScanResultScreen() {
     });
 
   return (
-    <Muncul style={{ flex: 1 }}>
-      <View style={[gs.screen, { backgroundColor: Colors.background }]}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={adaTiketAktif ? { paddingBottom: insets.bottom } : undefined}>
+    <View style={[gs.screen, { backgroundColor: Colors.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={adaTiketAktif ? { paddingBottom: insets.bottom } : undefined}>
+        <Muncul jeda={0}>
           <GaleriAset foto={foto} />
+        </Muncul>
 
-          {/* Identitas */}
+        {/* Identitas */}
+        <Muncul jeda={70}>
           <View style={[styles.seksi, { marginTop: 0 }]}>
             <Text style={styles.judul}>{aset.alias || aset.asset_name || '-'}</Text>
             {aset.alias && aset.asset_name ? <Text style={styles.sub}>{aset.asset_name}</Text> : null}
@@ -138,8 +140,10 @@ export default function ScanResultScreen() {
               </View>
             ) : null}
           </View>
+        </Muncul>
 
-          {/* Ringkas: empat ubin 2×2 */}
+        {/* Ringkas: empat ubin 2×2 */}
+        <Muncul jeda={140}>
           <View style={styles.seksi}>
             <View style={styles.grid}>
               {ubin.map((u) => (
@@ -155,40 +159,50 @@ export default function ScanResultScreen() {
               ))}
             </View>
           </View>
+        </Muncul>
 
+        <Muncul jeda={210}>
           <View style={styles.seksi}>
             <Text style={styles.judulSeksi}>Informasi aset</Text>
             {informasi.map((s, i) => (
               <BarisInfo key={s.label} ikon={s.ikon} label={s.label} nilai={s.nilai} garis={i > 0} />
             ))}
           </View>
+        </Muncul>
 
-          {/* Data opsional yang diisi di web (Update Data aset). Seksi hanya muncul bila ada isinya. */}
-          {spekTeknis.length > 0 ? (
+        {/* Data opsional yang diisi di web (Update Data aset). Seksi hanya muncul bila ada isinya. */}
+        {spekTeknis.length > 0 ? (
+          <Muncul jeda={280}>
             <View style={styles.seksi}>
               <Text style={styles.judulSeksi}>Spesifikasi teknis</Text>
               {spekTeknis.map((s, i) => (
                 <BarisInfo key={s.label} ikon="cog-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
               ))}
             </View>
-          ) : null}
+          </Muncul>
+        ) : null}
 
-          {tambahan.length > 0 ? (
+        {tambahan.length > 0 ? (
+          <Muncul jeda={280}>
             <View style={styles.seksi}>
               <Text style={styles.judulSeksi}>Data lainnya</Text>
               {tambahan.map((s, i) => (
                 <BarisInfo key={`${s.label}-${i}`} ikon="information-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
               ))}
             </View>
-          ) : null}
+          </Muncul>
+        ) : null}
 
-          {aset.asset_description?.trim() ? (
+        {aset.asset_description?.trim() ? (
+          <Muncul jeda={280}>
             <View style={styles.seksi}>
               <Text style={styles.judulSeksi}>Deskripsi</Text>
               <Text style={styles.deskripsi}>{aset.asset_description.trim()}</Text>
             </View>
-          ) : null}
+          </Muncul>
+        ) : null}
 
+        <Muncul jeda={350}>
           <View style={styles.seksi}>
             <View style={styles.judulBaris}>
               <Text style={[styles.judulSeksi, { marginBottom: 0 }]}>Riwayat perbaikan</Text>
@@ -223,15 +237,15 @@ export default function ScanResultScreen() {
               ))
             )}
           </View>
-        </ScrollView>
+        </Muncul>
+      </ScrollView>
 
-        {adaTiketAktif ? null : (
-          <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-            <Button icon="ticket-outline" label="Laporkan Masalah Aset" onPress={laporkan} block />
-          </View>
-        )}
-      </View>
-    </Muncul>
+      {adaTiketAktif ? null : (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <Button icon="ticket-outline" label="Laporkan Masalah Aset" onPress={laporkan} block />
+        </View>
+      )}
+    </View>
   );
 }
 

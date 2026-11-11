@@ -11,7 +11,7 @@ import Icon from '../../../src/components/common/Icon';
 import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailTiket from '../../../src/components/tiket/SkeletonDetailTiket';
 import RingkasanTiket from '../../../src/components/tiket/RingkasanTiket';
 import FotoTiket from '../../../src/components/tiket/FotoTiket';
 import MetrikTiket from '../../../src/components/tiket/MetrikTiket';
@@ -71,7 +71,7 @@ export default function DetailTiketScreen() {
     return (
       <View style={gs.screen}>
         <AppBar judul={`Tiket #${nomor}`} />
-        <SkeletonDetail />
+        <SkeletonDetailTiket />
       </View>
     );
   }
@@ -90,28 +90,30 @@ export default function DetailTiketScreen() {
   const adaFoto = !!(tiket.fotoSebelum || tiket.fotoSesudah);
 
   return (
-    <Muncul style={{ flex: 1 }}>
-      <>
-        <AppBar
-          judul={`Tiket #${tiket.noTiket}`}
-          kanan={
-            <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
-            </TouchableOpacity>
-          }
-        />
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: tiket.bisaKonfirmasi ? 0 : insets.bottom }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
-          }
-        >
-          {/* Kartu metrik langsung di atas latar layar (tanpa pembungkus putih). */}
+    <>
+      <AppBar
+        judul={`Tiket #${tiket.noTiket}`}
+        kanan={
+          <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
+            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        }
+      />
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: tiket.bisaKonfirmasi ? 0 : insets.bottom }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={menyegarkan} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+        }
+      >
+        {/* Kartu metrik langsung di atas latar layar (tanpa pembungkus putih). */}
+        <Muncul jeda={0}>
           <View style={styles.metrik}>
             <MetrikTiket metrik={tiket.metrik} />
           </View>
+        </Muncul>
 
+        <Muncul jeda={70}>
           <View style={styles.seksi}>
             <RingkasanTiket
               noTiket={tiket.noTiket}
@@ -125,19 +127,25 @@ export default function DetailTiketScreen() {
               aset={tiket.aset}
             />
           </View>
+        </Muncul>
 
+        <Muncul jeda={140}>
           <View style={styles.seksi}>
             <Text style={styles.judulSeksi}>Detail masalah</Text>
             <Text style={styles.teks}>{tiket.detail || '-'}</Text>
           </View>
+        </Muncul>
 
-          {adaFoto ? (
+        {adaFoto ? (
+          <Muncul jeda={210}>
             <View style={styles.seksi}>
               <Text style={styles.judulSeksi}>Foto</Text>
               <FotoTiket fotoSebelum={tiket.fotoSebelum} fotoSesudah={tiket.fotoSesudah} />
             </View>
-          ) : null}
+          </Muncul>
+        ) : null}
 
+        <Muncul jeda={280}>
           <View style={[styles.seksi, { marginBottom: 0 }]}>
             <Text style={styles.judulSeksi}>Progres penanganan</Text>
             {/* Tinggi dibatasi: progres panjang digulir di dalam kotak ini, bukan memanjangkan halaman. */}
@@ -145,43 +153,43 @@ export default function DetailTiketScreen() {
               <LinimasaTiket langkah={tiket.linimasa} />
             </ScrollView>
           </View>
-        </ScrollView>
+        </Muncul>
+      </ScrollView>
 
-        {/* Di luar ScrollView supaya tetap menempel di bawah saat halaman digulir. */}
-        {tiket.bisaKonfirmasi ? (
-          <View style={[styles.konfirmasi, { paddingBottom: insets.bottom + Spacing.md }]}>
-            <View style={gs.flex1}>
-              <Text style={styles.judulKonfirmasi}>Menunggu konfirmasi Anda</Text>
-              <Text style={styles.teks}>Teknisi sudah menyelesaikan perbaikan. Apakah masalahnya sudah teratasi?</Text>
-            </View>
-            <Button label="Konfirmasi" icon="check-circle" onPress={bukaSheet} />
+      {/* Di luar ScrollView supaya tetap menempel di bawah saat halaman digulir. */}
+      {tiket.bisaKonfirmasi ? (
+        <View style={[styles.konfirmasi, { paddingBottom: insets.bottom + Spacing.md }]}>
+          <View style={gs.flex1}>
+            <Text style={styles.judulKonfirmasi}>Menunggu konfirmasi Anda</Text>
+            <Text style={styles.teks}>Teknisi sudah menyelesaikan perbaikan. Apakah masalahnya sudah teratasi?</Text>
           </View>
-        ) : null}
+          <Button label="Konfirmasi" icon="check-circle" onPress={bukaSheet} />
+        </View>
+      ) : null}
 
-        <SheetBagikanTiket
-          visible={sheetBagikan}
-          adaBukti={tiket.status === 'RESOLVED' || tiket.status === 'OK'}
-          membuatPdf={membuatPdf}
-          onBagikanPesan={bagikanPesan}
-          onBagikanPdf={bagikanPdf}
-          onClose={() => setSheetBagikan(false)}
-        />
+      <SheetBagikanTiket
+        visible={sheetBagikan}
+        adaBukti={tiket.status === 'RESOLVED' || tiket.status === 'OK'}
+        membuatPdf={membuatPdf}
+        onBagikanPesan={bagikanPesan}
+        onBagikanPdf={bagikanPdf}
+        onClose={() => setSheetBagikan(false)}
+      />
 
-        <SheetKonfirmasiTiket
-          visible={sheetKonfirmasi}
-          noTiket={tiket.noTiket}
-          tanggalSelesai={tiket.tanggalSelesai}
-          batasKonfirmasi={tiket.batasKonfirmasi}
-          mengirim={aksi.mengirim}
-          galat={aksi.galat}
-          onKonfirmasi={async () => selesaiAksi(await aksi.konfirmasi(), 'Tiket Selesai', 'Terima kasih! Tiket telah dikonfirmasi selesai.')}
-          onReopen={async (alasan) =>
-            selesaiAksi(await aksi.reopen(alasan), 'Tiket Dibuka Kembali', 'Tiket dikembalikan ke teknisi untuk perbaikan ulang.')
-          }
-          onClose={() => setSheetKonfirmasi(false)}
-        />
-      </>
-    </Muncul>
+      <SheetKonfirmasiTiket
+        visible={sheetKonfirmasi}
+        noTiket={tiket.noTiket}
+        tanggalSelesai={tiket.tanggalSelesai}
+        batasKonfirmasi={tiket.batasKonfirmasi}
+        mengirim={aksi.mengirim}
+        galat={aksi.galat}
+        onKonfirmasi={async () => selesaiAksi(await aksi.konfirmasi(), 'Tiket Selesai', 'Terima kasih! Tiket telah dikonfirmasi selesai.')}
+        onReopen={async (alasan) =>
+          selesaiAksi(await aksi.reopen(alasan), 'Tiket Dibuka Kembali', 'Tiket dikembalikan ke teknisi untuk perbaikan ulang.')
+        }
+        onClose={() => setSheetKonfirmasi(false)}
+      />
+    </>
   );
 }
 

@@ -10,7 +10,7 @@ import Colors, { brand, lencana, slate } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
 import { fonts, fontsJudul, judulAppBar, ukuranIsi } from '../../../../constants/Typography';
 import AppBar from '../../../../src/components/common/AppBar';
-import { SkeletonDetail } from '../../../../src/components/common/Skeleton';
+import SkeletonDetailKaryawan from '../../../../src/components/hc/SkeletonDetailKaryawan';
 import Muncul from '../../../../src/components/common/Muncul';
 
 // Gojek-style primary colors
@@ -46,7 +46,7 @@ export default function EmployeeDetailScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <SkeletonDetail avatar="bulat" />
+        <SkeletonDetailKaryawan />
       </View>
     );
   }
@@ -109,16 +109,16 @@ export default function EmployeeDetailScreen() {
   };
 
   return (
-    <Muncul style={{ flex: 1 }}>
-      <>
-        <AppBar judul={'Detail Karyawan'} />
+    <>
+      <AppBar judul={'Detail Karyawan'} />
 
-        <ScrollView 
-          style={styles.container} 
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Main Profile Card */}
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xxl }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Main Profile Card */}
+        <Muncul jeda={0}>
           <View style={styles.profileCard}>
             <View style={styles.profileHeader}>
               {/* Avatar */}
@@ -138,7 +138,7 @@ export default function EmployeeDetailScreen() {
               {/* Basic Info */}
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName} numberOfLines={2}>{fullName}</Text>
-              
+            
                 <View style={styles.badgesColumn}>
                   {employee.nik && (
                     <Lencana label={employee.nik} ikon="card-account-details-outline" warna={lencana.biru} style={{ alignSelf: 'flex-start' }} />
@@ -172,8 +172,10 @@ export default function EmployeeDetailScreen() {
               </View>
             </View>
           </View>
+        </Muncul>
 
-          {/* Informasi Pribadi */}
+        {/* Informasi Pribadi */}
+        <Muncul jeda={70}>
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconBg}>
@@ -183,7 +185,7 @@ export default function EmployeeDetailScreen() {
               <View style={{ flex: 1 }} />
               <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
             </View>
-          
+        
             <View style={styles.gridContainer}>
               <View style={styles.gridItem}>
                 <View style={styles.infoLabelRow}>
@@ -223,8 +225,10 @@ export default function EmployeeDetailScreen() {
               <Text style={styles.infoValue}>{employee.alamat || '-'}</Text>
             </View>
           </View>
+        </Muncul>
 
-          {/* Informasi Kepegawaian */}
+        {/* Informasi Kepegawaian */}
+        <Muncul jeda={140}>
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconBg}>
@@ -234,7 +238,7 @@ export default function EmployeeDetailScreen() {
               <View style={{ flex: 1 }} />
               <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
             </View>
-          
+        
             <View style={styles.gridContainer}>
               <View style={styles.gridItem}>
                 <View style={styles.infoLabelRow}>
@@ -252,8 +256,10 @@ export default function EmployeeDetailScreen() {
               </View>
             </View>
           </View>
+        </Muncul>
 
-          {/* Status Keaktifan */}
+        {/* Status Keaktifan */}
+        <Muncul jeda={210}>
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconBg}>
@@ -263,16 +269,16 @@ export default function EmployeeDetailScreen() {
               <View style={{ flex: 1 }} />
               <Icon name="dots-horizontal" size={24} color={GOJEK_GREEN} />
             </View>
-          
+        
             <View style={styles.fullWidthItem}>
               <Text style={styles.infoLabel}>STATUS SAAT INI</Text>
               <Lencana label={status} titik warna={lencana.hijau} style={{ alignSelf: 'flex-start', marginTop: 6 }} />
             </View>
           </View>
+        </Muncul>
 
-        </ScrollView>
-      </>
-    </Muncul>
+      </ScrollView>
+    </>
   );
 }
 

@@ -12,7 +12,7 @@ import BottomSheet from '../../../src/components/common/BottomSheet';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailDokumen from '../../../src/components/common/SkeletonDetailDokumen';
 import QrPassKeluarPabrik from '../../../src/components/layananHrd/QrPassKeluarPabrik';
 import LencanaStatusKeluarPabrik from '../../../src/components/layananHrd/LencanaStatusKeluarPabrik';
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
@@ -54,7 +54,7 @@ export default function DetailKeluarPabrikScreen() {
     return (
       <View style={[gs.screen, { backgroundColor: Colors.white }]}>
         <AppBar judul="Detail Form" />
-        <SkeletonDetail />
+        <SkeletonDetailDokumen />
       </View>
     );
   }
@@ -77,14 +77,14 @@ export default function DetailKeluarPabrikScreen() {
   const tahap = tahapGerbang(f);
 
   return (
-    <Muncul style={{ flex: 1 }}>
-      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-        <AppBar judul="Detail Form" />
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.isi, { paddingBottom: (disetujui ? 0 : insets.bottom) + Spacing.xl }]}
-          refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-        >
+    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+      <AppBar judul="Detail Form" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.isi, { paddingBottom: (disetujui ? 0 : insets.bottom) + Spacing.xl }]}
+        refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+      >
+        <Muncul jeda={0}>
           <View style={styles.kepala}>
             <View style={styles.ikon}>
               <Icon name="logout" size={20} color={brand[700]} />
@@ -97,7 +97,9 @@ export default function DetailKeluarPabrikScreen() {
               <Text style={styles.nomor} selectable>{f.nomorDokumen}</Text>
             </View>
           </View>
+        </Muncul>
 
+        <Muncul jeda={70}>
           {ditolak || disetujui ? (
             <View style={[styles.catatan, { backgroundColor: ditolak ? Colors.serviceRed : brand[50] }]}>
               <Icon name={ditolak ? 'alert-circle' : 'check-circle'} size={16} color={ditolak ? Colors.danger : brand[600]} />
@@ -108,7 +110,9 @@ export default function DetailKeluarPabrikScreen() {
               </Text>
             </View>
           ) : null}
+        </Muncul>
 
+        <Muncul jeda={140}>
           <Text style={styles.judulBagian}>Pengajuan</Text>
           <View>
             <Baris label="Pemohon" nilai={f.namaUser} />
@@ -121,39 +125,41 @@ export default function DetailKeluarPabrikScreen() {
             <Baris label="Kembali aktual" nilai={f.waktuKembaliAktual ? formatWaktuKeluarPabrik(f.waktuKembaliAktual) : null} />
             <Baris label="Diajukan" nilai={formatWaktuKeluarPabrik(f.diajukanAt)} />
           </View>
+        </Muncul>
 
+        <Muncul jeda={210}>
           <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
           <LinimasaTiket langkah={langkahKeluarPabrik(f)} />
-        </ScrollView>
+        </Muncul>
+      </ScrollView>
 
-        {/* Menempel di bawah layar (seperti footer form Kaizen), di luar ScrollView. */}
-        {disetujui ? (
-          <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-            <Button
-              label={LABEL_TAHAP_GERBANG[tahap]}
-              icon={tahap === 'selesai' ? 'check-circle' : 'qrcode-scan'}
-              disabled={tahap === 'selesai' || !f.gerbangUrl}
-              onPress={() => setQrTerbuka(true)}
-              style={gs.flex1}
-            />
-          </View>
-        ) : null}
+      {/* Menempel di bawah layar (seperti footer form Kaizen), di luar ScrollView. */}
+      {disetujui ? (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <Button
+            label={LABEL_TAHAP_GERBANG[tahap]}
+            icon={tahap === 'selesai' ? 'check-circle' : 'qrcode-scan'}
+            disabled={tahap === 'selesai' || !f.gerbangUrl}
+            onPress={() => setQrTerbuka(true)}
+            style={gs.flex1}
+          />
+        </View>
+      ) : null}
 
-        {f.gerbangUrl ? (
-          <BottomSheet
-            visible={qrTerbuka}
-            onClose={() => {
-              setQrTerbuka(false);
-              d.segarkan(); // satpam mungkin baru memindai → tahap tombol ikut berubah
-            }}
-            title={tahap === 'kembali' ? 'QR Scan In' : 'QR Scan Out'}
-            subtitle={f.nomorDokumen}
-          >
-            <QrPassKeluarPabrik url={f.gerbangUrl} />
-          </BottomSheet>
-        ) : null}
-      </View>
-    </Muncul>
+      {f.gerbangUrl ? (
+        <BottomSheet
+          visible={qrTerbuka}
+          onClose={() => {
+            setQrTerbuka(false);
+            d.segarkan(); // satpam mungkin baru memindai → tahap tombol ikut berubah
+          }}
+          title={tahap === 'kembali' ? 'QR Scan In' : 'QR Scan Out'}
+          subtitle={f.nomorDokumen}
+        >
+          <QrPassKeluarPabrik url={f.gerbangUrl} />
+        </BottomSheet>
+      ) : null}
+    </View>
   );
 }
 

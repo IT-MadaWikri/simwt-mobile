@@ -11,7 +11,7 @@ import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailDokumen from '../../../src/components/common/SkeletonDetailDokumen';
 import LencanaStatusRequestAkun from '../../../src/components/layananIt/LencanaStatusRequestAkun';
 import LinimasaTiket from '../../../src/components/tiket/LinimasaTiket';
 import Colors, { brand } from '../../../constants/Colors';
@@ -42,7 +42,7 @@ export default function DetailRequestAkunScreen() {
     return (
       <View style={[gs.screen, { backgroundColor: Colors.white }]}>
         <AppBar judul="Detail Request" />
-        <SkeletonDetail />
+        <SkeletonDetailDokumen />
       </View>
     );
   }
@@ -64,14 +64,14 @@ export default function DetailRequestAkunScreen() {
   const ditolak = r.status === 'ditolak' && !!r.catatanPenolakan;
 
   return (
-    <Muncul style={{ flex: 1 }}>
-      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-        <AppBar judul="Detail Request" />
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
-          refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-        >
+    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+      <AppBar judul="Detail Request" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.isi, { paddingBottom: insets.bottom + Spacing.xl }]}
+        refreshControl={<RefreshControl refreshing={d.menyegarkan} onRefresh={d.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+      >
+        <Muncul jeda={0}>
           <View style={styles.kepala}>
             <View style={styles.ikon}>
               <Icon name="account-cog-outline" size={20} color={brand[700]} />
@@ -85,7 +85,9 @@ export default function DetailRequestAkunScreen() {
               <Text style={styles.nomor} selectable>{r.nomorDokumen}</Text>
             </View>
           </View>
+        </Muncul>
 
+        <Muncul jeda={70}>
           {ditolak || selesai ? (
             <View style={[styles.catatan, { backgroundColor: ditolak ? Colors.serviceRed : brand[50] }]}>
               <Icon name={ditolak ? 'alert-circle' : 'check-circle'} size={16} color={ditolak ? Colors.danger : brand[600]} />
@@ -99,6 +101,8 @@ export default function DetailRequestAkunScreen() {
             </View>
           ) : null}
 
+        </Muncul>
+        <Muncul jeda={140}>
           <Text style={styles.judulBagian}>Permintaan</Text>
           <View>
             <Baris label="Pemohon" nilai={r.namaUser} />
@@ -111,12 +115,14 @@ export default function DetailRequestAkunScreen() {
             <Baris label="Penyerahan" nilai={r.metodePreferensi ? LABEL_METODE[r.metodePreferensi] ?? r.metodePreferensi : null} />
             <Baris label="Diajukan" nilai={formatWaktuRequest(r.diajukanAt)} />
           </View>
+        </Muncul>
 
+        <Muncul jeda={210}>
           <Text style={[styles.judulBagian, { marginTop: Spacing.lg }]}>Status</Text>
           <LinimasaTiket langkah={langkahRequestAkun(r)} />
-        </ScrollView>
-      </View>
-    </Muncul>
+        </Muncul>
+      </ScrollView>
+    </View>
   );
 }
 
