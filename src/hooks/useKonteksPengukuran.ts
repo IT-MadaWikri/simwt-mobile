@@ -15,7 +15,7 @@ import {
   filterStandarPengukuranAktif,
   pilihDrawingSlides,
 } from '../utils/pengukuran';
-import { buatUrlStorageApi } from '../utils/storageApi';
+import { buatUrlStorageWeb } from '../utils/storageApi';
 
 export interface ProsesDraf {
   id: number | null;
@@ -50,7 +50,7 @@ export function useKonteksPengukuran({
   }, [detailPart, idProses, prosesDraf.id, namaProsesTerpilih]);
 
   const drawingSlides = useMemo(
-    () => pilihDrawingSlides({ detailPart, idProsesTerpilih, buatUrl: buatUrlStorageApi }),
+    () => pilihDrawingSlides({ detailPart, idProsesTerpilih, buatUrl: buatUrlStorageWeb }),
     [detailPart, idProsesTerpilih]
   );
 

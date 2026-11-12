@@ -165,7 +165,17 @@ export default function RuangChatScreen() {
 
   const pilihDokumen = async () => {
     const hasil = await DocumentPicker.getDocumentAsync({
-      type: '*/*',
+      // Samakan dengan validasi lampiran Mita di sim-mwt (maks 10MB); tipe lain ditolak server (422).
+      type: [
+        'image/*',
+        'application/pdf',
+        'text/plain',
+        'text/csv',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ],
       copyToCacheDirectory: true,
     });
     if (!hasil.canceled && hasil.assets?.[0]) {

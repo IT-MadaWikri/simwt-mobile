@@ -18,7 +18,7 @@ import Colors, { brand } from '../../../../constants/Colors';
 import Spacing from '../../../../constants/Spacing';
 import { fonts, ukuranIsi } from '../../../../constants/Typography';
 import { gs, inputReset } from '../../../../constants/GlobalStyles';
-import { buatUrlStorageApi } from '../../../../src/utils/storageApi';
+import { buatUrlStorageWeb } from '../../../../src/utils/storageApi';
 import { useDaftarPart } from '../../../../src/hooks/useDaftarPart';
 import { useOpsiFilterPart } from '../../../../src/hooks/useOpsiFilterPart';
 import Muncul from '../../../../src/components/common/Muncul';
@@ -90,7 +90,7 @@ export default function DaftarPartScreen() {
                 kode={item.kode}
                 bisnisPartner={item.nama_customer}
                 jumlahProses={item.proses?.length ?? 0}
-                gambarUrl={item.gambar_part ? buatUrlStorageApi(item.gambar_part) : null}
+                gambarUrl={item.gambar_part ? buatUrlStorageWeb(item.gambar_part) : null}
                 onPress={bukaPart}
               />
             )}

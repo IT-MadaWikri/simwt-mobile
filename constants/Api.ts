@@ -10,7 +10,8 @@
  */
 
 export const API_CONFIG = {
-  BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.madawikri.co.id/api',
+  /** API mobile di sim-mwt (prefix `/api/mobile`). Rute lama api-simwt (`api.madawikri.co.id/api`) tetap hidup untuk aplikasi yang belum menerima update. */
+  BASE_URL: (process.env.EXPO_PUBLIC_API_BASE_URL || 'https://sim.madawikri.co.id/api/mobile').replace(/\/+$/, ''),
 
   /**
    * Header X-SIMMWT-KEY. Bukan rahasia — nilai EXPO_PUBLIC_* ikut ter-inline
