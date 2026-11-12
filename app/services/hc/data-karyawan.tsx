@@ -7,11 +7,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, lencana, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { Employee, karyawanService } from '../../../src/services/karyawanService';
-import { fonts, judulAppBar } from '../../../constants/Typography';
+import { fonts, judulAppBar, ukuranIsi } from '../../../constants/Typography';
 import AppBar from '../../../src/components/common/AppBar';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { inputReset } from '../../../constants/GlobalStyles';
 import { SkeletonDaftar } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
+import { buatUrlStorageWeb } from '../../../src/utils/storageApi';
 
 export default function HumanCapitalScreen() {
   const router = useRouter();
@@ -60,7 +62,7 @@ export default function HumanCapitalScreen() {
     >
       {item.foto_profil ? (
         <Image
-          source={{ uri: item.foto_profil.startsWith('http') ? item.foto_profil : `https://mwtpart.co.id/storage/${item.foto_profil}` }}
+          source={{ uri: buatUrlStorageWeb(item.foto_profil) }}
           style={styles.avatar}
         />
       ) : (
@@ -119,16 +121,18 @@ export default function HumanCapitalScreen() {
         {loading ? (
           <SkeletonDaftar avatar="bulat" />
         ) : (
-          <FlatList
-            data={filteredEmployees}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderEmployee}
-            contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <KeadaanKosong pose="mikir" judul="Tidak Ditemukan" teks="Tidak ada karyawan yang cocok dengan pencarian Anda." />
-            }
-          />
+          <Muncul style={{ flex: 1 }}>
+            <FlatList
+              data={filteredEmployees}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderEmployee}
+              contentContainerStyle={[{ flexGrow: 1 }, styles.listContainer, { paddingBottom: insets.bottom + Spacing.xxl }]}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <KeadaanKosong pose="mikir" judul="Tidak Ditemukan" teks="Tidak ada karyawan yang cocok dengan pencarian Anda." />
+              }
+            />
+          </Muncul>
         )}
       </View>
     </>
@@ -158,7 +162,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
     ...inputReset,
   },
@@ -188,7 +192,7 @@ const styles = StyleSheet.create({
   },
   avatarInitial: {
     color: Colors.white,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
   },
   cardContent: {
@@ -196,13 +200,13 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
   },
   nameText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   roleText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
     marginBottom: 6,
   },
@@ -230,6 +234,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: Spacing.md,
     color: Colors.textSecondary,
-    fontSize: 12,
+    fontSize: ukuranIsi,
   },
 });

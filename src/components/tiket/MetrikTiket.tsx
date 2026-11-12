@@ -10,7 +10,7 @@ import BottomSheet from '../common/BottomSheet';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { formatDurasi } from '../../adapters/tiket';
 import { formatJam, useJamBerjalan } from '../../hooks/useJamBerjalan';
 import { MetrikTiket as Metrik } from '../../types/tiket';
@@ -94,9 +94,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   baris: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.sm },
-  label: { flex: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  nilai: { fontFamily: fonts.bold, fontSize: 12, color: Colors.textPrimary },
-  ket: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, paddingHorizontal: Spacing.screenPadding },
+  label: { flex: 1, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
+  nilai: { fontFamily: fonts.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  ket: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary, paddingHorizontal: Spacing.screenPadding },
   cincin: {
     width: 18,
     height: 18,

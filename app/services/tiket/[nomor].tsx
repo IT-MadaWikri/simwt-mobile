@@ -11,7 +11,7 @@ import Icon from '../../../src/components/common/Icon';
 import AppBar from '../../../src/components/common/AppBar';
 import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailTiket from '../../../src/components/tiket/SkeletonDetailTiket';
 import RingkasanTiket from '../../../src/components/tiket/RingkasanTiket';
 import FotoTiket from '../../../src/components/tiket/FotoTiket';
 import MetrikTiket from '../../../src/components/tiket/MetrikTiket';
@@ -20,12 +20,13 @@ import SheetKonfirmasiTiket from '../../../src/components/tiket/SheetKonfirmasiT
 import SheetBagikanTiket from '../../../src/components/tiket/SheetBagikanTiket';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useDetailTiket } from '../../../src/hooks/useDetailTiket';
 import { useKonfirmasiTiket } from '../../../src/hooks/useKonfirmasiTiket';
 import { teksBagikanTiket } from '../../../src/adapters/tiket';
 import { bagikanBuktiTiket } from '../../../src/services/buktiTiketService';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function DetailTiketScreen() {
   const { nomor } = useLocalSearchParams<{ nomor: string }>();
@@ -70,7 +71,7 @@ export default function DetailTiketScreen() {
     return (
       <View style={gs.screen}>
         <AppBar judul={`Tiket #${nomor}`} />
-        <SkeletonDetail />
+        <SkeletonDetailTiket />
       </View>
     );
   }
@@ -94,7 +95,7 @@ export default function DetailTiketScreen() {
         judul={`Tiket #${tiket.noTiket}`}
         kanan={
           <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-            <Icon name="share-variant" size={20} color={Colors.white} />
+            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
         }
       />
@@ -106,43 +107,53 @@ export default function DetailTiketScreen() {
         }
       >
         {/* Kartu metrik langsung di atas latar layar (tanpa pembungkus putih). */}
-        <View style={styles.metrik}>
-          <MetrikTiket metrik={tiket.metrik} />
-        </View>
+        <Muncul jeda={0}>
+          <View style={styles.metrik}>
+            <MetrikTiket metrik={tiket.metrik} />
+          </View>
+        </Muncul>
 
-        <View style={styles.seksi}>
-          <RingkasanTiket
-            noTiket={tiket.noTiket}
-            judul={tiket.judul}
-            status={tiket.status}
-            jenis={tiket.jenis}
-            plant={tiket.plant}
-            diajukanOleh={tiket.diajukanOleh}
-            pic={tiket.pic}
-            departemen={tiket.departemen}
-            aset={tiket.aset}
-          />
-        </View>
+        <Muncul jeda={70}>
+          <View style={styles.seksi}>
+            <RingkasanTiket
+              noTiket={tiket.noTiket}
+              judul={tiket.judul}
+              status={tiket.status}
+              jenis={tiket.jenis}
+              plant={tiket.plant}
+              diajukanOleh={tiket.diajukanOleh}
+              pic={tiket.pic}
+              departemen={tiket.departemen}
+              aset={tiket.aset}
+            />
+          </View>
+        </Muncul>
 
-        <View style={styles.seksi}>
-          <Text style={styles.judulSeksi}>Detail masalah</Text>
-          <Text style={styles.teks}>{tiket.detail || '-'}</Text>
-        </View>
+        <Muncul jeda={140}>
+          <View style={styles.seksi}>
+            <Text style={styles.judulSeksi}>Detail masalah</Text>
+            <Text style={styles.teks}>{tiket.detail || '-'}</Text>
+          </View>
+        </Muncul>
 
         {adaFoto ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Foto</Text>
-            <FotoTiket fotoSebelum={tiket.fotoSebelum} fotoSesudah={tiket.fotoSesudah} />
-          </View>
+          <Muncul jeda={210}>
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Foto</Text>
+              <FotoTiket fotoSebelum={tiket.fotoSebelum} fotoSesudah={tiket.fotoSesudah} />
+            </View>
+          </Muncul>
         ) : null}
 
-        <View style={[styles.seksi, { marginBottom: 0 }]}>
-          <Text style={styles.judulSeksi}>Progres penanganan</Text>
-          {/* Tinggi dibatasi: progres panjang digulir di dalam kotak ini, bukan memanjangkan halaman. */}
-          <ScrollView style={styles.linimasa} nestedScrollEnabled showsVerticalScrollIndicator>
-            <LinimasaTiket langkah={tiket.linimasa} />
-          </ScrollView>
-        </View>
+        <Muncul jeda={280}>
+          <View style={[styles.seksi, { marginBottom: 0 }]}>
+            <Text style={styles.judulSeksi}>Progres penanganan</Text>
+            {/* Tinggi dibatasi: progres panjang digulir di dalam kotak ini, bukan memanjangkan halaman. */}
+            <ScrollView style={styles.linimasa} nestedScrollEnabled showsVerticalScrollIndicator>
+              <LinimasaTiket langkah={tiket.linimasa} />
+            </ScrollView>
+          </View>
+        </Muncul>
       </ScrollView>
 
       {/* Di luar ScrollView supaya tetap menempel di bawah saat halaman digulir. */}
@@ -201,11 +212,11 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderSubtle,
   },
   linimasa: { maxHeight: 320 },
-  judulKonfirmasi: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  judulKonfirmasi: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
   metrik: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
   judulSeksi: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

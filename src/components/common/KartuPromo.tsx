@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from './Icon';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 
 const KEPALA = {
   putri: require('../../../assets/images/maskot/kepala-putri.png'),
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   label: {
     flexShrink: 1,
     fontFamily: fonts.semibold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
   sisiKanan: {

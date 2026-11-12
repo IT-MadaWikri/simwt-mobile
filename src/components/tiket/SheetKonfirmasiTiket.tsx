@@ -10,7 +10,7 @@ import BottomSheet from '../common/BottomSheet';
 import Button from '../common/Button';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 
 const MIN_ALASAN = 5;
@@ -118,8 +118,8 @@ export default function SheetKonfirmasiTiket({
 const styles = StyleSheet.create({
   isi: { paddingHorizontal: Spacing.screenPadding, gap: Spacing.md },
   info: { gap: 4 },
-  teks: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
+  teks: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
   textArea: { minHeight: 110, textAlignVertical: 'top' },
-  hitung: { marginTop: 4, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, textAlign: 'right' },
+  hitung: { marginTop: 4, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary, textAlign: 'right' },
   baris: { flexDirection: 'row', gap: Spacing.sm },
 });

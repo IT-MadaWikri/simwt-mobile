@@ -10,7 +10,7 @@ import BrandSpinner from './BrandSpinner';
 import Icon from './Icon';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranCatatan } from '../../../constants/Typography';
 
 interface SplashModulProps {
   ikon: string;
@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nama: { fontFamily: fonts.bold, fontSize: 20, color: Colors.textPrimary },
-  keterangan: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  keterangan: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textTertiary },
   spinner: { position: 'absolute' },
 });

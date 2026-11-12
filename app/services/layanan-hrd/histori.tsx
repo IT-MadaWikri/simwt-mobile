@@ -19,6 +19,7 @@ import { useFilterTanggal } from '../../../src/hooks/useFilterTanggal';
 import { dalamRentang } from '../../../src/utils/kalender';
 import { useKeluarPabrikSaya } from '../../../src/hooks/useKeluarPabrik';
 import { LABEL_JENIS, formatRentangJam, formatTanggalKeluar } from '../../../src/adapters/keluarPabrik';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function HistoriKeluarPabrikScreen() {
   const router = useRouter();
@@ -47,38 +48,40 @@ export default function HistoriKeluarPabrikScreen() {
       {h.memuat ? (
         <SkeletonBaris jumlah={5} style={styles.daftar} />
       ) : (
-        <>
-        <BarFilterTanggal dari={filter.dari} sampai={filter.sampai} onUbahDari={filter.setDari} onUbahSampai={filter.setSampai} />
-        <FlatList
-          data={tampilDaftar}
-          keyExtractor={(f) => String(f.id)}
-          contentContainerStyle={[styles.daftar, { paddingBottom: insets.bottom + Spacing.xxl }, tampilDaftar.length === 0 && { flexGrow: 1 }]}
-          refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-          renderItem={({ item }) => (
-            <KartuKeluarPabrik
-              jenis={LABEL_JENIS[item.jenisKeluar]}
-              waktu={`${formatTanggalKeluar(item.tanggalKeluar)} · ${formatRentangJam(item.jamKeluar, item.jamKembali)}`}
-              nomorDokumen={item.nomorDokumen}
-              status={item.status}
-              statusLabel={item.statusLabel}
-              onPress={() => router.push(`/services/layanan-hrd/${item.id}` as any)}
-            />
-          )}
-          ListEmptyComponent={
-            h.error ? (
-              <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={h.error} style={styles.kosong}>
-                <Button label="Coba Lagi" onPress={h.cobaLagi} style={{ marginTop: Spacing.lg }} />
-              </KeadaanKosong>
-            ) : filter.aktif ? (
-              <KeadaanKosong pose="mikir" judul="Tidak ditemukan" teks="Tidak ada yang diajukan pada rentang tanggal ini." style={styles.kosong} />
-            ) : (
-              <KeadaanKosong pose="persilakan" judul="Belum ada form" teks="Form keluar pabrik yang Anda ajukan akan tampil di sini." style={styles.kosong}>
-                <Button label="Ajukan Form Keluar Pabrik" icon="plus" onPress={ajukan} style={{ marginTop: Spacing.lg }} />
-              </KeadaanKosong>
-            )
-          }
-        />
-        </>
+        <Muncul style={{ flex: 1 }}>
+          <>
+          <BarFilterTanggal dari={filter.dari} sampai={filter.sampai} onUbahDari={filter.setDari} onUbahSampai={filter.setSampai} />
+          <FlatList
+            data={tampilDaftar}
+            keyExtractor={(f) => String(f.id)}
+            contentContainerStyle={[styles.daftar, { paddingBottom: insets.bottom + Spacing.xxl }, tampilDaftar.length === 0 && { flexGrow: 1 }]}
+            refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+            renderItem={({ item }) => (
+              <KartuKeluarPabrik
+                jenis={LABEL_JENIS[item.jenisKeluar]}
+                waktu={`${formatTanggalKeluar(item.tanggalKeluar)} · ${formatRentangJam(item.jamKeluar, item.jamKembali)}`}
+                nomorDokumen={item.nomorDokumen}
+                status={item.status}
+                statusLabel={item.statusLabel}
+                onPress={() => router.push(`/services/layanan-hrd/${item.id}` as any)}
+              />
+            )}
+            ListEmptyComponent={
+              h.error ? (
+                <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={h.error} style={styles.kosong}>
+                  <Button label="Coba Lagi" onPress={h.cobaLagi} style={{ marginTop: Spacing.lg }} />
+                </KeadaanKosong>
+              ) : filter.aktif ? (
+                <KeadaanKosong pose="mikir" judul="Tidak ditemukan" teks="Tidak ada yang diajukan pada rentang tanggal ini." style={styles.kosong} />
+              ) : (
+                <KeadaanKosong pose="persilakan" judul="Belum ada form" teks="Form keluar pabrik yang Anda ajukan akan tampil di sini." style={styles.kosong}>
+                  <Button label="Ajukan Form Keluar Pabrik" icon="plus" onPress={ajukan} style={{ marginTop: Spacing.lg }} />
+                </KeadaanKosong>
+              )
+            }
+          />
+          </>
+        </Muncul>
       )}
     </View>
   );

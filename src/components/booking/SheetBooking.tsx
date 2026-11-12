@@ -14,7 +14,7 @@ import { IKON, WARNA_STATUS } from './BarisBooking';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 
 interface SheetBookingProps {
   visible: boolean;
@@ -141,16 +141,16 @@ const styles = StyleSheet.create({
   isi: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg, gap: Spacing.md },
   kepala: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   ikonJenis: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  judul: { fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
   barisLencana: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: 4 },
   barisInfo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   ikonInfo: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   teksInfo: { flex: 1 },
-  label: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
-  nilai: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary },
+  label: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
+  nilai: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
   barisTombol: { flexDirection: 'row', gap: Spacing.sm },
   daftar: { paddingHorizontal: Spacing.lg },
   barisPeserta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.sm },
   garis: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border },
-  namaPeserta: { flex: 1, fontFamily: fonts.medium, fontSize: 12, color: Colors.textPrimary },
+  namaPeserta: { flex: 1, fontFamily: fonts.medium, fontSize: ukuranIsi, color: Colors.textPrimary },
 });

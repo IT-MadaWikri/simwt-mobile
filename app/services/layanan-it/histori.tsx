@@ -19,6 +19,7 @@ import { useFilterTanggal } from '../../../src/hooks/useFilterTanggal';
 import { dalamRentang } from '../../../src/utils/kalender';
 import { useRequestAkunSaya } from '../../../src/hooks/useRequestAkunSaya';
 import { formatWaktuRequest } from '../../../src/adapters/requestAkun';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function HistoriRequestScreen() {
   const router = useRouter();
@@ -47,39 +48,41 @@ export default function HistoriRequestScreen() {
       {h.memuat ? (
         <SkeletonBaris jumlah={5} style={styles.daftar} />
       ) : (
-        <>
-        <BarFilterTanggal dari={filter.dari} sampai={filter.sampai} onUbahDari={filter.setDari} onUbahSampai={filter.setSampai} />
-        <FlatList
-          data={tampilDaftar}
-          keyExtractor={(r) => String(r.id)}
-          contentContainerStyle={[styles.daftar, { paddingBottom: insets.bottom + Spacing.xxl }, tampilDaftar.length === 0 && { flexGrow: 1 }]}
-          refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-          renderItem={({ item }) => (
-            <KartuRequestAkun
-              jenis={item.jenisPermintaan}
-              sistem={item.sistem}
-              nomorDokumen={item.nomorDokumen}
-              diajukan={formatWaktuRequest(item.diajukanAt)}
-              status={item.status}
-              statusLabel={item.statusLabel}
-              onPress={() => router.push(`/services/layanan-it/${item.id}` as any)}
-            />
-          )}
-          ListEmptyComponent={
-            h.error ? (
-              <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={h.error} style={styles.kosong}>
-                <Button label="Coba Lagi" onPress={h.cobaLagi} style={{ marginTop: Spacing.lg }} />
-              </KeadaanKosong>
-            ) : filter.aktif ? (
-              <KeadaanKosong pose="mikir" judul="Tidak ditemukan" teks="Tidak ada yang diajukan pada rentang tanggal ini." style={styles.kosong} />
-            ) : (
-              <KeadaanKosong pose="persilakan" judul="Belum ada request" teks="Request akun yang Anda ajukan akan tampil di sini." style={styles.kosong}>
-                <Button label="Ajukan Request Akun" icon="plus" onPress={ajukan} style={{ marginTop: Spacing.lg }} />
-              </KeadaanKosong>
-            )
-          }
-        />
-        </>
+        <Muncul style={{ flex: 1 }}>
+          <>
+          <BarFilterTanggal dari={filter.dari} sampai={filter.sampai} onUbahDari={filter.setDari} onUbahSampai={filter.setSampai} />
+          <FlatList
+            data={tampilDaftar}
+            keyExtractor={(r) => String(r.id)}
+            contentContainerStyle={[styles.daftar, { paddingBottom: insets.bottom + Spacing.xxl }, tampilDaftar.length === 0 && { flexGrow: 1 }]}
+            refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+            renderItem={({ item }) => (
+              <KartuRequestAkun
+                jenis={item.jenisPermintaan}
+                sistem={item.sistem}
+                nomorDokumen={item.nomorDokumen}
+                diajukan={formatWaktuRequest(item.diajukanAt)}
+                status={item.status}
+                statusLabel={item.statusLabel}
+                onPress={() => router.push(`/services/layanan-it/${item.id}` as any)}
+              />
+            )}
+            ListEmptyComponent={
+              h.error ? (
+                <KeadaanKosong pose="mikir" judul="Gagal memuat" teks={h.error} style={styles.kosong}>
+                  <Button label="Coba Lagi" onPress={h.cobaLagi} style={{ marginTop: Spacing.lg }} />
+                </KeadaanKosong>
+              ) : filter.aktif ? (
+                <KeadaanKosong pose="mikir" judul="Tidak ditemukan" teks="Tidak ada yang diajukan pada rentang tanggal ini." style={styles.kosong} />
+              ) : (
+                <KeadaanKosong pose="persilakan" judul="Belum ada request" teks="Request akun yang Anda ajukan akan tampil di sini." style={styles.kosong}>
+                  <Button label="Ajukan Request Akun" icon="plus" onPress={ajukan} style={{ marginTop: Spacing.lg }} />
+                </KeadaanKosong>
+              )
+            }
+          />
+          </>
+        </Muncul>
       )}
     </View>
   );

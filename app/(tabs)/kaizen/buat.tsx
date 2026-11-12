@@ -33,7 +33,7 @@ import SheetKaryawan from '../../../src/components/kaizen/SheetKaryawan';
 import EditorFoto, { FotoKaizen, TagFoto } from '../../../src/components/kaizen/EditorFoto';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { kaizenService } from '../../../src/services/kaizenService';
@@ -41,6 +41,7 @@ import SliderManfaat from '../../../src/components/kaizen/SliderManfaat';
 import { KaizenOpsiBuat, KaryawanRingkas } from '../../../src/types/kaizen';
 import { LENCANA } from '../../../src/utils/kaizen';
 import { drafKaizen, buatIdDraf } from '../../../src/utils/drafKaizen';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Orang = { nama: string; nik: string };
 
@@ -715,183 +716,185 @@ export default function BuatKaizenScreen() {
     draf && setDraf({ ...draf, data: { ...draf.data, [k]: v }, galat: { ...draf.galat, [k]: '' } });
 
   return (
-    <KeyboardAvoidingView
-      style={[gs.screen, { backgroundColor: Colors.white }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
-      <View style={styles.langkah}>
-        {[
-          { n: 1, label: 'Kaizen' },
-          { n: 2, label: 'Manfaat' },
-        ].map((s) => {
-          const on = langkah >= s.n;
-          return (
-            <View key={s.n} style={gs.flex1}>
-              <View style={[styles.batang, on && styles.batangAktif]} />
-              <Text style={[styles.teksLangkah, on && styles.teksLangkahAktif]}>
-                {s.n}. {s.label}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-
-      <ScrollView
-        ref={scrollRef}
-        contentContainerStyle={styles.isi}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <Muncul style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={[gs.screen, { backgroundColor: Colors.white }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
-        {langkah === 1 ? langkah1 : langkah2}
-      </ScrollView>
-
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-        {langkah === 2 ? (
-          <Button variant="secondary" icon="arrow-left" onPress={() => setLangkah(1)} disabled={mengirim} accessibilityLabel="Kembali" />
-        ) : null}
-        <Button variant="secondary" icon="content-save-outline" label="Simpan draf" onPress={simpanDrafKaizen} disabled={mengirim} />
-        <Button
-          label={langkah === 1 ? 'Lanjut ke Manfaat' : 'Kirim Kaizen'}
-          iconRight={langkah === 1 ? 'arrow-right' : 'send'}
-          onPress={langkah === 1 ? lanjut : kirim}
-          loading={mengirim}
-          style={gs.flex1}
-        />
-      </View>
-
-      <SheetKaryawan
-        visible={sheetOrang !== null}
-        judul={sheetOrang === 'pelaksana' ? 'Pilih Pelaksana' : sheetOrang === 'saran' ? 'Disarankan Oleh' : 'Pilih PIC'}
-        onClose={() => setSheetOrang(null)}
-        onPilih={pilihOrang}
-      />
-
-      <BottomSheet visible={sheetSumber} onClose={() => setSheetSumber(false)} title="Upload foto">
-        {[
-          { sumber: 'kamera' as const, ikon: 'camera-plus-outline', label: 'Ambil dari kamera' },
-          { sumber: 'galeri' as const, ikon: 'image', label: `Pilih dari galeri${fotos.length === 0 ? ' (maks 2)' : ''}` },
-        ].map((o) => (
-          <TouchableOpacity
-            key={o.sumber}
-            style={styles.barisSumber}
-            activeOpacity={0.6}
-            onPress={() => {
-              setSheetSumber(false);
-              // Beri waktu sheet tertutup sebelum picker sistem terbuka.
-              setTimeout(() => tambahFoto(o.sumber), 250);
-            }}
-          >
-            <View style={styles.ikonSumber}>
-              <Icon name={o.ikon} size={18} color={brand[700]} />
-            </View>
-            <Text style={styles.teksBarisSumber}>{o.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </BottomSheet>
-
-      <EditorFoto
-        visible={editor !== null}
-        fotos={editor?.fotos ?? []}
-        awal={editor?.awal ?? 0}
-        onBatal={() => setEditor(null)}
-        onSelesai={(hasil) => {
-          setFotos(hasil);
-          setEditor(null);
-          setGalat((g) => ({ ...g, foto: '' }));
-        }}
-      />
-
-      <BottomSheet
-        visible={sheetKategori !== undefined && draf === null && butirSheet.length > 0}
-        onClose={() => setSheetKategori(undefined)}
-        title={`Manfaat ${kategoriNama(sheetKategori ?? null)}`}
-        subtitle={`${butirSheet.length} manfaat ditambahkan`}
-      >
-        <SliderManfaat
-          key={String(sheetKategori)}
-          items={butirSheet.map(({ m, i }) => {
-            const l = ikonKategori(m.kategori);
-            return {
-              ikon: l.ikon,
-              warna: l.warna[2],
-              tipe: m.pelaksanaan,
-              hemat: m.hemat,
-              sebelum: m.sebelum,
-              sesudah: m.sesudah,
-              area: m.area,
-              pic: m.pic?.nama ?? null,
-              aksi: (
-                <View style={styles.aksiButir}>
-                  <Button
-                    variant="outline"
-                    icon="pencil"
-                    label="Ubah"
-                    onPress={() => setDraf({ data: m, index: i, galat: {} })}
-                    style={gs.flex1}
-                  />
-                  <Button variant="dangerOutline" icon="delete-outline" onPress={() => hapusManfaat(i)} accessibilityLabel="Hapus manfaat" />
-                </View>
-              ),
-            };
+        <View style={styles.langkah}>
+          {[
+            { n: 1, label: 'Kaizen' },
+            { n: 2, label: 'Manfaat' },
+          ].map((s) => {
+            const on = langkah >= s.n;
+            return (
+              <View key={s.n} style={gs.flex1}>
+                <View style={[styles.batang, on && styles.batangAktif]} />
+                <Text style={[styles.teksLangkah, on && styles.teksLangkahAktif]}>
+                  {s.n}. {s.label}
+                </Text>
+              </View>
+            );
           })}
-        />
-      </BottomSheet>
+        </View>
 
-      <BottomSheet
-        visible={draf !== null && sheetOrang === null}
-        onClose={() => setDraf(null)}
-        title={draf?.index === null ? 'Tambah Manfaat' : 'Ubah Manfaat'}
-      >
-        {d && draf ? (
-          <View style={styles.isiSheet}>
-            <View style={styles.field}>
-              <Text style={styles.label}>
-                Kategori manfaat<Text style={styles.wajib}> *</Text>
-              </Text>
-              <View style={styles.chips}>
-                {opsi.kategori.map((k) => {
-                  const on = d.kategori === k.id;
-                  const l = LENCANA[k.kategori];
-                  return (
-                    <TouchableOpacity
-                      key={k.id}
-                      style={[styles.chip, styles.chipIkon, on && { backgroundColor: l?.warna[1] ?? Colors.textPrimary, borderColor: l?.warna[1] ?? Colors.textPrimary }]}
-                      onPress={() => ubahDraf('kategori', k.id)}
-                    >
-                      {l ? <Icon name={l.ikon} size={14} color={on ? Colors.white : l.warna[2]} /> : null}
-                      <Text style={[styles.teksChip, on && styles.teksChipAktif]}>{k.kategori}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.isi}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {langkah === 1 ? langkah1 : langkah2}
+        </ScrollView>
+
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          {langkah === 2 ? (
+            <Button variant="secondary" icon="arrow-left" onPress={() => setLangkah(1)} disabled={mengirim} accessibilityLabel="Kembali" />
+          ) : null}
+          <Button variant="secondary" icon="content-save-outline" label="Simpan draf" onPress={simpanDrafKaizen} disabled={mengirim} />
+          <Button
+            label={langkah === 1 ? 'Lanjut ke Manfaat' : 'Kirim Kaizen'}
+            iconRight={langkah === 1 ? 'arrow-right' : 'send'}
+            onPress={langkah === 1 ? lanjut : kirim}
+            loading={mengirim}
+            style={gs.flex1}
+          />
+        </View>
+
+        <SheetKaryawan
+          visible={sheetOrang !== null}
+          judul={sheetOrang === 'pelaksana' ? 'Pilih Pelaksana' : sheetOrang === 'saran' ? 'Disarankan Oleh' : 'Pilih PIC'}
+          onClose={() => setSheetOrang(null)}
+          onPilih={pilihOrang}
+        />
+
+        <BottomSheet visible={sheetSumber} onClose={() => setSheetSumber(false)} title="Upload foto">
+          {[
+            { sumber: 'kamera' as const, ikon: 'camera-plus-outline', label: 'Ambil dari kamera' },
+            { sumber: 'galeri' as const, ikon: 'image', label: `Pilih dari galeri${fotos.length === 0 ? ' (maks 2)' : ''}` },
+          ].map((o) => (
+            <TouchableOpacity
+              key={o.sumber}
+              style={styles.barisSumber}
+              activeOpacity={0.6}
+              onPress={() => {
+                setSheetSumber(false);
+                // Beri waktu sheet tertutup sebelum picker sistem terbuka.
+                setTimeout(() => tambahFoto(o.sumber), 250);
+              }}
+            >
+              <View style={styles.ikonSumber}>
+                <Icon name={o.ikon} size={18} color={brand[700]} />
               </View>
-              {draf.galat.kategori ? <Text style={styles.galat}>{draf.galat.kategori}</Text> : null}
-            </View>
-            <Kolom label="Kondisi sebelum" wajib maks={255} placeholder="Bagaimana kondisinya sebelum Kaizen?" value={d.sebelum} onChangeText={(v) => ubahDraf('sebelum', v)} galat={draf.galat.sebelum} />
-            <Kolom label="Hasil sesudah" wajib maks={255} placeholder="Bagaimana hasilnya sesudah Kaizen?" value={d.sesudah} onChangeText={(v) => ubahDraf('sesudah', v)} galat={draf.galat.sesudah} />
-            <Kolom label="Penghematan yang dihasilkan" wajib maks={255} placeholder="Contoh: Rp 2 juta/bulan, 15 menit/shift" value={d.hemat} onChangeText={(v) => ubahDraf('hemat', v)} galat={draf.galat.hemat} />
-            <View style={styles.field}>
-              <Text style={styles.label}>Pelaksanaan</Text>
-              <View style={styles.segmen}>
-                {(['Internal', 'Eksternal'] as const).map((p) => {
-                  const on = d.pelaksanaan === p;
-                  return (
-                    <TouchableOpacity key={p} style={[styles.ruas, on && styles.ruasAktif]} onPress={() => ubahDraf('pelaksanaan', p)}>
-                      <Text style={[styles.teksRuas, on && styles.teksRuasAktif]}>
-                        {p === 'Internal' ? 'Dalam perusahaan' : 'Luar perusahaan'}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+              <Text style={styles.teksBarisSumber}>{o.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </BottomSheet>
+
+        <EditorFoto
+          visible={editor !== null}
+          fotos={editor?.fotos ?? []}
+          awal={editor?.awal ?? 0}
+          onBatal={() => setEditor(null)}
+          onSelesai={(hasil) => {
+            setFotos(hasil);
+            setEditor(null);
+            setGalat((g) => ({ ...g, foto: '' }));
+          }}
+        />
+
+        <BottomSheet
+          visible={sheetKategori !== undefined && draf === null && butirSheet.length > 0}
+          onClose={() => setSheetKategori(undefined)}
+          title={`Manfaat ${kategoriNama(sheetKategori ?? null)}`}
+          subtitle={`${butirSheet.length} manfaat ditambahkan`}
+        >
+          <SliderManfaat
+            key={String(sheetKategori)}
+            items={butirSheet.map(({ m, i }) => {
+              const l = ikonKategori(m.kategori);
+              return {
+                ikon: l.ikon,
+                warna: l.warna[2],
+                tipe: m.pelaksanaan,
+                hemat: m.hemat,
+                sebelum: m.sebelum,
+                sesudah: m.sesudah,
+                area: m.area,
+                pic: m.pic?.nama ?? null,
+                aksi: (
+                  <View style={styles.aksiButir}>
+                    <Button
+                      variant="outline"
+                      icon="pencil"
+                      label="Ubah"
+                      onPress={() => setDraf({ data: m, index: i, galat: {} })}
+                      style={gs.flex1}
+                    />
+                    <Button variant="dangerOutline" icon="delete-outline" onPress={() => hapusManfaat(i)} accessibilityLabel="Hapus manfaat" />
+                  </View>
+                ),
+              };
+            })}
+          />
+        </BottomSheet>
+
+        <BottomSheet
+          visible={draf !== null && sheetOrang === null}
+          onClose={() => setDraf(null)}
+          title={draf?.index === null ? 'Tambah Manfaat' : 'Ubah Manfaat'}
+        >
+          {d && draf ? (
+            <View style={styles.isiSheet}>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  Kategori manfaat<Text style={styles.wajib}> *</Text>
+                </Text>
+                <View style={styles.chips}>
+                  {opsi.kategori.map((k) => {
+                    const on = d.kategori === k.id;
+                    const l = LENCANA[k.kategori];
+                    return (
+                      <TouchableOpacity
+                        key={k.id}
+                        style={[styles.chip, styles.chipIkon, on && { backgroundColor: l?.warna[1] ?? Colors.textPrimary, borderColor: l?.warna[1] ?? Colors.textPrimary }]}
+                        onPress={() => ubahDraf('kategori', k.id)}
+                      >
+                        {l ? <Icon name={l.ikon} size={14} color={on ? Colors.white : l.warna[2]} /> : null}
+                        <Text style={[styles.teksChip, on && styles.teksChipAktif]}>{k.kategori}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                {draf.galat.kategori ? <Text style={styles.galat}>{draf.galat.kategori}</Text> : null}
               </View>
+              <Kolom label="Kondisi sebelum" wajib maks={255} placeholder="Bagaimana kondisinya sebelum Kaizen?" value={d.sebelum} onChangeText={(v) => ubahDraf('sebelum', v)} galat={draf.galat.sebelum} />
+              <Kolom label="Hasil sesudah" wajib maks={255} placeholder="Bagaimana hasilnya sesudah Kaizen?" value={d.sesudah} onChangeText={(v) => ubahDraf('sesudah', v)} galat={draf.galat.sesudah} />
+              <Kolom label="Penghematan yang dihasilkan" wajib maks={255} placeholder="Contoh: Rp 2 juta/bulan, 15 menit/shift" value={d.hemat} onChangeText={(v) => ubahDraf('hemat', v)} galat={draf.galat.hemat} />
+              <View style={styles.field}>
+                <Text style={styles.label}>Pelaksanaan</Text>
+                <View style={styles.segmen}>
+                  {(['Internal', 'Eksternal'] as const).map((p) => {
+                    const on = d.pelaksanaan === p;
+                    return (
+                      <TouchableOpacity key={p} style={[styles.ruas, on && styles.ruasAktif]} onPress={() => ubahDraf('pelaksanaan', p)}>
+                        <Text style={[styles.teksRuas, on && styles.teksRuasAktif]}>
+                          {p === 'Internal' ? 'Dalam perusahaan' : 'Luar perusahaan'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+              <Kolom label="Area / tempat" wajib maks={255} placeholder="Nama area atau tempat Kaizen" value={d.area} onChangeText={(v) => ubahDraf('area', v)} galat={draf.galat.area} />
+              <BarisOrang label="PIC area setelah Kaizen" wajib orang={d.pic} galat={draf.galat.pic} onPilih={() => setSheetOrang('pic')} />
+              <Button label={draf.index === null ? 'Tambahkan' : 'Simpan perubahan'} onPress={simpanDraf} block />
             </View>
-            <Kolom label="Area / tempat" wajib maks={255} placeholder="Nama area atau tempat Kaizen" value={d.area} onChangeText={(v) => ubahDraf('area', v)} galat={draf.galat.area} />
-            <BarisOrang label="PIC area setelah Kaizen" wajib orang={d.pic} galat={draf.galat.pic} onPilih={() => setSheetOrang('pic')} />
-            <Button label={draf.index === null ? 'Tambahkan' : 'Simpan perubahan'} onPress={simpanDraf} block />
-          </View>
-        ) : null}
-      </BottomSheet>
-    </KeyboardAvoidingView>
+          ) : null}
+        </BottomSheet>
+      </KeyboardAvoidingView>
+    </Muncul>
   );
 }
 
@@ -914,7 +917,7 @@ const styles = StyleSheet.create({
   },
   teksLangkah: {
     marginTop: 6,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textTertiary,
   },
@@ -929,8 +932,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   judulBagian: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -957,7 +960,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
   },
   hitung: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
     marginBottom: 6,
@@ -984,7 +987,7 @@ const styles = StyleSheet.create({
   },
   galat: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.danger,
   },
@@ -1014,7 +1017,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   nikOrang: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1065,7 +1068,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   teksPlant: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1110,7 +1113,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTag: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.semibold,
     color: Colors.white,
   },
@@ -1141,7 +1144,7 @@ const styles = StyleSheet.create({
     backgroundColor: brand[50],
   },
   teksBarisSumber: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -1153,7 +1156,7 @@ const styles = StyleSheet.create({
   ket: {
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -1161,13 +1164,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   ringkasLabel: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   ringkasTema: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -1199,8 +1202,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   judulManfaat: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   segmen: {

@@ -37,11 +37,12 @@ import { NilaiFilter } from '../../../src/hooks/useDaftarKaizen';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { Kaizen, KaizenPeringkat } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, relatif, warnaStatus } from '../../../src/utils/kaizen';
 import { SkeletonBaris } from '../../../src/components/common/Skeleton';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Opsi = { label: string; value: string };
 
@@ -224,151 +225,153 @@ export default function KaizenSaya() {
       {awal ? (
         <SkeletonBaris jumlah={8} />
       ) : (
-        <FlatList
-          ref={daftarRef}
-          data={memuatDaftar ? [] : kaizens}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={renderKaizen}
-          ItemSeparatorComponent={() => (
-            <View style={styles.wadahPemisah}>
-              <View style={styles.pemisah} />
-            </View>
-          )}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 0 }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
-          onEndReached={muatBerikutnya}
-          onEndReachedThreshold={0.4}
-          ListHeaderComponent={
-            <>
-              <View style={styles.profil}>
-                <View style={[gs.row, { gap: Spacing.sm }]}>
-                  <Avatar nama={user?.nama_lengkap || user?.name || user?.username} ukuran={40} />
-                  <View style={gs.flex1}>
-                    <Text style={styles.namaProfil} numberOfLines={1}>{user?.nama_lengkap || user?.name || '-'}</Text>
-                    <Text style={styles.nikProfil} numberOfLines={1}>{user?.nik || user?.department || ''}</Text>
-                  </View>
-                </View>
-                <View style={styles.statProfil}>
-                  {[
-                    { label: 'Total Kaizen', nilai: profil?.jumlah_kaizen },
-                    { label: 'Nilai tertinggi', nilai: profil?.nilai_tertinggi },
-                    { label: 'Poin', nilai: profil?.poin },
-                  ].map((st, i) => (
-                    <View key={st.label} style={[styles.selStat, i > 0 && styles.garisStat]}>
-                      <Text style={styles.angkaStat}>{st.nilai == null ? '-' : st.nilai.toLocaleString('id-ID')}</Text>
-                      <Text style={styles.labelStat}>{st.label}</Text>
+        <Muncul style={{ flex: 1 }}>
+          <FlatList
+            ref={daftarRef}
+            data={memuatDaftar ? [] : kaizens}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderKaizen}
+            ItemSeparatorComponent={() => (
+              <View style={styles.wadahPemisah}>
+                <View style={styles.pemisah} />
+              </View>
+            )}
+            contentContainerStyle={[{ flexGrow: 1 }, styles.listContent, { paddingBottom: 0 }]}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />}
+            onEndReached={muatBerikutnya}
+            onEndReachedThreshold={0.4}
+            ListHeaderComponent={
+              <>
+                <View style={styles.profil}>
+                  <View style={[gs.row, { gap: Spacing.sm }]}>
+                    <Avatar nama={user?.nama_lengkap || user?.name || user?.username} ukuran={40} />
+                    <View style={gs.flex1}>
+                      <Text style={styles.namaProfil} numberOfLines={1}>{user?.nama_lengkap || user?.name || '-'}</Text>
+                      <Text style={styles.nikProfil} numberOfLines={1}>{user?.nik || user?.department || ''}</Text>
                     </View>
-                  ))}
+                  </View>
+                  <View style={styles.statProfil}>
+                    {[
+                      { label: 'Total Kaizen', nilai: profil?.jumlah_kaizen },
+                      { label: 'Nilai tertinggi', nilai: profil?.nilai_tertinggi },
+                      { label: 'Poin', nilai: profil?.poin },
+                    ].map((st, i) => (
+                      <View key={st.label} style={[styles.selStat, i > 0 && styles.garisStat]}>
+                        <Text style={styles.angkaStat}>{st.nilai == null ? '-' : st.nilai.toLocaleString('id-ID')}</Text>
+                        <Text style={styles.labelStat}>{st.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  {profil?.hutang ? (
+                    <View style={styles.hutang}>
+                      <Text style={styles.judulHutang}>Kaizen Anda {profil.hutang.tahun}</Text>
+                      <RekapBulan keadaan={profil.hutang.keadaan} />
+                      <View style={[styles.pilHutang, { backgroundColor: profil.hutang.terlewat ? '#fef2f2' : brand[50] }]}>
+                        <Text style={[styles.teksPilHutang, { color: profil.hutang.terlewat ? Colors.dangerDark : brand[700] }]}>
+                          {profil.hutang.terlewat
+                            ? `Anda tidak melakukan Kaizen sebanyak ${profil.hutang.terlewat} bulan di tahun ini`
+                            : 'Anda rutin melakukan Kaizen setiap bulan tahun ini'}
+                        </Text>
+                      </View>
+                    </View>
+                  ) : null}
+                  {TAMPILKAN_LENCANA && (() => {
+                    const data = profil?.pqcdsm ?? {};
+                    const utama = PQCDSM.reduce((a, b) => ((data[b] ?? 0) > (data[a] ?? 0) ? b : a));
+                    if (!data[utama]) return null;
+                    const l = LENCANA[utama];
+                    return (
+                      <View style={styles.lencana}>
+                        <KoinLencana ikon={l.ikon} warna={l.warna} />
+                        <View style={gs.flex1}>
+                          <Text style={styles.labelLencana}>Lencana Kaizen kamu</Text>
+                          <Text style={[styles.gelarLencana, { color: l.warna[2] }]}>{l.gelar}</Text>
+                          <Text style={styles.ketLencana}>Kaizen kamu paling banyak ke arah {utama}</Text>
+                        </View>
+                        <Kilau />
+                      </View>
+                    );
+                  })()}
                 </View>
-                {profil?.hutang ? (
-                  <View style={styles.hutang}>
-                    <Text style={styles.judulHutang}>Kaizen Anda {profil.hutang.tahun}</Text>
-                    <RekapBulan keadaan={profil.hutang.keadaan} />
-                    <View style={[styles.pilHutang, { backgroundColor: profil.hutang.terlewat ? '#fef2f2' : brand[50] }]}>
-                      <Text style={[styles.teksPilHutang, { color: profil.hutang.terlewat ? Colors.dangerDark : brand[700] }]}>
-                        {profil.hutang.terlewat
-                          ? `Anda tidak melakukan Kaizen sebanyak ${profil.hutang.terlewat} bulan di tahun ini`
-                          : 'Anda rutin melakukan Kaizen setiap bulan tahun ini'}
-                      </Text>
+                {pengingat && !pengingatDitutup ? (
+                  <View style={[styles.pengingat, pengingat.sudah ? styles.pengingatSudah : styles.pengingatBelum]}>
+                    <Icon
+                      name={pengingat.sudah ? 'check-circle' : 'calendar-clock-outline'}
+                      size={18}
+                      color={pengingat.sudah ? brand[700] : '#b45309'}
+                    />
+                    <Text style={[styles.teksPengingat, { color: pengingat.sudah ? brand[700] : '#b45309' }]} numberOfLines={2}>
+                      {pengingat.sudah
+                        ? `Kaizen ${pengingat.bulan} sudah masuk. Mantap!`
+                        : `Kaizen ${pengingat.bulan} belum ada. Yuk ajukan sebelum periodenya habis.`}
+                    </Text>
+                    {pengingat.sudah ? null : (
+                      <Button label="Buat" onPress={() => router.push('/kaizen/buat')} style={{ backgroundColor: '#d97706' }} />
+                    )}
+                    <TouchableOpacity onPress={() => setPengingatDitutup(true)} hitSlop={10} accessibilityLabel="Tutup pengingat">
+                      <Icon name="close" size={16} color={pengingat.sudah ? brand[700] : '#b45309'} />
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+                {top ? (
+                  // Dua kartu sejajar, digeser mendatar; snap per kartu. Bleed ke tepi layar (induk berpadding lg).
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    snapToInterval={lebarKartuTop + Spacing.sm}
+                    decelerationRate="fast"
+                    style={styles.barisTopGeser}
+                    contentContainerStyle={styles.isiTopGeser}
+                  >
+                    <KartuTop judul={`Top 5 Karyawan ${top.tahun}`} data={top.pelaksana} lebar={lebarKartuTop} />
+                    <KartuTop judul={`Top 5 Departemen ${top.tahun}`} data={top.departemen} lebar={lebarKartuTop} />
+                  </ScrollView>
+                ) : null}
+                {!error ? (
+                  <View style={styles.headerDaftar}>
+                    <View style={gs.rowBetween}>
+                      <Text style={styles.judulDaftar}>Kaizen kamu</Text>
+                    </View>
+                    <View style={{ marginTop: Spacing.sm }}>
+                    <View style={gs.row}>
+                      <View style={[gs.searchBar, gs.flex1, styles.kotakCari]}>
+                        <Icon name="magnify" size={16} color={Colors.textTertiary} />
+                        <TextInput
+                          style={styles.cari}
+                          placeholder="Cari tema atau nomor"
+                          placeholderTextColor={Colors.placeholder}
+                          value={search}
+                          onChangeText={setSearch}
+                          returnKeyType="search"
+                        />
+                        {search ? (
+                          <TouchableOpacity onPress={() => setSearch('')} hitSlop={10}>
+                            <Icon name="close-circle" size={16} color={Colors.textTertiary} />
+                          </TouchableOpacity>
+                        ) : null}
+                      </View>
+                      <TouchableOpacity style={styles.tombolFilter} onPress={bukaFilter} accessibilityLabel="Filter">
+                        <Icon name="filter-outline" size={16} color={Colors.textPrimary} />
+                      </TouchableOpacity>
+                      {/* Urutan menurut tanggal dibuat; tap untuk berganti terbaru ⇄ terlama. */}
+                      <TouchableOpacity
+                        style={styles.tombolFilter}
+                        onPress={gantiUrutan}
+                        accessibilityLabel={urutkan === 'TERBARU' ? 'Urutan: terbaru dulu' : 'Urutan: terlama dulu'}
+                      >
+                        <Icon name={urutkan === 'TERBARU' ? 'sort-descending' : 'sort-ascending'} size={16} color={Colors.textPrimary} />
+                      </TouchableOpacity>
+                    </View>
                     </View>
                   </View>
                 ) : null}
-                {TAMPILKAN_LENCANA && (() => {
-                  const data = profil?.pqcdsm ?? {};
-                  const utama = PQCDSM.reduce((a, b) => ((data[b] ?? 0) > (data[a] ?? 0) ? b : a));
-                  if (!data[utama]) return null;
-                  const l = LENCANA[utama];
-                  return (
-                    <View style={styles.lencana}>
-                      <KoinLencana ikon={l.ikon} warna={l.warna} />
-                      <View style={gs.flex1}>
-                        <Text style={styles.labelLencana}>Lencana Kaizen kamu</Text>
-                        <Text style={[styles.gelarLencana, { color: l.warna[2] }]}>{l.gelar}</Text>
-                        <Text style={styles.ketLencana}>Kaizen kamu paling banyak ke arah {utama}</Text>
-                      </View>
-                      <Kilau />
-                    </View>
-                  );
-                })()}
-              </View>
-              {pengingat && !pengingatDitutup ? (
-                <View style={[styles.pengingat, pengingat.sudah ? styles.pengingatSudah : styles.pengingatBelum]}>
-                  <Icon
-                    name={pengingat.sudah ? 'check-circle' : 'calendar-clock-outline'}
-                    size={18}
-                    color={pengingat.sudah ? brand[700] : '#b45309'}
-                  />
-                  <Text style={[styles.teksPengingat, { color: pengingat.sudah ? brand[700] : '#b45309' }]} numberOfLines={2}>
-                    {pengingat.sudah
-                      ? `Kaizen ${pengingat.bulan} sudah masuk. Mantap!`
-                      : `Kaizen ${pengingat.bulan} belum ada. Yuk ajukan sebelum periodenya habis.`}
-                  </Text>
-                  {pengingat.sudah ? null : (
-                    <Button label="Buat" onPress={() => router.push('/kaizen/buat')} style={{ backgroundColor: '#d97706' }} />
-                  )}
-                  <TouchableOpacity onPress={() => setPengingatDitutup(true)} hitSlop={10} accessibilityLabel="Tutup pengingat">
-                    <Icon name="close" size={16} color={pengingat.sudah ? brand[700] : '#b45309'} />
-                  </TouchableOpacity>
-                </View>
-              ) : null}
-              {top ? (
-                // Dua kartu sejajar, digeser mendatar; snap per kartu. Bleed ke tepi layar (induk berpadding lg).
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  snapToInterval={lebarKartuTop + Spacing.sm}
-                  decelerationRate="fast"
-                  style={styles.barisTopGeser}
-                  contentContainerStyle={styles.isiTopGeser}
-                >
-                  <KartuTop judul={`Top 5 Karyawan ${top.tahun}`} data={top.pelaksana} lebar={lebarKartuTop} />
-                  <KartuTop judul={`Top 5 Departemen ${top.tahun}`} data={top.departemen} lebar={lebarKartuTop} />
-                </ScrollView>
-              ) : null}
-              {!error ? (
-                <View style={styles.headerDaftar}>
-                  <View style={gs.rowBetween}>
-                    <Text style={styles.judulDaftar}>Kaizen kamu</Text>
-                  </View>
-                  <View style={{ marginTop: Spacing.sm }}>
-                  <View style={gs.row}>
-                    <View style={[gs.searchBar, gs.flex1, styles.kotakCari]}>
-                      <Icon name="magnify" size={16} color={Colors.textTertiary} />
-                      <TextInput
-                        style={styles.cari}
-                        placeholder="Cari tema atau nomor"
-                        placeholderTextColor={Colors.placeholder}
-                        value={search}
-                        onChangeText={setSearch}
-                        returnKeyType="search"
-                      />
-                      {search ? (
-                        <TouchableOpacity onPress={() => setSearch('')} hitSlop={10}>
-                          <Icon name="close-circle" size={16} color={Colors.textTertiary} />
-                        </TouchableOpacity>
-                      ) : null}
-                    </View>
-                    <TouchableOpacity style={styles.tombolFilter} onPress={bukaFilter} accessibilityLabel="Filter">
-                      <Icon name="filter-outline" size={16} color={Colors.textPrimary} />
-                    </TouchableOpacity>
-                    {/* Urutan menurut tanggal dibuat; tap untuk berganti terbaru ⇄ terlama. */}
-                    <TouchableOpacity
-                      style={styles.tombolFilter}
-                      onPress={gantiUrutan}
-                      accessibilityLabel={urutkan === 'TERBARU' ? 'Urutan: terbaru dulu' : 'Urutan: terlama dulu'}
-                    >
-                      <Icon name={urutkan === 'TERBARU' ? 'sort-descending' : 'sort-ascending'} size={16} color={Colors.textPrimary} />
-                    </TouchableOpacity>
-                  </View>
-                  </View>
-                </View>
-              ) : null}
-            </>
-          }
-          ListEmptyComponent={memuatDaftar ? <SkeletonBaris jumlah={8} style={styles.skeletonDaftar} /> : kosong}
-          ListFooterComponent={loadingMore ? <SkeletonBaris jumlah={2} style={styles.skeletonDaftar} /> : null}
-        />
+              </>
+            }
+            ListEmptyComponent={memuatDaftar ? <SkeletonBaris jumlah={8} style={styles.skeletonDaftar} /> : kosong}
+            ListFooterComponent={loadingMore ? <SkeletonBaris jumlah={2} style={styles.skeletonDaftar} /> : null}
+          />
+        </Muncul>
       )}
 
       {/* Bar bawah tetap: tombol tidak menutupi isi daftar */}
@@ -527,7 +530,7 @@ const styles = StyleSheet.create({
   judulSeksi: {
     marginTop: Spacing.sm,
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   chips: {
@@ -573,7 +576,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   tanggal: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -634,8 +637,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   judulTop: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   kosongTop: {
@@ -660,7 +663,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nomorPeringkat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textSecondary,
   },
@@ -693,8 +696,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   judulDaftar: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   card: {
@@ -717,23 +720,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tema: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
   nilai: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   nilaiKecil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -752,7 +755,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   tagText: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.medium,
     color: Colors.textSecondary,
   },
@@ -771,7 +774,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   kakiText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -781,7 +784,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     letterSpacing: 0.4,
   },
@@ -804,12 +807,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   namaProfil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   nikProfil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -830,12 +833,12 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.border,
   },
   angkaStat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   labelStat: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
     marginTop: 2,
@@ -845,7 +848,7 @@ const styles = StyleSheet.create({
   },
   judulHutang: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textSecondary,
   },
   pilHutang: {
@@ -856,7 +859,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   teksPilHutang: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
   },
   lencana: {
@@ -904,16 +907,16 @@ const styles = StyleSheet.create({
     width: 60,
   },
   labelLencana: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   gelarLencana: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.bold,
   },
   ketLencana: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },

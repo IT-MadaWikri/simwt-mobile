@@ -9,7 +9,7 @@ import Icon from '../common/Icon';
 import ZoomFoto from './ZoomFoto';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 interface FotoTiketProps {
   fotoSebelum: string | null;
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   gambar: { width: '100%', height: '100%' },
   kosong: { alignItems: 'center', justifyContent: 'center', gap: 4, padding: Spacing.sm },
-  teksKosong: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, textAlign: 'center' },
+  teksKosong: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary, textAlign: 'center' },
   tag: {
     position: 'absolute',
     left: 8,
@@ -80,5 +80,5 @@ const styles = StyleSheet.create({
     ...Spacing.curve,
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
-  teksTag: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.white },
+  teksTag: { fontSize: ukuranCatatan, fontFamily: fonts.semibold, color: Colors.white },
 });

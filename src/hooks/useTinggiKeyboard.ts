@@ -7,8 +7,10 @@
  */
 import { useEffect, useState } from 'react';
 import { Keyboard, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function useTinggiKeyboard() {
+  const insets = useSafeAreaInsets();
   const [tinggi, setTinggi] = useState(0);
 
   useEffect(() => {
@@ -21,5 +23,7 @@ export function useTinggiKeyboard() {
     };
   }, []);
 
-  return tinggi;
+  // Android edge-to-edge: tinggi dari event tidak termasuk navigation bar, padahal keyboard duduk di
+  // atasnya — tanpa ini bilah di atas keyboard (mis. kolom pesan chat) tertutup setinggi nav bar.
+  return tinggi > 0 && Platform.OS === 'android' ? tinggi + insets.bottom : tinggi;
 }

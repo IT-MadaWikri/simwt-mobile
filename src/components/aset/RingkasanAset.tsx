@@ -10,7 +10,7 @@ import Icon from '../common/Icon';
 import TeksBergulir from '../common/TeksBergulir';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { RingkasanAsetData } from '../../types/aset';
 
 interface RingkasanAsetProps {
@@ -84,8 +84,8 @@ export default function RingkasanAset({ ringkasan }: RingkasanAsetProps) {
 const styles = StyleSheet.create({
   pembungkus: { paddingHorizontal: Spacing.screenPadding, marginBottom: Spacing.xl },
   ikonCincin: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
-  labelBiasa: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
-  label: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  labelBiasa: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
+  label: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   kartuLebar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
   },
   cincinBesar: { width: UKURAN_DONAT, height: UKURAN_DONAT },
   isiLebar: { flex: 1, gap: 2 },
-  judulLebar: { fontFamily: fonts.bold, fontSize: 14, color: Colors.textPrimary },
-  subLebar: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  judulLebar: { fontFamily: fontsJudul.bold, fontSize: 14, color: Colors.textPrimary },
+  subLebar: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
   nilaiKanan: { alignItems: 'flex-end' },
   // Angka hero di kanan: pengecualian aturan 12px.
   persenBesar: { fontFamily: fonts.bold, fontSize: 20, color: brand[700] },

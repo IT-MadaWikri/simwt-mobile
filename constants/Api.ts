@@ -10,7 +10,8 @@
  */
 
 export const API_CONFIG = {
-  BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.madawikri.co.id/api',
+  /** API mobile di sim-mwt (prefix `/api/mobile`). Rute lama api-simwt (`api.madawikri.co.id/api`) tetap hidup untuk aplikasi yang belum menerima update. */
+  BASE_URL: (process.env.EXPO_PUBLIC_API_BASE_URL || 'https://sim.madawikri.co.id/api/mobile').replace(/\/+$/, ''),
 
   /**
    * Header X-SIMMWT-KEY. Bukan rahasia — nilai EXPO_PUBLIC_* ikut ter-inline
@@ -19,6 +20,13 @@ export const API_CONFIG = {
   API_TOKEN: process.env.EXPO_PUBLIC_API_TOKEN || '',
 
   TIMEOUT: Number(process.env.EXPO_PUBLIC_API_TIMEOUT) || 30000,
+
+  /**
+   * Host storage web SIMWT (sim-mwt): foto Kaizen lama, foto profil karyawan, sampul berita.
+   * Path relatif dari server dilayani dari `{host}/storage/{path}`. Bukan mwtpart.co.id
+   * (itu situs profil perusahaan, tidak menyimpan berkas SIMWT).
+   */
+  STORAGE_WEB_URL: (process.env.EXPO_PUBLIC_STORAGE_WEB_URL || 'https://sim.madawikri.co.id').replace(/\/+$/, ''),
 
   ENDPOINTS: {
     // Auth

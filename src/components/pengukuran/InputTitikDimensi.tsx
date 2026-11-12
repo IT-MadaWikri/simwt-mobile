@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   sampel: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginTop: Spacing.sm },
   sampelKotak: { width: '30%', flexGrow: 1 },
   sampelLebar: { width: '100%' },
-  label: { marginBottom: 4, fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  label: { marginBottom: 4, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   input: {
     borderWidth: 1,
     borderColor: Colors.border,
@@ -142,6 +142,6 @@ const styles = StyleSheet.create({
     ...inputReset,
   },
   inputSalah: { borderColor: Colors.danger },
-  galat: { marginTop: 2, fontFamily: fonts.regular, fontSize: 12, color: Colors.danger },
-  standar: { marginTop: Spacing.sm, fontFamily: fonts.regular, fontSize: 12, color: brand[600] },
+  galat: { marginTop: 2, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.danger },
+  standar: { marginTop: Spacing.sm, fontFamily: fonts.regular, fontSize: ukuranIsi, color: brand[600] },
 });

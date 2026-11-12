@@ -25,7 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors, { brand, slate, ubin } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { gs } from '../../constants/GlobalStyles';
-import { fonts } from '../../constants/Typography';
+import { fonts, fontsJudul, ukuranCatatan, ukuranIsi } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import {
   approvalService,
@@ -35,6 +35,7 @@ import {
 import { useAuth } from '../../src/contexts/AuthContext';
 import { jalankanSetelahTransisi } from '../../src/utils/useSetelahTransisi';
 import { SkeletonDaftar } from '../../src/components/common/Skeleton';
+import Muncul from '../../src/components/common/Muncul';
 
 type Saring = 'semua' | 'kaizen' | 'tiket';
 
@@ -146,102 +147,104 @@ export default function ApprovalCenterScreen() {
   }
 
   return (
-    <View style={[gs.screen, { backgroundColor: Colors.white }]}>
-      {/* Penyaring */}
-      <View style={[gs.containerX, { paddingVertical: Spacing.md }]}>
-        <View style={[gs.row, gs.gapSm]}>
-          <Chip nilai="semua" label="Semua" jumlah={ringkasan.total} />
-          {bisaKaizen ? <Chip nilai="kaizen" label="Kaizen" jumlah={ringkasan.kaizen} /> : null}
-          <Chip nilai="tiket" label="Tiket" jumlah={ringkasan.tiket} />
-        </View>
-      </View>
-
-      <FlatList
-        data={daftar}
-        keyExtractor={(item) => `${item.jenis}-${item.id}`}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
-        showsVerticalScrollIndicator={false}
-        initialNumToRender={10}
-        windowSize={7}
-        removeClippedSubviews
-        refreshControl={
-          <RefreshControl
-            refreshing={menyegarkan}
-            onRefresh={() => {
-              setMenyegarkan(true);
-              muat();
-            }}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
-          />
-        }
-        ItemSeparatorComponent={() => (
-          <View style={styles.wadahPemisah}>
-            <View style={styles.pemisah} />
+    <Muncul style={{ flex: 1 }}>
+      <View style={[gs.screen, { backgroundColor: Colors.white }]}>
+        {/* Penyaring */}
+        <View style={[gs.containerX, { paddingVertical: Spacing.md }]}>
+          <View style={[gs.row, gs.gapSm]}>
+            <Chip nilai="semua" label="Semua" jumlah={ringkasan.total} />
+            {bisaKaizen ? <Chip nilai="kaizen" label="Kaizen" jumlah={ringkasan.kaizen} /> : null}
+            <Chip nilai="tiket" label="Tiket" jumlah={ringkasan.tiket} />
           </View>
-        )}
-        ListEmptyComponent={
-          <KeadaanKosong
-            pose={galat ? 'mikir' : 'jempol'}
-            judul={galat ? 'Gagal memuat' : 'Semua beres'}
-            teks={galat ?? 'Tidak ada pengajuan yang menunggu keputusan Anda.'}
-          />
-        }
-        renderItem={({ item }) => {
-          const rupa = RUPA[item.jenis];
-          const sub = [item.nomor ? `#${item.nomor}` : null, item.pengaju ? `Diajukan oleh ${item.pengaju}` : null]
-            .filter(Boolean)
-            .join(' · ');
+        </View>
 
-          const baris = (
-            <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={() => buka(item)}>
-              <View style={[styles.logo, { backgroundColor: rupa.tile }]}>
-                <Icon name={rupa.icon as any} size={18} color={rupa.warna} />
-              </View>
+        <FlatList
+          data={daftar}
+          keyExtractor={(item) => `${item.jenis}-${item.id}`}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={10}
+          windowSize={7}
+          removeClippedSubviews
+          refreshControl={
+            <RefreshControl
+              refreshing={menyegarkan}
+              onRefresh={() => {
+                setMenyegarkan(true);
+                muat();
+              }}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+          ItemSeparatorComponent={() => (
+            <View style={styles.wadahPemisah}>
+              <View style={styles.pemisah} />
+            </View>
+          )}
+          ListEmptyComponent={
+            <KeadaanKosong
+              pose={galat ? 'mikir' : 'jempol'}
+              judul={galat ? 'Gagal memuat' : 'Semua beres'}
+              teks={galat ?? 'Tidak ada pengajuan yang menunggu keputusan Anda.'}
+            />
+          }
+          renderItem={({ item }) => {
+            const rupa = RUPA[item.jenis];
+            const sub = [item.nomor ? `#${item.nomor}` : null, item.pengaju ? `Diajukan oleh ${item.pengaju}` : null]
+              .filter(Boolean)
+              .join(' · ');
 
-              <View style={gs.flex1}>
-                <Text style={styles.judul} numberOfLines={1}>
-                  {item.judul}
-                </Text>
-                {sub ? (
-                  <Text style={styles.sub} numberOfLines={1}>
-                    {sub}
+            const baris = (
+              <TouchableOpacity style={styles.baris} activeOpacity={0.6} onPress={() => buka(item)}>
+                <View style={[styles.logo, { backgroundColor: rupa.tile }]}>
+                  <Icon name={rupa.icon as any} size={18} color={rupa.warna} />
+                </View>
+
+                <View style={gs.flex1}>
+                  <Text style={styles.judul} numberOfLines={1}>
+                    {item.judul}
                   </Text>
-                ) : null}
-              </View>
+                  {sub ? (
+                    <Text style={styles.sub} numberOfLines={1}>
+                      {sub}
+                    </Text>
+                  ) : null}
+                </View>
 
-              <View style={styles.kanan}>
-                <Text style={styles.waktu} numberOfLines={1}>{jarakWaktu(item.tanggal)}</Text>
-              </View>
-              <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
-            </TouchableOpacity>
-          );
+                <View style={styles.kanan}>
+                  <Text style={styles.waktu} numberOfLines={1}>{jarakWaktu(item.tanggal)}</Text>
+                </View>
+                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+              </TouchableOpacity>
+            );
 
-          // Tiket: geser ke kiri untuk "Proses" (halaman detail tiket belum punya aksi itu).
-          return item.jenis === 'tiket' ? (
-            <Swipeable
-              overshootRight={false}
-              renderRightActions={(_progres, _geser, metode) => (
-                <TouchableOpacity
-                  style={styles.aksiProses}
-                  onPress={() => {
-                    metode.close();
-                    proses(item);
-                  }}
-                >
-                  <Icon name="progress-wrench" size={18} color={Colors.white} />
-                  <Text style={styles.teksAksi}>Proses</Text>
-                </TouchableOpacity>
-              )}
-            >
-              {baris}
-            </Swipeable>
-          ) : (
-            baris
-          );
-        }}
-      />
-    </View>
+            // Tiket: geser ke kiri untuk "Proses" (halaman detail tiket belum punya aksi itu).
+            return item.jenis === 'tiket' ? (
+              <Swipeable
+                overshootRight={false}
+                renderRightActions={(_progres, _geser, metode) => (
+                  <TouchableOpacity
+                    style={styles.aksiProses}
+                    onPress={() => {
+                      metode.close();
+                      proses(item);
+                    }}
+                  >
+                    <Icon name="progress-wrench" size={18} color={Colors.white} />
+                    <Text style={styles.teksAksi}>Proses</Text>
+                  </TouchableOpacity>
+                )}
+              >
+                {baris}
+              </Swipeable>
+            ) : (
+              baris
+            );
+          }}
+        />
+      </View>
+    </Muncul>
   );
 }
 
@@ -283,7 +286,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipTeks: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.semibold,
     color: Colors.textSecondary,
   },
@@ -326,13 +329,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   judul: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },
@@ -341,7 +344,7 @@ const styles = StyleSheet.create({
     maxWidth: '30%',
   },
   waktu: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -363,7 +366,7 @@ const styles = StyleSheet.create({
   },
   teksAksi: {
     color: Colors.white,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
   },
 });

@@ -8,7 +8,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranCatatan } from '../../../constants/Typography';
 
 interface QrPassKeluarPabrikProps {
   url: string;
@@ -30,5 +30,5 @@ const styles = StyleSheet.create({
   isi: { alignItems: 'center', paddingBottom: Spacing.lg },
   // Latar putih + jarak tepi supaya mudah dipindai walau tema gelap.
   wadahQr: { padding: Spacing.md, backgroundColor: Colors.white, borderWidth: 1, borderColor: slate[200], borderRadius: Spacing.radius.md, ...Spacing.curve },
-  petunjuk: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, textAlign: 'center', marginTop: Spacing.md },
+  petunjuk: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textTertiary, textAlign: 'center', marginTop: Spacing.md },
 });

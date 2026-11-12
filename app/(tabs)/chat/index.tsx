@@ -1,21 +1,23 @@
 /**
- * Daftar percakapan — tata letak mengikuti WhatsApp.
+ * Daftar percakapan — judul besar + ikon tulis di kanan, kolom cari outline,
+ * baris datar tanpa pemisah (gaya aplikasi chat modern).
  *
  * Mita (asisten AI) dipin di baris teratas dengan rupa khusus — cincin
- * gradien di sekeliling avatarnya — meniru penempatan Meta AI di WhatsApp.
- * Kontak lain adalah sesama pengguna; sebelum server chat (WebSocket) hidup,
- * percakapannya tersimpan lokal dan pesan keluar berstatus jam pasir.
+ * gradien di sekeliling avatarnya. Kontak lain adalah sesama pengguna; sebelum
+ * server chat (WebSocket) hidup, percakapannya tersimpan lokal dan pesan
+ * keluar berstatus jam pasir.
  */
 import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useCallback, useState } from 'react';
-import AppBar from '../../../src/components/common/AppBar';
 import KeadaanKosong from '../../../src/components/common/KeadaanKosong';
 import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../../../src/components/common/Icon';
+import Avatar from '../../../src/components/common/Avatar';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import Typography, { fonts, judulAppBar } from '../../../constants/Typography';
+import Typography, { fonts, fontsJudul } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { chatService } from '../../../src/services/chatService';
@@ -38,17 +40,9 @@ function labelWaktu(waktu: number | null): string {
   return tanggal.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
 }
 
-function inisial(nama: string): string {
-  return nama
-    .split(' ')
-    .slice(0, 2)
-    .map((kata) => kata[0] ?? '')
-    .join('')
-    .toUpperCase();
-}
-
 export default function DaftarChatScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const [daftar, setDaftar] = useState<RingkasanChat[]>([]);
@@ -86,18 +80,17 @@ export default function DaftarChatScreen() {
 
   const renderBaris = ({ item }: { item: RingkasanChat }) => {
     const { kontak } = item;
+    const belumDibaca = item.belumDibaca > 0;
 
     const avatar = kontak.ai ? (
       // Cincin gradien ala Meta AI: avatar dibungkus gradien brand tipis.
-      <View style={[styles.avatarRing, { backgroundColor: brand[500] }]}>
-        <View style={[styles.avatar, { backgroundColor: Colors.white }]}>
+      <View style={styles.avatarRing}>
+        <View style={styles.avatarAi}>
           <Icon name="creation" size={24} color={brand[600]} />
         </View>
       </View>
     ) : (
-      <View style={[styles.avatar, { backgroundColor: brand[100] }]}>
-        <Text style={styles.avatarInisial}>{inisial(kontak.nama)}</Text>
-      </View>
+      <Avatar nama={kontak.nama} foto={kontak.foto ?? undefined} ukuran={AVATAR} />
     );
 
     return (
@@ -110,24 +103,26 @@ export default function DaftarChatScreen() {
 
         <View style={[gs.flex1, { marginLeft: Spacing.md }]}>
           <View style={gs.rowBetween}>
-            <View style={[gs.row, gs.gapXs]}>
+            <View style={[gs.row, gs.gapXs, gs.flex1]}>
               <Text style={styles.nama} numberOfLines={1}>
                 {kontak.nama}
               </Text>
               {kontak.ai && (
                 <View style={[gs.badge, gs.badgeBrand, styles.badgeAi]}>
-                  <Text style={[gs.badgeText, gs.badgeTextBrand, { fontSize: 12 }]}>AI</Text>
+                  <Text style={[gs.badgeText, gs.badgeTextBrand]}>AI</Text>
                 </View>
               )}
             </View>
-            <Text style={gs.caption}>{labelWaktu(item.waktu)}</Text>
+            <Text style={[styles.waktu, belumDibaca && styles.waktuBaru]}>
+              {labelWaktu(item.waktu)}
+            </Text>
           </View>
 
           <View style={[gs.rowBetween, { marginTop: 2 }]}>
-            <Text style={[gs.bodySm, gs.flex1]} numberOfLines={1}>
+            <Text style={[gs.bodySm, gs.flex1]} numberOfLines={2}>
               {item.cuplikan}
             </Text>
-            {item.belumDibaca > 0 && (
+            {belumDibaca && (
               <LencanaAngka jumlah={item.belumDibaca} warna={brand[500]} style={styles.unread} />
             )}
           </View>
@@ -138,15 +133,27 @@ export default function DaftarChatScreen() {
 
   return (
     <View style={gs.screenPlain}>
-      <AppBar judul="Chat" />
+      <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Pencarian pil. */}
-      <View style={[gs.containerX, { marginVertical: Spacing.sm }]}>
-        <View style={[gs.searchBar, { paddingVertical: Spacing.xs }]}>
+      {/* Judul besar + tombol tulis chat baru. */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.lg }]}>
+        <Text style={styles.judul}>Chat</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/chat/baru' as any)}
+          style={styles.tombolTulis}
+          accessibilityLabel="Mulai chat baru"
+        >
+          <Icon name="message-plus-outline" size={24} color={Colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Kolom cari outline. */}
+      <View style={[gs.containerX, { marginBottom: Spacing.sm }]}>
+        <View style={styles.kolomCari}>
           <Icon name="magnify" size={20} color={Colors.textTertiary} />
           <TextInput
-            style={gs.fieldInner}
-            placeholder="Cari kontak..."
+            style={[gs.fieldInner, { paddingVertical: Spacing.sm }]}
+            placeholder="Cari kontak"
             placeholderTextColor={Colors.placeholder}
             value={cari}
             onChangeText={setCari}
@@ -158,29 +165,43 @@ export default function DaftarChatScreen() {
         data={tersaring}
         keyExtractor={(item) => item.kontak.id}
         renderItem={renderBaris}
-        contentContainerStyle={{ paddingBottom: Spacing.xxxl }}
-        ItemSeparatorComponent={() => <View style={styles.pemisah} />}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: Spacing.xxxl }}
         ListEmptyComponent={
-          <KeadaanKosong pose="sapa" judul="Belum ada percakapan" teks="Mulai lewat tombol Chat Baru." />
+          <KeadaanKosong pose="sapa" judul="Belum ada percakapan" teks="Mulai lewat tombol tulis di kanan atas." />
         }
       />
-
-      {/* Tombol chat baru mengambang — pola WhatsApp. */}
-      <TouchableOpacity
-        style={[styles.fab, { bottom: Spacing.xl }]}
-        activeOpacity={0.85}
-        onPress={() => router.push('/(tabs)/chat/baru' as any)}
-        accessibilityLabel="Mulai chat baru"
-      >
-        <Icon name="message-plus-outline" size={24} color={Colors.white} />
-      </TouchableOpacity>
     </View>
   );
 }
 
-const AVATAR = 50;
+const AVATAR = 52;
 
 const styles = {
+  header: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    paddingHorizontal: Spacing.screenPadding,
+    paddingBottom: Spacing.md,
+  },
+  judul: {
+    fontFamily: fontsJudul.bold,
+    fontSize: Typography.sizes.xxxl,
+    color: Colors.textPrimary,
+  },
+  tombolTulis: {
+    padding: Spacing.sm,
+  },
+  kolomCari: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+    borderRadius: Spacing.radius.full,
+    ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.lg,
+  },
   baris: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -191,26 +212,23 @@ const styles = {
     width: AVATAR + 6,
     height: AVATAR + 6,
     borderRadius: (AVATAR + 6) / 2,
+    backgroundColor: brand[500],
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     // Kompensasi supaya baris ber-cincin sejajar dengan baris biasa.
     marginLeft: -3,
     marginRight: -3,
   },
-  avatar: {
+  avatarAi: {
     width: AVATAR,
     height: AVATAR,
     borderRadius: AVATAR / 2,
+    backgroundColor: Colors.white,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  avatarInisial: {
-    fontFamily: fonts.semibold,
-    fontSize: Typography.sizes.lg,
-    color: brand[700],
-  },
   nama: {
-    fontFamily: fonts.semibold,
+    fontFamily: fonts.bold,
     fontSize: Typography.sizes.lg,
     color: Colors.textPrimary,
   },
@@ -218,22 +236,18 @@ const styles = {
     paddingVertical: 1,
     paddingHorizontal: Spacing.sm,
   },
-  pemisah: {
-    height: 1,
-    backgroundColor: Colors.borderSubtle,
-    marginLeft: Spacing.screenPadding + AVATAR + Spacing.md,
+  waktu: {
+    fontFamily: fonts.regular,
+    fontSize: Typography.sizes.xs,
+    color: Colors.textTertiary,
+    marginLeft: Spacing.sm,
+  },
+  // Waktu pesan yang belum dibaca diwarnai brand, seperti "Now" pada referensi.
+  waktuBaru: {
+    fontFamily: fonts.bold,
+    color: brand[600],
   },
   unread: {
     marginLeft: Spacing.sm,
-  },
-  fab: {
-    position: 'absolute' as const,
-    right: Spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: brand[600],
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
   },
 };

@@ -7,27 +7,39 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Button from '../common/Button';
+import Muncul from '../common/Muncul';
+import { Skeleton } from '../common/Skeleton';
 import KueUlangTahun from './KueUlangTahun';
 import BottomSheet from '../common/BottomSheet';
 import Avatar from '../common/Avatar';
 import PolaMemphis from '../common/PolaMemphis';
 import Colors, { palet } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranCatatan, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import type { Employee } from '../../services/karyawanService';
+import { buatUrlStorageWeb } from '../../utils/storageApi';
 
 interface BirthdayBannerProps {
   birthdays: Employee[];
+  /** Selama true tampil skeleton seukuran kartu, lalu kartu muncul dengan animasi. */
+  memuat: boolean;
   /** Id karyawan yang ucapannya sedang dikirim (tombolnya memutar). */
   idMengirim: number | null;
   sudahDiucapkan: (item: Employee) => boolean;
   onBeriSelamat: (id: number) => void;
 }
 
-export default function BirthdayBanner({ birthdays, idMengirim, sudahDiucapkan, onBeriSelamat }: BirthdayBannerProps) {
+export default function BirthdayBanner({ birthdays, memuat, idMengirim, sudahDiucapkan, onBeriSelamat }: BirthdayBannerProps) {
   const [sheetTerbuka, setSheetTerbuka] = useState(false);
 
+  if (memuat) {
+    return (
+      <View style={styles.banner}>
+        <Skeleton h={112} r={Spacing.radius.xl} />
+      </View>
+    );
+  }
   if (birthdays.length === 0) return null;
 
   const renderEmployee = ({ item }: { item: Employee }) => {
@@ -39,13 +51,7 @@ export default function BirthdayBanner({ birthdays, idMengirim, sudahDiucapkan, 
         <Avatar
           nama={item.nama_lengkap}
           ukuran={40}
-          foto={
-            item.foto_profil
-              ? item.foto_profil.startsWith('http')
-                ? item.foto_profil
-                : `https://mwtpart.co.id/storage/${item.foto_profil}`
-              : undefined
-          }
+          foto={item.foto_profil ? buatUrlStorageWeb(item.foto_profil) : undefined}
         />
 
         <View style={gs.flex1}>
@@ -77,20 +83,22 @@ export default function BirthdayBanner({ birthdays, idMengirim, sudahDiucapkan, 
 
   return (
     <>
-      <TouchableOpacity style={styles.banner} activeOpacity={0.85} onPress={() => setSheetTerbuka(true)} accessibilityRole="button">
-        <View style={styles.kartu}>
-          <PolaMemphis variasi={2} />
-          <View style={styles.teks}>
-            <Text style={styles.bannerTitle} numberOfLines={2}>
-              Hari ini {birthdays.length} karyawan berulang tahun 🎉
-            </Text>
-            <Text style={styles.petunjuk}>Ketuk untuk melihat daftarnya</Text>
+      <Muncul>
+        <TouchableOpacity style={styles.banner} activeOpacity={0.85} onPress={() => setSheetTerbuka(true)} accessibilityRole="button">
+          <View style={styles.kartu}>
+            <PolaMemphis variasi={2} />
+            <View style={styles.teks}>
+              <Text style={styles.bannerTitle} numberOfLines={2}>
+                Hari ini {birthdays.length} karyawan berulang tahun 🎉
+              </Text>
+              <Text style={styles.petunjuk}>Ketuk untuk melihat daftarnya</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.ilustrasi} pointerEvents="none">
-          <KueUlangTahun ukuran={96} />
-        </View>
-      </TouchableOpacity>
+          <View style={styles.ilustrasi} pointerEvents="none">
+            <KueUlangTahun ukuran={96} />
+          </View>
+        </TouchableOpacity>
+      </Muncul>
 
       <BottomSheet
         visible={sheetTerbuka}
@@ -113,7 +121,7 @@ const styles = StyleSheet.create({
   banner: {
     marginHorizontal: Spacing.screenPadding,
     marginTop: Spacing.xxl - Spacing.xs,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.sectionGap,
   },
   kartu: {
     minHeight: 112,
@@ -139,12 +147,12 @@ const styles = StyleSheet.create({
   },
   petunjuk: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
   },
   bannerTitle: {
     fontFamily: fonts.bold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.ink,
   },
 
@@ -157,12 +165,12 @@ const styles = StyleSheet.create({
   },
   nama: {
     fontFamily: fonts.semibold,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
   meta: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
   },
 });

@@ -17,6 +17,7 @@ import Spacing from '../../../constants/Spacing';
 import { gs } from '../../../constants/GlobalStyles';
 import { teksBagikanBerita } from '../../../src/adapters/berita';
 import { useDaftarBerita } from '../../../src/hooks/useDaftarBerita';
+import Muncul from '../../../src/components/common/Muncul';
 
 export default function DaftarBeritaScreen() {
   const router = useRouter();
@@ -48,27 +49,29 @@ export default function DaftarBeritaScreen() {
   }
 
   return (
-    <View style={gs.screenPlain}>
-      <AppBar judul="Berita" />
-      <FlatList
-        data={h.berita}
-        keyExtractor={(b) => String(b.id)}
-        contentContainerStyle={[styles.isi, { paddingBottom: Spacing.xxxl + insets.bottom }]}
-        refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} />}
-        onEndReached={h.muatBerikutnya}
-        onEndReachedThreshold={0.4}
-        ListEmptyComponent={<KeadaanKosong pose="persilakan" judul="Belum ada berita" teks="Berita terbaru perusahaan akan tampil di sini." />}
-        ListFooterComponent={h.memuatLebih ? <ActivityIndicator style={styles.footer} color={Colors.primary} /> : null}
-        renderItem={({ item }) => (
-          <BarisBerita
-            berita={item}
-            onPress={() => router.push(`/services/berita/${item.id}` as any)}
-            onSuka={() => ubahSuka(item.id)}
-            onBagikan={() => Share.share({ message: teksBagikanBerita(item) }).catch(() => {})}
-          />
-        )}
-      />
-    </View>
+    <Muncul style={{ flex: 1 }}>
+      <View style={gs.screenPlain}>
+        <AppBar judul="Berita" />
+        <FlatList
+          data={h.berita}
+          keyExtractor={(b) => String(b.id)}
+          contentContainerStyle={[{ flexGrow: 1 }, styles.isi, { paddingBottom: Spacing.xxxl + insets.bottom }]}
+          refreshControl={<RefreshControl refreshing={h.menyegarkan} onRefresh={h.segarkan} />}
+          onEndReached={h.muatBerikutnya}
+          onEndReachedThreshold={0.4}
+          ListEmptyComponent={<KeadaanKosong pose="persilakan" judul="Belum ada berita" teks="Berita terbaru perusahaan akan tampil di sini." />}
+          ListFooterComponent={h.memuatLebih ? <ActivityIndicator style={styles.footer} color={Colors.primary} /> : null}
+          renderItem={({ item }) => (
+            <BarisBerita
+              berita={item}
+              onPress={() => router.push(`/services/berita/${item.id}` as any)}
+              onSuka={() => ubahSuka(item.id)}
+              onBagikan={() => Share.share({ message: teksBagikanBerita(item) }).catch(() => {})}
+            />
+          )}
+        />
+      </View>
+    </Muncul>
   );
 }
 

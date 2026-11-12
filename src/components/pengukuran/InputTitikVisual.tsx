@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   nama: { fontFamily: fonts.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
   sub: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   sampel: { marginTop: Spacing.sm },
-  label: { marginBottom: 4, fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  label: { marginBottom: 4, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   input: {
     minHeight: 40,
     borderWidth: 1,

@@ -13,20 +13,21 @@ import AppBar from '../../../src/components/common/AppBar';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Button from '../../../src/components/common/Button';
 import Icon from '../../../src/components/common/Icon';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailBerita from '../../../src/components/berita/SkeletonDetailBerita';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { tanggalBerita, teksBagikanBerita } from '../../../src/adapters/berita';
 import { useDetailBerita } from '../../../src/hooks/useDetailBerita';
+import Muncul from '../../../src/components/common/Muncul';
 
 // Gaya isi artikel: Poppins 12px seperti teks lain; judul bagian memakai varian bold.
-const baseStyle = { fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, color: Colors.textSecondary };
+const baseStyle = { fontFamily: fonts.regular, fontSize: ukuranIsi, lineHeight: 20, color: Colors.textSecondary };
 const tagsStyles = {
   p: { marginTop: 0, marginBottom: Spacing.md },
-  h2: { fontFamily: fonts.bold, fontWeight: 'normal' as const, fontSize: 16, lineHeight: 24, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
-  h3: { fontFamily: fonts.bold, fontWeight: 'normal' as const, fontSize: 14, lineHeight: 22, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
+  h2: { fontFamily: fontsJudul.bold, fontWeight: 'normal' as const, fontSize: 16, lineHeight: 24, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
+  h3: { fontFamily: fontsJudul.bold, fontWeight: 'normal' as const, fontSize: 14, lineHeight: 22, color: Colors.textPrimary, marginTop: Spacing.md, marginBottom: Spacing.sm },
   strong: { fontFamily: fonts.bold, fontWeight: 'normal' as const },
   b: { fontFamily: fonts.bold, fontWeight: 'normal' as const },
   a: { color: Colors.primary, textDecorationLine: 'underline' as const },
@@ -49,7 +50,7 @@ export default function BeritaDetailScreen() {
     return (
       <View style={gs.screenPlain}>
         <AppBar judul="Berita" />
-        <SkeletonDetail />
+        <SkeletonDetailBerita />
       </View>
     );
   }
@@ -73,7 +74,7 @@ export default function BeritaDetailScreen() {
         judul="Berita"
         kanan={
           <TouchableOpacity hitSlop={10} onPress={() => Share.share({ message: teksBagikanBerita(berita) }).catch(() => {})}>
-            <Icon name="share-variant" size={20} color={Colors.white} />
+            <Icon name="share-variant" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
         }
       />
@@ -82,68 +83,76 @@ export default function BeritaDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Judul besar: pengecualian dari aturan 12px, seperti sapaan di puncak beranda. */}
-        <Text style={styles.judul}>{berita.judul}</Text>
+        <Muncul jeda={0}>
+          <Text style={styles.judul}>{berita.judul}</Text>
 
-        <View style={styles.baris}>
-          <Text style={styles.meta} numberOfLines={1}>
-            {tanggalBerita(berita.terbitPada)}
-            {berita.penulis ? ' oleh ' : ''}
-            {berita.penulis ? <Text style={styles.penulis}>{berita.penulis}</Text> : null}
-          </Text>
-          <Text style={styles.meta}>{berita.menitBaca} mnt baca</Text>
-        </View>
-
-        <View style={styles.statistik}>
-          <View style={styles.butir}>
-            <Icon name="eye-outline" size={16} color={Colors.textSecondary} />
-            <Text style={styles.meta}>{berita.dilihat}</Text>
+          <View style={styles.baris}>
+            <Text style={styles.meta} numberOfLines={1}>
+              {tanggalBerita(berita.terbitPada)}
+              {berita.penulis ? ' oleh ' : ''}
+              {berita.penulis ? <Text style={styles.penulis}>{berita.penulis}</Text> : null}
+            </Text>
+            <Text style={styles.meta}>{berita.menitBaca} mnt baca</Text>
           </View>
-          <TouchableOpacity style={styles.butir} hitSlop={10} onPress={() => suka()}>
-            <Icon
-              name="heart"
-              size={16}
-              color={berita.disukai ? Colors.danger : Colors.textSecondary}
-              fill={berita.disukai ? Colors.danger : 'none'}
-            />
-            <Text style={styles.meta}>{berita.jumlahSuka}</Text>
-          </TouchableOpacity>
-        </View>
 
-        <View style={styles.foto}>
-          {berita.sampulUrl ? (
-            <Image source={{ uri: berita.sampulUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          ) : (
-            <Icon name="image" size={32} color={Colors.textTertiary} />
-          )}
-        </View>
+          <View style={styles.statistik}>
+            <View style={styles.butir}>
+              <Icon name="eye-outline" size={16} color={Colors.textSecondary} />
+              <Text style={styles.meta}>{berita.dilihat}</Text>
+            </View>
+            <TouchableOpacity style={styles.butir} hitSlop={10} onPress={() => suka()}>
+              <Icon
+                name="heart"
+                size={16}
+                color={berita.disukai ? Colors.danger : Colors.textSecondary}
+                fill={berita.disukai ? Colors.danger : 'none'}
+              />
+              <Text style={styles.meta}>{berita.jumlahSuka}</Text>
+            </TouchableOpacity>
+          </View>
+        </Muncul>
 
-        <RenderHTML
-          contentWidth={width - Spacing.screenPadding * 2}
-          source={{ html: berita.isi }}
-          baseStyle={baseStyle}
-          tagsStyles={tagsStyles}
-          // Font Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
-          systemFonts={[fonts.regular, fonts.bold]}
-        />
+        <Muncul jeda={70}>
+          <View style={styles.foto}>
+            {berita.sampulUrl ? (
+              <Image source={{ uri: berita.sampulUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            ) : (
+              <Icon name="image" size={32} color={Colors.textTertiary} />
+            )}
+          </View>
+        </Muncul>
 
-        <BagikanSosmed
-          teks={teksBagikanBerita(berita)}
-          onGagal={(nama) => dialog.alert('Gagal Membuka', `${nama} tidak bisa dibuka di perangkat ini.`, 'danger')}
-        />
+        <Muncul jeda={140}>
+          <RenderHTML
+            contentWidth={width - Spacing.screenPadding * 2}
+            source={{ html: berita.isi }}
+            baseStyle={baseStyle}
+            tagsStyles={tagsStyles}
+            // Font Inter/Poppins harus didaftarkan, kalau tidak teks HTML jatuh ke font sistem.
+            systemFonts={[fonts.regular, fonts.bold, fontsJudul.bold]}
+          />
+
+          <BagikanSosmed
+            teks={teksBagikanBerita(berita)}
+            onGagal={(nama) => dialog.alert('Gagal Membuka', `${nama} tidak bisa dibuka di perangkat ini.`, 'danger')}
+          />
+        </Muncul>
 
         {berita.terkait.length > 0 ? (
-          <View style={styles.terkait}>
-            <Text style={styles.judulTerkait}>Mungkin Anda suka</Text>
-            {berita.terkait.map((t) => (
-              <BarisBerita
-                key={t.id}
-                berita={t}
-                onPress={() => router.push(`/services/berita/${t.id}` as any)}
-                onSuka={() => sukaTerkait(t.id)}
-                onBagikan={() => Share.share({ message: teksBagikanBerita(t) }).catch(() => {})}
-              />
-            ))}
-          </View>
+          <Muncul jeda={210}>
+            <View style={styles.terkait}>
+              <Text style={styles.judulTerkait}>Mungkin Anda suka</Text>
+              {berita.terkait.map((t) => (
+                <BarisBerita
+                  key={t.id}
+                  berita={t}
+                  onPress={() => router.push(`/services/berita/${t.id}` as any)}
+                  onSuka={() => sukaTerkait(t.id)}
+                  onBagikan={() => Share.share({ message: teksBagikanBerita(t) }).catch(() => {})}
+                />
+              ))}
+            </View>
+          </Muncul>
         ) : null}
       </ScrollView>
     </View>
@@ -152,7 +161,7 @@ export default function BeritaDetailScreen() {
 
 const styles = StyleSheet.create({
   judul: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 20,
     lineHeight: 28,
     color: Colors.textPrimary,
@@ -178,7 +187,7 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderSubtle,
   },
   judulTerkait: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 14,
     color: Colors.textPrimary,
     marginBottom: Spacing.xs,
@@ -190,7 +199,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
     flexShrink: 1,
   },

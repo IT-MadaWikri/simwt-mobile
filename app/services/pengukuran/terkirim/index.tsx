@@ -20,6 +20,7 @@ import { fonts, ukuranIsi } from '../../../../constants/Typography';
 import { gs, inputReset } from '../../../../constants/GlobalStyles';
 import { useDaftarTerkirim } from '../../../../src/hooks/useDaftarTerkirim';
 import { formatTanggalWaktu } from '../../../../src/utils/pengukuran';
+import Muncul from '../../../../src/components/common/Muncul';
 
 export default function PengukuranTerkirimScreen() {
   const router = useRouter();
@@ -57,37 +58,39 @@ export default function PengukuranTerkirimScreen() {
       {t.memuat ? (
         <SkeletonBaris jumlah={6} />
       ) : (
-        <FlatList
-          data={t.terkirim}
-          keyExtractor={(item) => String(item.id)}
-          keyboardShouldPersistTaps="handled"
-          onEndReached={t.muatBerikutnya}
-          onEndReachedThreshold={0.4}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
-          ItemSeparatorComponent={() => <View style={styles.pemisah} />}
-          refreshControl={
-            <RefreshControl refreshing={t.menyegarkan} onRefresh={t.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
-          }
-          ListFooterComponent={t.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
-          ListEmptyComponent={
-            <KeadaanKosong
-              pose={t.error || t.adaFilter ? 'mikir' : 'persilakan'}
-              judul={t.error ? 'Gagal memuat' : t.adaFilter ? 'Tidak ditemukan' : 'Belum ada pengukuran'}
-              teks={t.error ?? (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Pengukuran yang sudah dikirim akan tampil di sini.')}
-            >
-              {t.error ? <Button label="Coba Lagi" onPress={t.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
-            </KeadaanKosong>
-          }
-          renderItem={({ item }) => (
-            <KartuTerkirim
-              namaPart={item.nama_part || '-'}
-              namaChecker={item.nama_checker || '-'}
-              waktu={formatTanggalWaktu(item.tanggal_dikirim)}
-              judgment={item.judgment}
-              onPress={() => router.push(`/services/pengukuran/terkirim/${item.id}` as any)}
-            />
-          )}
-        />
+        <Muncul style={{ flex: 1 }}>
+          <FlatList
+            data={t.terkirim}
+            keyExtractor={(item) => String(item.id)}
+            keyboardShouldPersistTaps="handled"
+            onEndReached={t.muatBerikutnya}
+            onEndReachedThreshold={0.4}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + Spacing.xxl }}
+            ItemSeparatorComponent={() => <View style={styles.pemisah} />}
+            refreshControl={
+              <RefreshControl refreshing={t.menyegarkan} onRefresh={t.segarkan} colors={[Colors.primary]} tintColor={Colors.primary} />
+            }
+            ListFooterComponent={t.memuatLebih ? <BrandSpinner size={20} color={brand[600]} /> : null}
+            ListEmptyComponent={
+              <KeadaanKosong
+                pose={t.error || t.adaFilter ? 'mikir' : 'persilakan'}
+                judul={t.error ? 'Gagal memuat' : t.adaFilter ? 'Tidak ditemukan' : 'Belum ada pengukuran'}
+                teks={t.error ?? (t.adaFilter ? 'Coba ubah kata cari atau filter.' : 'Pengukuran yang sudah dikirim akan tampil di sini.')}
+              >
+                {t.error ? <Button label="Coba Lagi" onPress={t.cobaLagi} style={{ marginTop: Spacing.lg }} /> : null}
+              </KeadaanKosong>
+            }
+            renderItem={({ item }) => (
+              <KartuTerkirim
+                namaPart={item.nama_part || '-'}
+                namaChecker={item.nama_checker || '-'}
+                waktu={formatTanggalWaktu(item.tanggal_dikirim)}
+                judgment={item.judgment}
+                onPress={() => router.push(`/services/pengukuran/terkirim/${item.id}` as any)}
+              />
+            )}
+          />
+        </Muncul>
       )}
 
       <SheetFilterTerkirim

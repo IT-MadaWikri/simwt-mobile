@@ -94,9 +94,8 @@ export default function ServiceGrid({ searchQuery = '', kodeMenu }: ServiceGridP
 }
 
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: Spacing.lg,
-  },
+  // Tanpa margin bawah: banner di bawahnya sudah menyisakan ruang atas untuk maskot.
+  section: {},
   grid: {
     // Baris terakhir membawa margin bawah sendiri; dibatalkan agar jarak antar section rata.
     marginBottom: -Spacing.xl,

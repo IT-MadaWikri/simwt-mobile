@@ -13,7 +13,7 @@
  * tidak pernah terjebak di layar tanpa jalan keluar.
  */
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import Icon from './Icon';
 import Colors from '../../../constants/Colors';
@@ -26,24 +26,40 @@ interface TombolKembaliProps {
   cadangan?: string;
   /** Ikon tombol — `close` untuk layar yang ditutup, bukan dimundurkan. */
   ikon?: string;
+  /** Latar lingkaran putih — untuk header transparan yang menimpa konten. */
+  lingkaran?: boolean;
 }
 
 export default function TombolKembali({
-  warna = Colors.white,
+  warna = Colors.textPrimary,
   cadangan = '/(tabs)',
-  ikon = 'arrow-left',
+  ikon = 'chevron-left',
+  lingkaran = false,
 }: TombolKembaliProps) {
   const router = useRouter();
 
   return (
     <TouchableOpacity
       onPress={() => (router.canGoBack() ? router.back() : router.replace(cadangan as any))}
-      style={{ paddingRight: Spacing.md, paddingVertical: Spacing.xs }}
+      style={lingkaran ? styles.lingkaran : { paddingRight: Spacing.md, paddingVertical: Spacing.xs }}
       accessibilityRole="button"
       accessibilityLabel={ikon === 'close' ? 'Tutup' : 'Kembali'}
       hitSlop={8}
     >
-      <Icon name={ikon} size={24} color={warna} />
+      <Icon name={ikon} size={ikon === 'close' ? 24 : 28} color={warna} />
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  lingkaran: {
+    width: 36,
+    height: 36,
+    borderRadius: Spacing.radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.borderSubtle,
+  },
+});

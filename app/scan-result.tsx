@@ -12,15 +12,16 @@ import Icon from '../src/components/common/Icon';
 import Button from '../src/components/common/Button';
 import GaleriAset from '../src/components/aset/GaleriAset';
 import LencanaStatusTiket from '../src/components/tiket/LencanaStatusTiket';
-import { SkeletonDetail } from '../src/components/common/Skeleton';
+import SkeletonDetailAset from '../src/components/aset/SkeletonDetailAset';
 import Colors, { slate } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
-import { fonts, ukuranIsi } from '../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../constants/Typography';
 import { gs } from '../constants/GlobalStyles';
 import { useAsetScan } from '../src/hooks/useAsetScan';
 import { statusAman, tiketAktif } from '../src/adapters/tiket';
 import { adaptasiExtraData } from '../src/adapters/aset';
 import { urlFoto } from '../src/utils/kaizen';
+import Muncul from '../src/components/common/Muncul';
 
 // Warna ikon sama dengan grid layanan; tint 12% untuk latar ubin/kapsul.
 const WARNA = { jingga: '#ff9a2e', biru: '#4a98ff', ungu: '#9a6bff', tosca: '#1fc2a8' };
@@ -58,7 +59,7 @@ export default function ScanResultScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: Colors.white }}>
-        <SkeletonDetail />
+        <SkeletonDetailAset />
       </View>
     );
   }
@@ -115,112 +116,128 @@ export default function ScanResultScreen() {
   return (
     <View style={[gs.screen, { backgroundColor: Colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={adaTiketAktif ? { paddingBottom: insets.bottom } : undefined}>
-        <GaleriAset foto={foto} />
+        <Muncul jeda={0}>
+          <GaleriAset foto={foto} />
+        </Muncul>
 
         {/* Identitas */}
-        <View style={[styles.seksi, { marginTop: 0 }]}>
-          <Text style={styles.judul}>{aset.alias || aset.asset_name || '-'}</Text>
-          {aset.alias && aset.asset_name ? <Text style={styles.sub}>{aset.asset_name}</Text> : null}
-          <View style={styles.barisNomor}>
-            <Icon name="barcode" size={14} color={Colors.textTertiary} />
-            <Text style={styles.sub}>{aset.asset_number || '-'}</Text>
+        <Muncul jeda={70}>
+          <View style={[styles.seksi, { marginTop: 0 }]}>
+            <Text style={styles.judul}>{aset.alias || aset.asset_name || '-'}</Text>
+            {aset.alias && aset.asset_name ? <Text style={styles.sub}>{aset.asset_name}</Text> : null}
+            <View style={styles.barisNomor}>
+              <Icon name="barcode" size={14} color={Colors.textTertiary} />
+              <Text style={styles.sub}>{aset.asset_number || '-'}</Text>
+            </View>
+            {chip.length > 0 ? (
+              <View style={styles.chipBaris}>
+                {chip.map((c) => (
+                  <View key={c.ikon} style={[styles.chip, { backgroundColor: tint(c.warna) }]}>
+                    <Icon name={c.ikon} size={13} color={c.warna} />
+                    <Text style={[styles.chipTeks, { color: c.warna }]} numberOfLines={1}>{c.teks}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
           </View>
-          {chip.length > 0 ? (
-            <View style={styles.chipBaris}>
-              {chip.map((c) => (
-                <View key={c.ikon} style={[styles.chip, { backgroundColor: tint(c.warna) }]}>
-                  <Icon name={c.ikon} size={13} color={c.warna} />
-                  <Text style={[styles.chipTeks, { color: c.warna }]} numberOfLines={1}>{c.teks}</Text>
+        </Muncul>
+
+        {/* Ringkas: empat ubin 2×2 */}
+        <Muncul jeda={140}>
+          <View style={styles.seksi}>
+            <View style={styles.grid}>
+              {ubin.map((u) => (
+                <View key={u.label} style={styles.ubin}>
+                  <View style={[styles.lingkar, { backgroundColor: tint(u.warna) }]}>
+                    <Icon name={u.ikon} size={15} color={u.warna} />
+                  </View>
+                  <View style={gs.flex1}>
+                    <Text style={styles.label} numberOfLines={1}>{u.label}</Text>
+                    <Text style={styles.nilai} numberOfLines={2}>{u.nilai || '-'}</Text>
+                  </View>
                 </View>
               ))}
             </View>
-          ) : null}
-        </View>
+          </View>
+        </Muncul>
 
-        {/* Ringkas: empat ubin 2×2 */}
-        <View style={styles.seksi}>
-          <View style={styles.grid}>
-            {ubin.map((u) => (
-              <View key={u.label} style={styles.ubin}>
-                <View style={[styles.lingkar, { backgroundColor: tint(u.warna) }]}>
-                  <Icon name={u.ikon} size={15} color={u.warna} />
-                </View>
-                <View style={gs.flex1}>
-                  <Text style={styles.label} numberOfLines={1}>{u.label}</Text>
-                  <Text style={styles.nilai} numberOfLines={2}>{u.nilai || '-'}</Text>
-                </View>
-              </View>
+        <Muncul jeda={210}>
+          <View style={styles.seksi}>
+            <Text style={styles.judulSeksi}>Informasi aset</Text>
+            {informasi.map((s, i) => (
+              <BarisInfo key={s.label} ikon={s.ikon} label={s.label} nilai={s.nilai} garis={i > 0} />
             ))}
           </View>
-        </View>
-
-        <View style={styles.seksi}>
-          <Text style={styles.judulSeksi}>Informasi aset</Text>
-          {informasi.map((s, i) => (
-            <BarisInfo key={s.label} ikon={s.ikon} label={s.label} nilai={s.nilai} garis={i > 0} />
-          ))}
-        </View>
+        </Muncul>
 
         {/* Data opsional yang diisi di web (Update Data aset). Seksi hanya muncul bila ada isinya. */}
         {spekTeknis.length > 0 ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Spesifikasi teknis</Text>
-            {spekTeknis.map((s, i) => (
-              <BarisInfo key={s.label} ikon="cog-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
-            ))}
-          </View>
+          <Muncul jeda={280}>
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Spesifikasi teknis</Text>
+              {spekTeknis.map((s, i) => (
+                <BarisInfo key={s.label} ikon="cog-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
+              ))}
+            </View>
+          </Muncul>
         ) : null}
 
         {tambahan.length > 0 ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Data lainnya</Text>
-            {tambahan.map((s, i) => (
-              <BarisInfo key={`${s.label}-${i}`} ikon="information-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
-            ))}
-          </View>
+          <Muncul jeda={280}>
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Data lainnya</Text>
+              {tambahan.map((s, i) => (
+                <BarisInfo key={`${s.label}-${i}`} ikon="information-outline" label={s.label} nilai={s.nilai} garis={i > 0} />
+              ))}
+            </View>
+          </Muncul>
         ) : null}
 
         {aset.asset_description?.trim() ? (
-          <View style={styles.seksi}>
-            <Text style={styles.judulSeksi}>Deskripsi</Text>
-            <Text style={styles.deskripsi}>{aset.asset_description.trim()}</Text>
-          </View>
+          <Muncul jeda={280}>
+            <View style={styles.seksi}>
+              <Text style={styles.judulSeksi}>Deskripsi</Text>
+              <Text style={styles.deskripsi}>{aset.asset_description.trim()}</Text>
+            </View>
+          </Muncul>
         ) : null}
 
-        <View style={styles.seksi}>
-          <View style={styles.judulBaris}>
-            <Text style={[styles.judulSeksi, { marginBottom: 0 }]}>Riwayat perbaikan</Text>
-            <LencanaAngka jumlah={riwayat.length} ukuran={20} warna={slate[100]} teks={Colors.textSecondary} />
-          </View>
-          {riwayat.length === 0 ? (
-            <View style={styles.kosong}>
-              <Icon name="clipboard-check-outline" size={28} color={slate[300]} />
-              <Text style={styles.sub}>Belum ada riwayat perbaikan.</Text>
+        <Muncul jeda={350}>
+          <View style={styles.seksi}>
+            <View style={styles.judulBaris}>
+              <Text style={[styles.judulSeksi, { marginBottom: 0 }]}>Riwayat perbaikan</Text>
+              <LencanaAngka jumlah={riwayat.length} ukuran={20} warna={slate[100]} teks={Colors.textSecondary} />
             </View>
-          ) : (
-            riwayat.map((t, i) => (
-              <TouchableOpacity
-                key={t.no_ticket ?? i}
-                style={[styles.barisRiwayat, i > 0 && styles.garis]}
-                activeOpacity={0.6}
-                disabled={!t.no_ticket}
-                onPress={() => router.push(`/services/tiket/${t.no_ticket}` as any)}
-              >
-                <View style={[styles.lingkar, { backgroundColor: tint(WARNA.jingga) }]}>
-                  <Icon name="progress-wrench" size={16} color={WARNA.jingga} />
-                </View>
-                <View style={gs.flex1}>
-                  <Text style={styles.teksRiwayat} numberOfLines={2}>{t.judul_masalah || '-'}</Text>
-                  <Text style={styles.sub} numberOfLines={1}>
-                    {[t.no_ticket && `#${t.no_ticket}`, t.tanggal_diajukan && formatTanggal(t.tanggal_diajukan)].filter(Boolean).join(' · ')}
-                  </Text>
-                </View>
-                <LencanaStatusTiket status={statusAman(t.status_pengajuan)} />
-                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
+            {riwayat.length === 0 ? (
+              <View style={styles.kosong}>
+                <Icon name="clipboard-check-outline" size={28} color={slate[300]} />
+                <Text style={styles.sub}>Belum ada riwayat perbaikan.</Text>
+              </View>
+            ) : (
+              riwayat.map((t, i) => (
+                <TouchableOpacity
+                  key={t.no_ticket ?? i}
+                  style={[styles.barisRiwayat, i > 0 && styles.garis]}
+                  activeOpacity={0.6}
+                  disabled={!t.no_ticket}
+                  onPress={() => router.push(`/services/tiket/${t.no_ticket}` as any)}
+                >
+                  <View style={[styles.lingkar, { backgroundColor: tint(WARNA.jingga) }]}>
+                    <Icon name="progress-wrench" size={16} color={WARNA.jingga} />
+                  </View>
+                  <View style={gs.flex1}>
+                    <Text style={styles.teksRiwayat} numberOfLines={2}>{t.judul_masalah || '-'}</Text>
+                    <Text style={styles.sub} numberOfLines={1}>
+                      {[t.no_ticket && `#${t.no_ticket}`, t.tanggal_diajukan && formatTanggal(t.tanggal_diajukan)].filter(Boolean).join(' · ')}
+                    </Text>
+                  </View>
+                  <LencanaStatusTiket status={statusAman(t.status_pengajuan)} />
+                  <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        </Muncul>
       </ScrollView>
 
       {adaTiketAktif ? null : (
@@ -239,8 +256,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     marginTop: Spacing.xs,
   },
-  judul: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
-  sub: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary, marginTop: 2 },
+  judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.bold, color: Colors.textPrimary },
+  sub: { fontSize: ukuranCatatan, fontFamily: fonts.regular, color: Colors.textSecondary, marginTop: 2 },
   barisNomor: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   chipBaris: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs, marginTop: Spacing.sm },
   chip: {
@@ -252,7 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
     maxWidth: '100%',
   },
-  chipTeks: { fontSize: 12, fontFamily: fonts.semibold },
+  chipTeks: { fontSize: ukuranCatatan, fontFamily: fonts.semibold },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs },
   ubin: {
@@ -270,12 +287,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
-  nilai: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  label: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
+  nilai: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
 
   judulSeksi: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -284,12 +301,12 @@ const styles = StyleSheet.create({
   judulBaris: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: 2 },
   barisSpek: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingVertical: 7 },
   garis: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border },
-  labelSpek: { width: 100, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
-  nilaiSpek: { flex: 1, textAlign: 'right', fontSize: 12, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  labelSpek: { width: 100, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
+  nilaiSpek: { flex: 1, textAlign: 'right', fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
 
   deskripsi: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary, lineHeight: 18 },
   barisRiwayat: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingVertical: Spacing.sm },
-  teksRiwayat: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.textPrimary },
+  teksRiwayat: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
   kosong: { alignItems: 'center', gap: Spacing.xs, paddingVertical: Spacing.lg },
 
   footer: {

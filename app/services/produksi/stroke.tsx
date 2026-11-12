@@ -24,13 +24,14 @@ import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { DAFTAR_SHIFT, LANGKAH, useFormProduksi } from '../../../src/hooks/useFormProduksi';
 import { usePencarian } from '../../../src/hooks/usePencarian';
 import { useTinggiKeyboard } from '../../../src/hooks/useTinggiKeyboard';
 import { produksiService } from '../../../src/services/produksiService';
 import { JenisCariProduksi, KaryawanCari, PartCari } from '../../../src/types/produksi';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Sheet = 'operator' | 'leader' | 'shift' | 'sub' | 'part' | 'proses' | 'subProses' | 'gudang' | 'material' | 'alasan' | null;
 
@@ -447,107 +448,109 @@ export default function StrokeScreen() {
   );
 
   return (
-    // Diangkat setinggi keyboard (bukan KeyboardAvoidingView, yang meleset di Android edge-to-edge).
-    <View style={[gs.screen, { backgroundColor: Colors.white, paddingBottom: tinggiKeyboard }]}>
-      <AppBar judul="Pencapaian Produksi" />
+    <Muncul style={{ flex: 1 }}>
+      // Diangkat setinggi keyboard (bukan KeyboardAvoidingView, yang meleset di Android edge-to-edge).
+      <View style={[gs.screen, { backgroundColor: Colors.white, paddingBottom: tinggiKeyboard }]}>
+        <AppBar judul="Pencapaian Produksi" />
 
-      <View style={styles.langkah}>
-        {LANGKAH.map((s, i) => {
-          const on = langkah >= i;
-          return (
-            <View key={s.judul} style={gs.flex1}>
-              <View style={[styles.batang, on && styles.batangAktif]} />
-              <Text style={[styles.teksLangkah, on && styles.teksLangkahAktif]} numberOfLines={1}>
-                {i + 1}. {s.judul}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+        <View style={styles.langkah}>
+          {LANGKAH.map((s, i) => {
+            const on = langkah >= i;
+            return (
+              <View key={s.judul} style={gs.flex1}>
+                <View style={[styles.batang, on && styles.batangAktif]} />
+                <Text style={[styles.teksLangkah, on && styles.teksLangkahAktif]} numberOfLines={1}>
+                  {i + 1}. {s.judul}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
 
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {[langkah1, langkah2, langkah3, langkah4][langkah]}
-      </ScrollView>
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {[langkah1, langkah2, langkah3, langkah4][langkah]}
+        </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: (tinggiKeyboard ? 0 : insets.bottom) + Spacing.sm }]}>
-        <Button variant="secondary" icon="home" onPress={keBeranda} disabled={f.mengirim} accessibilityLabel="Ke beranda" />
-        <Button variant="secondary" icon="layout-grid-circles" onPress={bukaMenuDraf} disabled={f.mengirim} accessibilityLabel="Menu Draft" />
-        <Button
-          label={terakhir ? 'Simpan' : 'Lanjut'}
-          iconRight={terakhir ? 'send' : 'arrow-right'}
-          onPress={terakhir ? kirim : lanjut}
-          loading={f.mengirim}
-          style={gs.flex1}
+        <View style={[styles.footer, { paddingBottom: (tinggiKeyboard ? 0 : insets.bottom) + Spacing.sm }]}>
+          <Button variant="secondary" icon="home" onPress={keBeranda} disabled={f.mengirim} accessibilityLabel="Ke beranda" />
+          <Button variant="secondary" icon="layout-grid-circles" onPress={bukaMenuDraf} disabled={f.mengirim} accessibilityLabel="Menu Draft" />
+          <Button
+            label={terakhir ? 'Simpan' : 'Lanjut'}
+            iconRight={terakhir ? 'send' : 'arrow-right'}
+            onPress={terakhir ? kirim : lanjut}
+            loading={f.mengirim}
+            style={gs.flex1}
+          />
+        </View>
+
+        <SheetMenuDraf visible={sheetMenu} jumlahDraf={jumlahDraf} onSimpan={bukaSheetSimpan} onBukaDaftar={bukaDaftarDraf} onClose={() => setSheetMenu(false)} />
+        <SheetSimpanDraf
+          visible={sheetSimpan}
+          judul={f.metaDraf.judul}
+          nama={f.metaDraf.nama}
+          shift={f.metaDraf.shift}
+          daftarShift={DAFTAR_SHIFT}
+          judulBawaan={`Draf ${master.dies.alias || master.dies.asset_name}`}
+          menyimpan={menyimpanDraf}
+          onUbahJudul={(v) => f.setMetaDraf((m) => ({ ...m, judul: v }))}
+          onUbahNama={(v) => f.setMetaDraf((m) => ({ ...m, nama: v }))}
+          onPilihShift={(s) => f.setMetaDraf((m) => ({ ...m, shift: m.shift === s ? null : s }))}
+          onSimpan={simpanDraf}
+          onClose={() => setSheetSimpan(false)}
+        />
+
+        <SheetCari
+          visible={!!jenisCari && sheet !== null}
+          judul={(sheet && TEKS_CARI[sheet]?.judul) || ''}
+          placeholder={(sheet && TEKS_CARI[sheet]?.placeholder) || ''}
+          q={cari.q}
+          onChangeQ={cari.setQ}
+          item={itemCari}
+          memuat={cari.memuat}
+          gagal={cari.gagal}
+          minHuruf={jenisCari === 'alasan-ng' ? 0 : 2}
+          izinkanBaru={sheet === 'alasan'}
+          onPilih={pilihDariCari}
+          onClose={() => setSheet(null)}
+        />
+
+        <SheetPilihan visible={sheet === 'shift'} judul="Shift" opsi={DAFTAR_SHIFT.map((s) => ({ id: s, label: `Shift ${s}` }))} terpilih={form.shift} onPilih={(id) => f.ubah('shift', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan
+          visible={sheet === 'sub'}
+          judul="Sub Departemen"
+          opsi={opsiDari(master.sub_departemen)}
+          terpilih={master.sub_departemen.indexOf(form.subDepartemen)}
+          onPilih={(id) => f.ubah('subDepartemen', master.sub_departemen[id])}
+          onClose={() => setSheet(null)}
+        />
+        <SheetPilihan
+          visible={sheet === 'proses'}
+          judul="Proses Part"
+          opsi={opsiDari(f.opsiProses)}
+          terpilih={f.opsiProses.indexOf(form.proses)}
+          onPilih={(id) => f.ubah('proses', f.opsiProses[id])}
+          onClose={() => setSheet(null)}
+        />
+        <SheetPilihan
+          visible={sheet === 'subProses'}
+          judul="Sub Proses"
+          opsi={opsiDari(master.proses)}
+          terpilih={master.proses.indexOf(form.subProses)}
+          bolehKosong
+          onPilih={(id) => f.ubah('subProses', id === undefined || id === null ? '' : master.proses[id] ?? '')}
+          onClose={() => setSheet(null)}
+        />
+        <SheetPilihan
+          visible={sheet === 'gudang'}
+          judul="Gudang"
+          opsi={master.gudang.map((x, id) => ({ id, label: `${x.kode} — ${x.nama}` }))}
+          terpilih={master.gudang.findIndex((x) => x.kode === form.kodeGudang)}
+          bolehKosong
+          onPilih={(id) => f.ubah('kodeGudang', id === undefined || id === null ? '' : master.gudang[id]?.kode ?? '')}
+          onClose={() => setSheet(null)}
         />
       </View>
-
-      <SheetMenuDraf visible={sheetMenu} jumlahDraf={jumlahDraf} onSimpan={bukaSheetSimpan} onBukaDaftar={bukaDaftarDraf} onClose={() => setSheetMenu(false)} />
-      <SheetSimpanDraf
-        visible={sheetSimpan}
-        judul={f.metaDraf.judul}
-        nama={f.metaDraf.nama}
-        shift={f.metaDraf.shift}
-        daftarShift={DAFTAR_SHIFT}
-        judulBawaan={`Draf ${master.dies.alias || master.dies.asset_name}`}
-        menyimpan={menyimpanDraf}
-        onUbahJudul={(v) => f.setMetaDraf((m) => ({ ...m, judul: v }))}
-        onUbahNama={(v) => f.setMetaDraf((m) => ({ ...m, nama: v }))}
-        onPilihShift={(s) => f.setMetaDraf((m) => ({ ...m, shift: m.shift === s ? null : s }))}
-        onSimpan={simpanDraf}
-        onClose={() => setSheetSimpan(false)}
-      />
-
-      <SheetCari
-        visible={!!jenisCari && sheet !== null}
-        judul={(sheet && TEKS_CARI[sheet]?.judul) || ''}
-        placeholder={(sheet && TEKS_CARI[sheet]?.placeholder) || ''}
-        q={cari.q}
-        onChangeQ={cari.setQ}
-        item={itemCari}
-        memuat={cari.memuat}
-        gagal={cari.gagal}
-        minHuruf={jenisCari === 'alasan-ng' ? 0 : 2}
-        izinkanBaru={sheet === 'alasan'}
-        onPilih={pilihDariCari}
-        onClose={() => setSheet(null)}
-      />
-
-      <SheetPilihan visible={sheet === 'shift'} judul="Shift" opsi={DAFTAR_SHIFT.map((s) => ({ id: s, label: `Shift ${s}` }))} terpilih={form.shift} onPilih={(id) => f.ubah('shift', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan
-        visible={sheet === 'sub'}
-        judul="Sub Departemen"
-        opsi={opsiDari(master.sub_departemen)}
-        terpilih={master.sub_departemen.indexOf(form.subDepartemen)}
-        onPilih={(id) => f.ubah('subDepartemen', master.sub_departemen[id])}
-        onClose={() => setSheet(null)}
-      />
-      <SheetPilihan
-        visible={sheet === 'proses'}
-        judul="Proses Part"
-        opsi={opsiDari(f.opsiProses)}
-        terpilih={f.opsiProses.indexOf(form.proses)}
-        onPilih={(id) => f.ubah('proses', f.opsiProses[id])}
-        onClose={() => setSheet(null)}
-      />
-      <SheetPilihan
-        visible={sheet === 'subProses'}
-        judul="Sub Proses"
-        opsi={opsiDari(master.proses)}
-        terpilih={master.proses.indexOf(form.subProses)}
-        bolehKosong
-        onPilih={(id) => f.ubah('subProses', id === undefined || id === null ? '' : master.proses[id] ?? '')}
-        onClose={() => setSheet(null)}
-      />
-      <SheetPilihan
-        visible={sheet === 'gudang'}
-        judul="Gudang"
-        opsi={master.gudang.map((x, id) => ({ id, label: `${x.kode} — ${x.nama}` }))}
-        terpilih={master.gudang.findIndex((x) => x.kode === form.kodeGudang)}
-        bolehKosong
-        onPilih={(id) => f.ubah('kodeGudang', id === undefined || id === null ? '' : master.gudang[id]?.kode ?? '')}
-        onClose={() => setSheet(null)}
-      />
-    </View>
+    </Muncul>
   );
 }
 
@@ -562,12 +565,12 @@ const styles = StyleSheet.create({
   },
   batang: { height: 4, borderRadius: Spacing.radius.full, backgroundColor: slate[200] },
   batangAktif: { backgroundColor: Colors.primary },
-  teksLangkah: { marginTop: 6, fontSize: 12, fontFamily: fonts.semibold, color: Colors.textTertiary },
+  teksLangkah: { marginTop: 6, fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textTertiary },
   teksLangkahAktif: { color: Colors.textPrimary },
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   judulBagian: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -582,15 +585,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
   },
-  namaAset: { fontSize: 12, fontFamily: fonts.bold, color: Colors.textPrimary },
-  nomorAset: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
+  namaAset: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
+  nomorAset: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
   // Ringkasan tanpa kartu/garis: label kecil di atas, nilai tebal di bawahnya; angka hasil sebaris.
   itemRekap: { marginBottom: Spacing.md },
-  labelRekap: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  labelRekap: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   nilaiRekap: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
   angkaRekap: { flexDirection: 'row', gap: Spacing.md, marginTop: Spacing.xs },
   angka: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
-  ketRapat: { marginTop: -Spacing.sm, marginBottom: Spacing.md, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  ketRapat: { marginTop: -Spacing.sm, marginBottom: Spacing.md, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   ringkasan: {
     flexDirection: 'row',
     gap: Spacing.md,
@@ -601,10 +604,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
   },
-  labelRingkas: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  labelRingkas: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   nilaiRingkas: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
   lepas: { alignSelf: 'flex-start', marginBottom: Spacing.sm },
-  teksLepas: { fontSize: 12, fontFamily: fonts.semibold, color: Colors.danger },
+  teksLepas: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.danger },
   barisNg: {
     flexDirection: 'row',
     alignItems: 'center',

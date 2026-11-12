@@ -8,7 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranCatatan, ukuranIsi } from '../../../constants/Typography';
 import { NAMA_BULAN, NAMA_HARI, SINGKATAN_HARI, kunciTanggal, sama, selBulan } from '../../utils/kalender';
 
 interface KalenderBulanProps {
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.md,
   },
-  judul: { fontFamily: fonts.bold, fontSize: 18, color: Colors.textPrimary },
-  sub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: 18, color: Colors.textPrimary },
+  sub: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textTertiary },
   panah: {
     width: 32,
     height: 32,
@@ -106,14 +106,14 @@ const styles = StyleSheet.create({
     width: `${100 / 7}%`,
     textAlign: 'center',
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textTertiary,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.sm, paddingBottom: Spacing.md },
   sel: { width: `${100 / 7}%`, height: 50, alignItems: 'center', justifyContent: 'center' },
   bulat: { width: 34, height: 34, borderRadius: 17, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   bulatDipilih: { backgroundColor: Colors.ink },
-  angka: { fontFamily: fonts.medium, fontSize: 12, color: Colors.textPrimary },
+  angka: { fontFamily: fonts.medium, fontSize: ukuranIsi, color: Colors.textPrimary },
   angkaHariIni: { fontFamily: fonts.bold, color: brand[600] },
   angkaDipilih: { fontFamily: fonts.bold, color: Colors.white },
   titikBaris: { height: 6, flexDirection: 'row', gap: 2, marginTop: 1 },

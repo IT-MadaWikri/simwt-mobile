@@ -15,7 +15,7 @@ import { biometric } from '../../src/utils/biometric';
 import Colors, { gradasiLembut } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { fonts } from '../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import Button from '../../src/components/common/Button';
 import { versiAplikasi } from '../../src/utils/versiAplikasi';
@@ -220,8 +220,8 @@ const styles = StyleSheet.create({
   },
   judulHalaman: {
     textAlign: 'center',
-    fontFamily: fonts.bold,
-    fontSize: 12,
+    fontFamily: fontsJudul.bold,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
     marginBottom: Spacing.lg,
   },
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   email: {
     marginTop: 2,
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textTertiary,
   },
   menuContainer: {
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl,
   },
   footerText: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textTertiary,
     fontFamily: fonts.medium,
     marginTop: 4,

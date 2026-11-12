@@ -11,7 +11,7 @@ import { Skeleton } from '../common/Skeleton';
 import Lencana from '../common/Lencana';
 import Colors, { brand, lencana } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { DetailAset } from '../../types/aset';
 
 interface SheetAsetScanProps {
@@ -123,12 +123,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderSubtle,
     padding: Spacing.lg,
   },
-  nama: { fontFamily: fonts.bold, fontSize: 12, color: Colors.textPrimary },
-  nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  keterangan: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, marginTop: Spacing.sm },
+  nama: { fontFamily: fonts.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  nomor: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary, marginTop: 2 },
+  keterangan: { fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary, marginTop: Spacing.sm },
   lencanaBaris: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md },
   galat: { alignItems: 'center', paddingVertical: Spacing.xl },
-  teksGalat: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.md },
+  teksGalat: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.md },
   menu: { rowGap: Spacing.sm, marginTop: Spacing.lg },
   ubin: { height: 52, borderRadius: Spacing.radius.full, ...Spacing.curve, overflow: 'hidden' },
   isiUbin: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.sm },

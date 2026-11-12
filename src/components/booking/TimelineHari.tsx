@@ -8,7 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { sama } from '../../utils/kalender';
 import { rentangJamTampil, susunKolom } from '../../utils/timelineBooking';
 
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   flex1: { flex: 1 },
   wadah: { marginTop: Spacing.sm, marginHorizontal: Spacing.screenPadding },
   barisJam: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
-  labelJam: { width: LEBAR_LABEL, marginTop: -8, fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary },
+  labelJam: { width: LEBAR_LABEL, marginTop: -8, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary },
   garis: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Colors.border },
   area: { position: 'absolute', top: 0, bottom: 0, left: LEBAR_LABEL, right: 0 },
   kartu: {
@@ -119,10 +119,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   kartuDalam: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.xs },
-  judul: { fontFamily: fonts.bold, fontSize: 12, color: Colors.ink },
-  kategori: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  judul: { fontFamily: fontsJudul.bold, fontSize: ukuranIsi, color: Colors.ink },
+  kategori: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   baris: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  jam: { flexShrink: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  jam: { flexShrink: 1, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   sekarang: { position: 'absolute', left: 0, right: 0, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: brand[600] },
   titikSekarang: { position: 'absolute', left: -4, top: -5, width: 8, height: 8, borderRadius: 4, backgroundColor: brand[600] },
 });

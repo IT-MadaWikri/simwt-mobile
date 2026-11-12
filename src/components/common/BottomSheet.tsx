@@ -32,7 +32,7 @@ import BrandSpinner from './BrandSpinner';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
 import { useTinggiKeyboard } from '../../hooks/useTinggiKeyboard';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 const TINGGI_PENUH = 0.85;
 /** Perkiraan tinggi handle + judul sheet, dikurangkan agar sheet `penuh` tidak melebihi layar. */
@@ -227,13 +227,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   title: {
-    fontFamily: fonts.bold,
-    fontSize: 12,
+    fontFamily: fontsJudul.bold,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
   subtitle: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     color: Colors.textSecondary,
     marginTop: 2,
   },

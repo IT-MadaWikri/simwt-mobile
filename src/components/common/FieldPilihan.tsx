@@ -73,5 +73,5 @@ const styles = StyleSheet.create({
   },
   inputGalat: { borderColor: Colors.danger },
   nilai: { flex: 1, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textPrimary },
-  galat: { marginTop: 4, fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { marginTop: 4, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
 });

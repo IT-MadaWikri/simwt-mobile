@@ -7,7 +7,7 @@ import { ReactNode } from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 
 export const MASKOT = {
   salam: require('../../../assets/images/maskot/putri-salam.png'),
@@ -66,14 +66,18 @@ export default function KeadaanKosong({
 }
 
 const styles = StyleSheet.create({
+  // Memenuhi ruang yang tersisa lalu menaruh isinya di tengah vertikal. Di dalam
+  // FlatList, `contentContainerStyle` daftarnya harus punya `flexGrow: 1`.
   wadah: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: Spacing.xxl,
+    paddingVertical: Spacing.xxl,
     paddingHorizontal: Spacing.xl,
   },
   judul: {
     marginTop: Spacing.md,
-    fontFamily: fonts.bold,
+    fontFamily: fontsJudul.bold,
     fontSize: 14,
     color: Colors.textPrimary,
     textAlign: 'center',
@@ -81,7 +85,7 @@ const styles = StyleSheet.create({
   teks: {
     marginTop: Spacing.xs,
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
     textAlign: 'center',
   },

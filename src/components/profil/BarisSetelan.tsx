@@ -6,7 +6,7 @@ import { Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from 'reac
 import Icon from '../common/Icon';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 
 interface BarisSetelanProps {
   ikon: string;
@@ -64,13 +64,13 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
-    fontFamily: fonts.semibold,
-    fontSize: 12,
+    fontFamily: fonts.regular,
+    fontSize: ukuranIsi,
     color: Colors.textPrimary,
   },
   nilai: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textTertiary,
   },
   panah: {

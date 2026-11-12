@@ -9,7 +9,7 @@ import BrandSpinner from '../common/BrandSpinner';
 import Icon from '../common/Icon';
 import Colors, { brand } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 
 interface SheetBagikanTiketProps {
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  judul: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: Colors.textPrimary },
-  ket: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  judul: { fontSize: ukuranIsi, fontFamily: fontsJudul.semibold, color: Colors.textPrimary },
+  ket: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
 });

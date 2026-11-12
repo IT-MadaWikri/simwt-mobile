@@ -2,6 +2,7 @@
  * Helper tampilan Kaizen yang dipakai bersama layar daftar & detail.
  */
 import { lencana } from '../../constants/Colors';
+import { buatUrlStorageWeb } from './storageApi';
 
 /** Warna pil status. DITERIMA = menunggu penilaian. */
 export const WARNA_STATUS: Record<string, { bg: string; fg: string; label: string }> = {
@@ -45,8 +46,7 @@ export const teksBagikanKaizen = (k: { tema?: string; nomor?: string; pelaksana?
     .join('\n');
 
 /** Foto Kaizen bisa berupa URL penuh atau path storage relatif. */
-export const urlFoto = (path?: string | null) =>
-  !path ? null : path.startsWith('http') ? path : `https://mwtpart.co.id/storage/${path}`;
+export const urlFoto = (path?: string | null) => (path ? buatUrlStorageWeb(path) : null);
 
 /** Ikon, gelar, dan 3 nada warna (terang, utama, gelap) per kategori PQCDSM. */
 export const LENCANA: Record<string, { ikon: string; gelar: string; warna: readonly [string, string, string] }> = {

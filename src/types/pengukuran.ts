@@ -58,7 +58,7 @@ export interface Part {
   nama_bisnis_partner: string;
   nama_customer: string;
   jumlah_standar_pengukuran: number;
-  /** Path relatif di storage api-simwt (lihat `buatUrlStorageApi`); null bila part tak punya gambar. */
+  /** Path relatif di storage sim-mwt (lihat `buatUrlStorageWeb`); null bila part tak punya gambar. */
   gambar_part: string | null;
 }
 

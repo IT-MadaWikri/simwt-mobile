@@ -23,7 +23,7 @@ import Icon from '../common/Icon';
 import Button from '../common/Button';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 
 export type TagFoto = 'sebelum' | 'sesudah';
 
@@ -302,8 +302,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   judul: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.bold,
     color: Colors.white,
   },
   area: {
@@ -355,14 +355,14 @@ const styles = StyleSheet.create({
   labelThumb: {
     marginTop: 2,
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.medium,
     color: putihPudar,
   },
   labelBagian: {
     marginTop: Spacing.sm,
     marginBottom: 6,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: putihPudar,
   },
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   petunjuk: {
     marginTop: Spacing.md,
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: 'rgba(255,255,255,0.45)',
   },

@@ -32,16 +32,18 @@ import Button from '../../../src/components/common/Button';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { kaizenService } from '../../../src/services/kaizenService';
 import { KaizenDetail } from '../../../src/types/kaizen';
 import { BULAN, LENCANA, teksBagikanKaizen, urlFoto, warnaStatus } from '../../../src/utils/kaizen';
 import AppBar from '../../../src/components/common/AppBar';
 import BrandSpinner from '../../../src/components/common/BrandSpinner';
-import SliderManfaat from '../../../src/components/kaizen/SliderManfaat';
+import DaftarManfaat from '../../../src/components/kaizen/DaftarManfaat';
+import RincianKartuManfaat from '../../../src/components/kaizen/RincianKartuManfaat';
 import { bagikanBuktiKaizen } from '../../../src/services/buktiKaizenService';
-import { SkeletonDetail } from '../../../src/components/common/Skeleton';
+import SkeletonDetailKaizen from '../../../src/components/kaizen/SkeletonDetailKaizen';
+import Muncul from '../../../src/components/common/Muncul';
 
 const PQCDSM = ['Productivity', 'Quality', 'Cost', 'Delivery', 'Safety', 'Morale'];
 
@@ -69,6 +71,8 @@ export default function KaizenDetailScreen() {
   const [sheetTolak, setSheetTolak] = useState(false);
   // Kategori manfaat yang rinciannya sedang dibuka di sheet ('' = Manfaat tanpa kategori).
   const [sheetManfaat, setSheetManfaat] = useState<string | null>(null);
+  // Urutan manfaat (di dalam kategori itu) yang rincian Penghematan/Sebelum/Sesudah-nya dibuka.
+  const [rincianManfaat, setRincianManfaat] = useState<number | null>(null);
   // Menu Bagikan (pesan / bukti PDF); `membuatPdf` = PDF sedang dibuat.
   const [sheetBagikan, setSheetBagikan] = useState(false);
   const [membuatPdf, setMembuatPdf] = useState(false);
@@ -96,7 +100,7 @@ export default function KaizenDetailScreen() {
   if (loading) {
     return (
       <View style={gs.screen}>
-        <SkeletonDetail />
+        <SkeletonDetailKaizen />
       </View>
     );
   }
@@ -128,6 +132,9 @@ export default function KaizenDetailScreen() {
       .entries()
   );
   const butirSheet = sheetManfaat === null ? [] : manfaats.filter((m) => (m.manfaat_nilai?.kategori ?? '') === sheetManfaat);
+  const butirRincian = rincianManfaat === null ? undefined : butirSheet[rincianManfaat];
+  const ikonManfaat = (kat?: string | null) => LENCANA[kat ?? '']?.ikon ?? 'lightbulb-on-outline';
+  const warnaManfaat = (kat?: string | null) => LENCANA[kat ?? '']?.warna[2] ?? Colors.textSecondary;
   const warna = warnaStatus(kaizen.status);
   const k = kaizen as any;
   const departemen = kaizen.departemen?.nama || k.departemen?.nama_departemen || kaizen.nama_departemen;
@@ -231,7 +238,7 @@ export default function KaizenDetailScreen() {
         kanan={
           kaizen.status === 'DISETUJUI' ? (
             <TouchableOpacity onPress={() => setSheetBagikan(true)} hitSlop={10} accessibilityLabel="Bagikan">
-              <Icon name="share-variant" size={20} color={Colors.white} />
+              <Icon name="share-variant" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
           ) : undefined
         }
@@ -245,126 +252,137 @@ export default function KaizenDetailScreen() {
         }
       >
         {/* Ringkasan */}
-        <View style={styles.kartu}>
-          <View style={gs.rowBetween}>
-            <View style={[styles.pil, { backgroundColor: warna.bg }]}>
-              <Text style={[styles.teksPil, { color: warna.fg }]}>{warna.label}</Text>
+        <Muncul jeda={0}>
+          <View style={styles.kartu}>
+            <View style={gs.rowBetween}>
+              <View style={[styles.pil, { backgroundColor: warna.bg }]}>
+                <Text style={[styles.teksPil, { color: warna.fg }]}>{warna.label}</Text>
+              </View>
+              <Text style={styles.kecil}>{kaizen.nomor || `#${kaizen.id}`}</Text>
             </View>
-            <Text style={styles.kecil}>{kaizen.nomor || `#${kaizen.id}`}</Text>
-          </View>
-          <Text style={styles.tema}>{kaizen.tema || 'Tanpa tema'}</Text>
-          {tags.length ? <Text style={styles.kecil}>{tags.join('  ·  ')}</Text> : null}
+            <Text style={styles.tema}>{kaizen.tema || 'Tanpa tema'}</Text>
+            {tags.length ? <Text style={styles.kecil}>{tags.join('  ·  ')}</Text> : null}
 
-          <View style={styles.garis} />
-          <View style={[gs.row, { gap: Spacing.sm }]}>
-            <Avatar nama={kaizen.nama_pelaksana} ukuran={34} />
-            <View style={gs.flex1}>
-              <Text style={styles.nama} numberOfLines={1}>{kaizen.nama_pelaksana || '-'}</Text>
-              <Text style={styles.kecil} numberOfLines={1}>Pelaksana · {kaizen.nik_nama_pelaksana || '-'}</Text>
+            <View style={styles.garis} />
+            <View style={[gs.row, { gap: Spacing.sm }]}>
+              <Avatar nama={kaizen.nama_pelaksana} ukuran={34} />
+              <View style={gs.flex1}>
+                <Text style={styles.nama} numberOfLines={1}>{kaizen.nama_pelaksana || '-'}</Text>
+                <Text style={styles.kecil} numberOfLines={1}>Pelaksana · {kaizen.nik_nama_pelaksana || '-'}</Text>
+              </View>
             </View>
+            {kaizen.disarankan_oleh ? (
+              <View style={[gs.row, { gap: 6, marginTop: Spacing.sm }]}>
+                <Icon name="lightbulb-on-outline" size={14} color={Colors.textTertiary} />
+                <Text style={styles.kecil}>Disarankan oleh {kaizen.disarankan_oleh}</Text>
+              </View>
+            ) : null}
           </View>
-          {kaizen.disarankan_oleh ? (
-            <View style={[gs.row, { gap: 6, marginTop: Spacing.sm }]}>
-              <Icon name="lightbulb-on-outline" size={14} color={Colors.textTertiary} />
-              <Text style={styles.kecil}>Disarankan oleh {kaizen.disarankan_oleh}</Text>
-            </View>
-          ) : null}
-        </View>
+        </Muncul>
 
         {/* Jejak keputusan */}
-        <View style={styles.kartu}>
-          {jejak.map((j, i) => (
-            <View key={i} style={styles.jejak}>
-              <View style={styles.kolomJejak}>
-                <Icon name={j.ikon} size={16} color={j.warna} />
-                {i < jejak.length - 1 ? <View style={styles.tiangJejak} /> : null}
+        <Muncul jeda={70}>
+          <View style={styles.kartu}>
+            {jejak.map((j, i) => (
+              <View key={i} style={styles.jejak}>
+                <View style={styles.kolomJejak}>
+                  <Icon name={j.ikon} size={16} color={j.warna} />
+                  {i < jejak.length - 1 ? <View style={styles.tiangJejak} /> : null}
+                </View>
+                <View style={[gs.flex1, { paddingBottom: i < jejak.length - 1 ? Spacing.md : 0 }]}>
+                  <Text style={styles.judulJejak}>{j.judul}</Text>
+                  {j.ket ? <Text style={styles.kecil}>{j.ket}</Text> : null}
+                </View>
               </View>
-              <View style={[gs.flex1, { paddingBottom: i < jejak.length - 1 ? Spacing.md : 0 }]}>
-                <Text style={styles.judulJejak}>{j.judul}</Text>
-                {j.ket ? <Text style={styles.kecil}>{j.ket}</Text> : null}
+            ))}
+            {kaizen.status === 'DITOLAK' && kaizen.alasan ? (
+              <View style={styles.alasan}>
+                <Text style={styles.judulAlasan}>Alasan ditolak</Text>
+                <Text style={styles.teksAlasan}>{kaizen.alasan}</Text>
               </View>
-            </View>
-          ))}
-          {kaizen.status === 'DITOLAK' && kaizen.alasan ? (
-            <View style={styles.alasan}>
-              <Text style={styles.judulAlasan}>Alasan ditolak</Text>
-              <Text style={styles.teksAlasan}>{kaizen.alasan}</Text>
-            </View>
-          ) : null}
-        </View>
+            ) : null}
+          </View>
+        </Muncul>
 
         {/* Foto */}
-        <View style={styles.kartu}>
-        <Text style={styles.judulSeksi}>Foto</Text>
-        <View style={[gs.row, { gap: Spacing.sm }]}>
-          {fotos.map((f) => (
-            <TouchableOpacity
-              key={f.label}
-              style={styles.ubinFoto}
-              activeOpacity={0.85}
-              disabled={!f.uri}
-              onPress={() => setFotoBesar(f.uri)}
-            >
-              {f.uri ? (
-                <Image source={{ uri: f.uri }} style={styles.gambar} resizeMode="cover" />
-              ) : (
-                <View style={[styles.gambar, gs.centerFill]}>
-                  <Icon name="image" size={22} color={Colors.textTertiary} />
-                  <Text style={[styles.kecil, { marginTop: 4 }]}>Tidak ada foto</Text>
+        <Muncul jeda={140}>
+          <View style={styles.kartu}>
+          <Text style={styles.judulSeksi}>Foto</Text>
+          <View style={[gs.row, { gap: Spacing.sm }]}>
+            {fotos.map((f) => (
+              <TouchableOpacity
+                key={f.label}
+                style={styles.ubinFoto}
+                activeOpacity={0.85}
+                disabled={!f.uri}
+                onPress={() => setFotoBesar(f.uri)}
+              >
+                {f.uri ? (
+                  <Image source={{ uri: f.uri }} style={styles.gambar} resizeMode="cover" />
+                ) : (
+                  <View style={[styles.gambar, gs.centerFill]}>
+                    <Icon name="image" size={22} color={Colors.textTertiary} />
+                    <Text style={[styles.kecil, { marginTop: 4 }]}>Tidak ada foto</Text>
+                  </View>
+                )}
+                <View style={[styles.tagFoto, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
+                  <Text style={styles.teksTagFoto}>{f.label}</Text>
                 </View>
-              )}
-              <View style={[styles.tagFoto, f.label === 'Sesudah' && { backgroundColor: Colors.primary }]}>
-                <Text style={styles.teksTagFoto}>{f.label}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+          </View>
+        </Muncul>
 
         {/* Kondisi */}
-        <View style={styles.kartu}>
-          <Text style={styles.judulSeksi}>Kondisi</Text>
-          {[
-            { label: 'Sebelum Kaizen', warna: Colors.danger, teks: teksSebelum },
-            { label: 'Sesudah Kaizen', warna: brand[600], teks: teksSesudah },
-          ].map((s, i) => (
-            <View key={s.label} style={i > 0 ? { marginTop: Spacing.md } : null}>
-              <View style={[gs.row, { gap: 6, marginBottom: 4 }]}>
-                <View style={[styles.titik, { backgroundColor: s.warna }]} />
-                <Text style={styles.labelKondisi}>{s.label}</Text>
+        <Muncul jeda={210}>
+          <View style={styles.kartu}>
+            <Text style={styles.judulSeksi}>Kondisi</Text>
+            {[
+              { label: 'Sebelum Kaizen', warna: Colors.danger, teks: teksSebelum },
+              { label: 'Sesudah Kaizen', warna: brand[600], teks: teksSesudah },
+            ].map((s, i) => (
+              <View key={s.label} style={i > 0 ? { marginTop: Spacing.md } : null}>
+                <View style={[gs.row, { gap: 6, marginBottom: 4 }]}>
+                  <View style={[styles.titik, { backgroundColor: s.warna }]} />
+                  <Text style={styles.labelKondisi}>{s.label}</Text>
+                </View>
+                <Text style={styles.teks}>{s.teks || '-'}</Text>
               </View>
-              <Text style={styles.teks}>{s.teks || '-'}</Text>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        </Muncul>
 
         {/* Manfaat */}
-        <View style={styles.kartu}>
-          <Text style={styles.judulSeksi}>Manfaat ({manfaats.length})</Text>
-          {manfaats.length === 0 ? <Text style={[styles.teks, styles.kosong]}>Belum ada manfaat.</Text> : null}
-          {kelompokManfaat.map(([kat, butir]) => {
-            const l = LENCANA[kat];
-            return (
-              <TouchableOpacity key={kat || 'x'} style={styles.kartuManfaat} activeOpacity={0.6} onPress={() => setSheetManfaat(kat)}>
-                <View style={[styles.logoManfaat, { backgroundColor: l?.warna[1] ?? slate[400] }]}>
-                  <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
-                </View>
-                <Text style={[styles.nama, gs.flex1]} numberOfLines={1}>{kat || 'Manfaat'}</Text>
-                <LencanaAngka jumlah={butir.length} ukuran={24} warna={brand[50]} teks={brand[700]} />
-                <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <Muncul jeda={280}>
+          <View style={styles.kartu}>
+            <Text style={styles.judulSeksi}>Manfaat ({manfaats.length})</Text>
+            {manfaats.length === 0 ? <Text style={[styles.teks, styles.kosong]}>Belum ada manfaat.</Text> : null}
+            {kelompokManfaat.map(([kat, butir]) => {
+              const l = LENCANA[kat];
+              return (
+                <TouchableOpacity key={kat || 'x'} style={styles.kartuManfaat} activeOpacity={0.6} onPress={() => setSheetManfaat(kat)}>
+                  <View style={[styles.logoManfaat, { backgroundColor: l?.warna[1] ?? slate[400] }]}>
+                    <Icon name={l?.ikon ?? 'lightbulb-on-outline'} size={14} color={Colors.white} />
+                  </View>
+                  <Text style={[styles.nama, gs.flex1]} numberOfLines={1}>{kat || 'Manfaat'}</Text>
+                  <LencanaAngka jumlah={butir.length} ukuran={24} warna={brand[50]} teks={brand[700]} />
+                  <Icon name="chevron-right" size={16} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Muncul>
 
         {/* Penilaian — hanya untuk Kaizen yang disetujui, seperti website */}
         {kaizen.status === 'DISETUJUI' ? (
           <>
-            <View style={styles.kartu}>
-            <View style={[gs.rowBetween, { alignItems: 'flex-end' }]}>
-              <Text style={styles.judulSeksi}>Nilai PQCDSM</Text>
-              <Text style={[styles.kecil, { marginBottom: Spacing.sm }]}>Total +{totalKategoriNilai || 0} poin</Text>
-            </View>
+            <Muncul jeda={350}>
+              <View style={styles.kartu}>
+              <View style={[gs.rowBetween, { alignItems: 'flex-end' }]}>
+                <Text style={styles.judulSeksi}>Nilai PQCDSM</Text>
+                <Text style={[styles.kecil, { marginBottom: Spacing.sm }]}>Total +{totalKategoriNilai || 0} poin</Text>
+              </View>
             <View style={styles.gridNilai}>
               {PQCDSM.map((kat) => {
                 const l = LENCANA[kat];
@@ -381,32 +399,35 @@ export default function KaizenDetailScreen() {
               })}
             </View>
 
-            </View>
+              </View>
+            </Muncul>
 
-            <View style={styles.kartu}>
-              <Text style={styles.judulSeksi}>Penilaian komite</Text>
-              {nilaiPanitia ? (
-                <>
-                  {[
-                    { label: 'Nilai PQCDSM', nilai: totalKategoriNilai || 0 },
-                    { label: 'Nilai komite', nilai: nilaiPanitia.nilai_panitia },
-                    ...(nilaiPelaksanaan ? [{ label: 'Nilai pelaksanaan', nilai: nilaiPelaksanaan }] : []),
-                  ].map((b, i) => (
-                    <View key={b.label} style={[gs.rowBetween, i > 0 && { marginTop: 6 }]}>
-                      <Text style={styles.teks}>{b.label}</Text>
-                      <Text style={styles.nama}>+{b.nilai} poin</Text>
+            <Muncul jeda={420}>
+              <View style={styles.kartu}>
+                <Text style={styles.judulSeksi}>Penilaian komite</Text>
+                {nilaiPanitia ? (
+                  <>
+                    {[
+                      { label: 'Nilai PQCDSM', nilai: totalKategoriNilai || 0 },
+                      { label: 'Nilai komite', nilai: nilaiPanitia.nilai_panitia },
+                      ...(nilaiPelaksanaan ? [{ label: 'Nilai pelaksanaan', nilai: nilaiPelaksanaan }] : []),
+                    ].map((b, i) => (
+                      <View key={b.label} style={[gs.rowBetween, i > 0 && { marginTop: 6 }]}>
+                        <Text style={styles.teks}>{b.label}</Text>
+                        <Text style={styles.nama}>+{b.nilai} poin</Text>
+                      </View>
+                    ))}
+                    <View style={[styles.garis, { marginVertical: Spacing.sm }]} />
+                    <View style={gs.rowBetween}>
+                      <Text style={styles.nama}>Poin didapat</Text>
+                      <Text style={[styles.nama, { color: brand[700] }]}>+{totalPoin} poin</Text>
                     </View>
-                  ))}
-                  <View style={[styles.garis, { marginVertical: Spacing.sm }]} />
-                  <View style={gs.rowBetween}>
-                    <Text style={styles.nama}>Poin didapat</Text>
-                    <Text style={[styles.nama, { color: brand[700] }]}>+{totalPoin} poin</Text>
-                  </View>
-                </>
-              ) : (
-                <Text style={[styles.teks, styles.kosong]}>Belum dinilai oleh komite. Penilaian dilakukan lewat website SIMWT.</Text>
-              )}
-            </View>
+                  </>
+                ) : (
+                  <Text style={[styles.teks, styles.kosong]}>Belum dinilai oleh komite. Penilaian dilakukan lewat website SIMWT.</Text>
+                )}
+              </View>
+            </Muncul>
           </>
         ) : null}
         {/* Menutup celah abu-abu di bawah seksi terakhir (marginBottom-nya dibatalkan). */}
@@ -443,26 +464,39 @@ export default function KaizenDetailScreen() {
 
       <BottomSheet
         visible={sheetManfaat !== null}
-        onClose={() => setSheetManfaat(null)}
+        onClose={() => { setSheetManfaat(null); setRincianManfaat(null); }}
         title={`Manfaat ${sheetManfaat || ''}`.trim()}
         subtitle={`${butirSheet.length} manfaat`}
       >
-        <SliderManfaat
-          key={sheetManfaat}
-          items={butirSheet.map((m) => {
-            const l = LENCANA[m.manfaat_nilai?.kategori ?? ''];
-            return {
-              ikon: l?.ikon ?? 'lightbulb-on-outline',
-              warna: l?.warna[2] ?? Colors.textSecondary,
-              tipe: m.tipe_area,
-              hemat: m.hemat,
-              sebelum: m.sebelum,
-              sesudah: m.sesudah,
-              area: m.area,
-              pic: m.pic,
-            };
-          })}
+        <DaftarManfaat
+          onPilih={setRincianManfaat}
+          items={butirSheet.map((m, urut) => ({
+            judul: `${sheetManfaat || 'Manfaat'} ${urut + 1}`,
+            ikon: ikonManfaat(m.manfaat_nilai?.kategori),
+            warna: warnaManfaat(m.manfaat_nilai?.kategori),
+            tipe: m.tipe_area,
+          }))}
         />
+      </BottomSheet>
+
+      {/* Sheet kedua: menutupi daftar manfaat, isinya Penghematan/Sebelum/Sesudah satu manfaat. */}
+      <BottomSheet
+        visible={rincianManfaat !== null && butirRincian !== undefined}
+        onClose={() => setRincianManfaat(null)}
+        title={`${sheetManfaat || 'Manfaat'} ${(rincianManfaat ?? 0) + 1}`}
+      >
+        {butirRincian ? (
+          <RincianKartuManfaat
+            item={{
+              warna: warnaManfaat(butirRincian.manfaat_nilai?.kategori),
+              hemat: butirRincian.hemat,
+              sebelum: butirRincian.sebelum,
+              sesudah: butirRincian.sesudah,
+              area: butirRincian.area,
+              pic: butirRincian.pic,
+            }}
+          />
+        ) : null}
       </BottomSheet>
 
       <BottomSheet visible={sheetTolak} onClose={() => setSheetTolak(false)} title="Tolak Kaizen">
@@ -533,12 +567,12 @@ const styles = StyleSheet.create({
   tema: {
     marginTop: Spacing.sm,
     marginBottom: 4,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
   kecil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -548,7 +582,7 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.md,
   },
   nama: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
@@ -564,8 +598,8 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
   },
   judulSeksi: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -587,7 +621,7 @@ const styles = StyleSheet.create({
   },
   judulJejak: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   alasan: {
@@ -598,8 +632,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef2f2',
   },
   judulAlasan: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.dangerDark,
     marginBottom: 2,
   },
@@ -632,7 +666,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.75)',
   },
   teksTagFoto: {
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.semibold,
     color: Colors.white,
   },
@@ -679,12 +713,12 @@ const styles = StyleSheet.create({
   },
   judulBagikan: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   ketBagikan: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
@@ -706,7 +740,7 @@ const styles = StyleSheet.create({
   },
   angka: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },

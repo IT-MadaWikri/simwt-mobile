@@ -6,10 +6,11 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { Berita } from '../../types/berita';
 import BarisBerita from '../berita/BarisBerita';
 import Button from '../common/Button';
+import Muncul from '../common/Muncul';
 import SectionHeader from '../common/SectionHeader';
 import { SkeletonDaftar } from '../common/Skeleton';
 
@@ -51,15 +52,17 @@ export default function NewsCarousel({
             <Text style={styles.teksKosong}>Belum ada berita.</Text>
           </View>
         ) : (
-          berita.map((b) => (
-            <BarisBerita
-              key={b.id}
-              berita={b}
-              onPress={() => onBuka(b.id)}
-              onSuka={() => onSuka(b.id)}
-              onBagikan={() => onBagikan(b)}
-            />
-          ))
+          <Muncul>
+            {berita.map((b) => (
+              <BarisBerita
+                key={b.id}
+                berita={b}
+                onPress={() => onBuka(b.id)}
+                onSuka={() => onSuka(b.id)}
+                onBagikan={() => onBagikan(b)}
+              />
+            ))}
+          </Muncul>
         )}
       </View>
     </View>
@@ -68,7 +71,7 @@ export default function NewsCarousel({
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: Spacing.lg,
+    marginTop: Spacing.sectionGap,
   },
   daftar: {
     paddingHorizontal: Spacing.screenPadding,
@@ -80,7 +83,7 @@ const styles = StyleSheet.create({
   },
   teksKosong: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: ukuranIsi,
     color: Colors.textSecondary,
     textAlign: 'center',
   },

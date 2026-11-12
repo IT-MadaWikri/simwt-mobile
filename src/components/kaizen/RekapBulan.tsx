@@ -11,7 +11,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Icon from '../common/Icon';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { BULAN } from '../../utils/kaizen';
 
 type Keadaan = 'ada' | 'kosong' | 'berjalan' | 'belum-mulai' | 'belum-wajib';
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   bulan: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.medium,
     color: Colors.textTertiary,
   },

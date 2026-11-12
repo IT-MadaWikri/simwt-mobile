@@ -86,6 +86,7 @@ export default function HomeScreen() {
           <LinearGradient colors={['rgba(255,255,255,0)', Colors.white]} pointerEvents="none" style={styles.pudarAtas} />
         <BirthdayBanner
           birthdays={ulangTahun.daftar}
+          memuat={ulangTahun.memuat}
           idMengirim={ulangTahun.idMengirim}
           sudahDiucapkan={ulangTahun.sudahDiucapkan}
           onBeriSelamat={ulangTahun.beriSelamat}

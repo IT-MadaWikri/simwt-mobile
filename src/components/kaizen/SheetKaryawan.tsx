@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.border,
   },
   nama: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   nik: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
     marginTop: 1,

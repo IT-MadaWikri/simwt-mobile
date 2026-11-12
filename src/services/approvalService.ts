@@ -53,7 +53,7 @@ export const approvalService = {
 
   /** Tandai tiket mulai diproses (PENDING → PROSES). */
   async prosesTiket(id: number): Promise<void> {
-    await api.get(`/tiket/${id}/proses`);
+    await api.post(`/tiket/${id}/proses`);
   },
 };
 

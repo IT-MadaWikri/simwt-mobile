@@ -14,7 +14,7 @@ import TombolKembali from '../src/components/common/TombolKembali';
 import Icon from '../src/components/common/Icon';
 import Colors, { slate } from '../constants/Colors';
 import Spacing from '../constants/Spacing';
-import { fonts } from '../constants/Typography';
+import { fonts, ukuranIsi } from '../constants/Typography';
 
 const Aksi = ({ ikon, label, aktif = true, onPress }: { ikon: string; label: string; aktif?: boolean; onPress: () => void }) => (
   <TouchableOpacity style={styles.aksiMenu} disabled={!aktif} activeOpacity={0.6} onPress={onPress}>
@@ -71,13 +71,13 @@ export default function BrowserScreen() {
         kanan={
           <View style={styles.aksi}>
             <TouchableOpacity onPress={() => webView.current?.reload()} hitSlop={10} accessibilityLabel="Muat ulang">
-              <Icon name="refresh" size={20} color={Colors.white} />
+              <Icon name="refresh" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.replace('/(tabs)')} hitSlop={10} accessibilityLabel="Beranda">
-              <Icon name="home" size={20} color={Colors.white} />
+              <Icon name="home" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setMenu(true)} hitSlop={10} accessibilityLabel="Menu">
-              <Icon name="dots-vertical" size={20} color={Colors.white} />
+              <Icon name="dots-vertical" size={20} color={Colors.textPrimary} />
             </TouchableOpacity>
           </View>
         }
@@ -123,10 +123,10 @@ export default function BrowserScreen() {
 const styles = StyleSheet.create({
   progres: { height: 2, backgroundColor: Colors.primary },
   baris: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
-  label: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textPrimary },
+  label: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textPrimary },
   barisAksi: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: Spacing.md },
   aksiMenu: { alignItems: 'center', gap: Spacing.xs, width: 72 },
   lingkar: { width: 44, height: 44, borderRadius: 22, backgroundColor: slate[100], alignItems: 'center', justifyContent: 'center' },
-  labelAksi: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textPrimary, textAlign: 'center' },
+  labelAksi: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textPrimary, textAlign: 'center' },
   aksi: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, paddingHorizontal: Spacing.lg },
 });

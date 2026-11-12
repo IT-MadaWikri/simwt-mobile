@@ -22,10 +22,11 @@ import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 import { useBuatTiket } from '../../../src/hooks/useBuatTiket';
 import { useCariAset } from '../../../src/hooks/useCariAset';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Sheet = 'aset' | 'jenis' | 'kategori' | 'departemen' | 'sub' | 'area' | 'foto' | null;
 
@@ -92,181 +93,183 @@ export default function BuatTiketScreen() {
   const g = diperiksa ? t.galat : {};
 
   return (
-    <KeyboardAvoidingView
-      style={[gs.screen, { backgroundColor: Colors.white }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
-      <AppBar judul="Buat Tiket" />
+    <Muncul style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={[gs.screen, { backgroundColor: Colors.white }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+        <AppBar judul="Buat Tiket" />
 
-      <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text style={styles.judulBagian}>Aset</Text>
-        <View style={styles.bagian}>
-          {form.aset ? (
-            <View style={styles.kartuAset}>
-              <View style={gs.flex1}>
-                <Text style={styles.namaAset} numberOfLines={2}>{form.aset.alias || form.aset.asset_name}</Text>
-                {form.aset.alias ? <Text style={styles.nomorAset} numberOfLines={1}>{form.aset.asset_name}</Text> : null}
-                <Text style={styles.nomorAset}>{form.aset.asset_number}</Text>
+        <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Text style={styles.judulBagian}>Aset</Text>
+          <View style={styles.bagian}>
+            {form.aset ? (
+              <View style={styles.kartuAset}>
+                <View style={gs.flex1}>
+                  <Text style={styles.namaAset} numberOfLines={2}>{form.aset.alias || form.aset.asset_name}</Text>
+                  {form.aset.alias ? <Text style={styles.nomorAset} numberOfLines={1}>{form.aset.asset_name}</Text> : null}
+                  <Text style={styles.nomorAset}>{form.aset.asset_number}</Text>
+                </View>
+                <TouchableOpacity onPress={() => t.ubah('aset', null)} hitSlop={8} accessibilityLabel="Lepas aset">
+                  <Icon name="close-circle" size={18} color={Colors.textTertiary} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => t.ubah('aset', null)} hitSlop={8} accessibilityLabel="Lepas aset">
-                <Icon name="close-circle" size={18} color={Colors.textTertiary} />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <FieldPilihan label="Aset" placeholder="Cari aset (opsional)" nilai={null} onPress={() => setSheet('aset')} />
-              <Text style={styles.ketAset}>Pilih bila masalahnya terkait aset tertentu.</Text>
-            </>
-          )}
-        </View>
+            ) : (
+              <>
+                <FieldPilihan label="Aset" placeholder="Cari aset (opsional)" nilai={null} onPress={() => setSheet('aset')} />
+                <Text style={styles.ketAset}>Pilih bila masalahnya terkait aset tertentu.</Text>
+              </>
+            )}
+          </View>
 
-        <Text style={styles.judulBagian}>Masalah</Text>
-        <View style={styles.bagian}>
-          <FieldPilihan
-            label="Jenis Masalah"
-            wajib
-            nilai={t.labelDari(t.opsiJenis, form.idJenis)}
-            galat={g.jenis}
-            nonaktif={t.jenisTerkunci}
-            onPress={() => setSheet('jenis')}
-          />
-          <FieldPilihan
-            label="Kategori Masalah"
-            wajib
-            nonaktif={!form.idJenis}
-            placeholder={form.idJenis ? 'Pilih kategori masalah' : 'Pilih jenis masalah dulu'}
-            nilai={t.labelDari(t.opsiKategori, form.idKategori)}
-            galat={g.kategori}
-            onPress={() => setSheet('kategori')}
-          />
-          {t.strokeAktif ? (
-            <FieldTeks
-              label="Jumlah Stroke"
-              nilai={form.stroke}
-              onUbah={(v) => t.ubah('stroke', v)}
-              keyboardType="decimal-pad"
-              placeholder="Pembacaan counter dies saat ini"
-              galat={g.stroke}
-            />
-          ) : null}
-        </View>
-
-        <Text style={styles.judulBagian}>Lokasi</Text>
-        <View style={styles.bagian}>
-          <FieldPilihan
-            label="Departemen"
-            wajib
-            nilai={t.labelDari(t.opsiDepartemen, form.idDepartemen)}
-            galat={g.departemen}
-            onPress={() => setSheet('departemen')}
-          />
-          {t.opsiSub.length > 0 ? (
+          <Text style={styles.judulBagian}>Masalah</Text>
+          <View style={styles.bagian}>
             <FieldPilihan
-              label="Sub Departemen"
+              label="Jenis Masalah"
               wajib
-              nilai={t.labelDari(t.opsiSub, form.idSub)}
-              galat={g.sub}
-              onPress={() => setSheet('sub')}
+              nilai={t.labelDari(t.opsiJenis, form.idJenis)}
+              galat={g.jenis}
+              nonaktif={t.jenisTerkunci}
+              onPress={() => setSheet('jenis')}
             />
-          ) : null}
-          {t.opsiArea.length > 0 ? (
-            <FieldPilihan label="Area" nilai={t.labelDari(t.opsiArea, form.idArea)} onPress={() => setSheet('area')} />
-          ) : null}
-        </View>
+            <FieldPilihan
+              label="Kategori Masalah"
+              wajib
+              nonaktif={!form.idJenis}
+              placeholder={form.idJenis ? 'Pilih kategori masalah' : 'Pilih jenis masalah dulu'}
+              nilai={t.labelDari(t.opsiKategori, form.idKategori)}
+              galat={g.kategori}
+              onPress={() => setSheet('kategori')}
+            />
+            {t.strokeAktif ? (
+              <FieldTeks
+                label="Jumlah Stroke"
+                nilai={form.stroke}
+                onUbah={(v) => t.ubah('stroke', v)}
+                keyboardType="decimal-pad"
+                placeholder="Pembacaan counter dies saat ini"
+                galat={g.stroke}
+              />
+            ) : null}
+          </View>
 
-        <Text style={styles.judulBagian}>Detail</Text>
-        <View style={styles.bagian}>
-          <View style={styles.field}>
-            <View style={gs.rowBetween}>
-              <Text style={styles.label}>
-                Detail Masalah<Text style={styles.wajib}> *</Text>
-              </Text>
-              <Text style={styles.hitung}>{form.detail.length}/{MAKS_DETAIL}</Text>
+          <Text style={styles.judulBagian}>Lokasi</Text>
+          <View style={styles.bagian}>
+            <FieldPilihan
+              label="Departemen"
+              wajib
+              nilai={t.labelDari(t.opsiDepartemen, form.idDepartemen)}
+              galat={g.departemen}
+              onPress={() => setSheet('departemen')}
+            />
+            {t.opsiSub.length > 0 ? (
+              <FieldPilihan
+                label="Sub Departemen"
+                wajib
+                nilai={t.labelDari(t.opsiSub, form.idSub)}
+                galat={g.sub}
+                onPress={() => setSheet('sub')}
+              />
+            ) : null}
+            {t.opsiArea.length > 0 ? (
+              <FieldPilihan label="Area" nilai={t.labelDari(t.opsiArea, form.idArea)} onPress={() => setSheet('area')} />
+            ) : null}
+          </View>
+
+          <Text style={styles.judulBagian}>Detail</Text>
+          <View style={styles.bagian}>
+            <View style={styles.field}>
+              <View style={gs.rowBetween}>
+                <Text style={styles.label}>
+                  Detail Masalah<Text style={styles.wajib}> *</Text>
+                </Text>
+                <Text style={styles.hitung}>{form.detail.length}/{MAKS_DETAIL}</Text>
+              </View>
+              <TextInput
+                style={[styles.input, styles.textArea, g.detail ? styles.inputGalat : null]}
+                placeholder="Jelaskan masalah: kapan terjadi, dampaknya, dan langkah yang sudah dicoba…"
+                placeholderTextColor={Colors.placeholder}
+                value={form.detail}
+                onChangeText={(v) => t.ubah('detail', v)}
+                multiline
+                maxLength={MAKS_DETAIL}
+              />
+              {g.detail ? <Text style={styles.galat}>{g.detail}</Text> : null}
             </View>
-            <TextInput
-              style={[styles.input, styles.textArea, g.detail ? styles.inputGalat : null]}
-              placeholder="Jelaskan masalah: kapan terjadi, dampaknya, dan langkah yang sudah dicoba…"
-              placeholderTextColor={Colors.placeholder}
-              value={form.detail}
-              onChangeText={(v) => t.ubah('detail', v)}
-              multiline
-              maxLength={MAKS_DETAIL}
-            />
-            {g.detail ? <Text style={styles.galat}>{g.detail}</Text> : null}
           </View>
-        </View>
 
-        <Text style={styles.judulBagian}>Foto</Text>
-        <View style={styles.bagian}>
-          {form.foto ? (
-            <TouchableOpacity style={styles.ubinFoto} activeOpacity={0.85} onPress={t.bukaEditorFoto}>
-              <Image source={{ uri: form.foto.uri }} style={styles.gambar} />
-              <TouchableOpacity style={styles.hapusFoto} onPress={t.hapusFoto} hitSlop={8} accessibilityLabel="Hapus foto">
-                <Icon name="close" size={14} color={Colors.white} />
+          <Text style={styles.judulBagian}>Foto</Text>
+          <View style={styles.bagian}>
+            {form.foto ? (
+              <TouchableOpacity style={styles.ubinFoto} activeOpacity={0.85} onPress={t.bukaEditorFoto}>
+                <Image source={{ uri: form.foto.uri }} style={styles.gambar} />
+                <TouchableOpacity style={styles.hapusFoto} onPress={t.hapusFoto} hitSlop={8} accessibilityLabel="Hapus foto">
+                  <Icon name="close" size={14} color={Colors.white} />
+                </TouchableOpacity>
               </TouchableOpacity>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={[styles.ubinFoto, styles.ubinTambah]} activeOpacity={0.8} onPress={() => setSheet('foto')}>
-              <Icon name="camera-plus-outline" size={22} color={brand[700]} />
-              <Text style={styles.teksSumber}>Upload foto</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={styles.ket}>Opsional. Tap foto untuk crop ulang. Foto membantu tim IT memahami masalahnya lebih cepat.</Text>
-        </View>
-
-        {t.galatServer ? (
-          <View style={styles.galatServer} accessibilityRole="alert">
-            <Icon name="alert-circle" size={18} color={Colors.danger} />
-            <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{t.galatServer}</Text>
+            ) : (
+              <TouchableOpacity style={[styles.ubinFoto, styles.ubinTambah]} activeOpacity={0.8} onPress={() => setSheet('foto')}>
+                <Icon name="camera-plus-outline" size={22} color={brand[700]} />
+                <Text style={styles.teksSumber}>Upload foto</Text>
+              </TouchableOpacity>
+            )}
+            <Text style={styles.ket}>Opsional. Tap foto untuk crop ulang. Foto membantu tim IT memahami masalahnya lebih cepat.</Text>
           </View>
-        ) : null}
-      </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-        <Button label="Kirim Tiket" iconRight="send" onPress={kirim} loading={t.mengirim} style={gs.flex1} />
-      </View>
+          {t.galatServer ? (
+            <View style={styles.galatServer} accessibilityRole="alert">
+              <Icon name="alert-circle" size={18} color={Colors.danger} />
+              <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{t.galatServer}</Text>
+            </View>
+          ) : null}
+        </ScrollView>
 
-      <SheetAset
-        visible={sheet === 'aset'}
-        q={cariAset.q}
-        onChangeQ={cariAset.setQ}
-        hasil={cariAset.hasil}
-        memuat={cariAset.memuat}
-        gagal={cariAset.gagal}
-        onPilih={(a) => t.ubah('aset', a)}
-        onClose={() => setSheet(null)}
-      />
-
-      <EditorFoto
-        visible={t.editorTerbuka}
-        fotos={t.fotoAtur ? [t.fotoAtur] : []}
-        tanpaTag
-        onBatal={t.batalFoto}
-        onSelesai={t.selesaiFoto}
-      />
-
-      <SheetPilihan visible={sheet === 'jenis'} judul="Jenis Masalah" opsi={t.opsiJenis} terpilih={form.idJenis} onPilih={(id) => t.ubah('idJenis', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'kategori'} judul="Kategori Masalah" opsi={t.opsiKategori} terpilih={form.idKategori} onPilih={(id) => t.ubah('idKategori', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={t.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => t.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'sub'} judul="Sub Departemen" opsi={t.opsiSub} terpilih={form.idSub} onPilih={(id) => t.ubah('idSub', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'area'} judul="Area" opsi={t.opsiArea} terpilih={form.idArea} bolehKosong onPilih={(id) => t.ubah('idArea', id ?? null)} onClose={() => setSheet(null)} />
-
-      <BottomSheet visible={sheet === 'foto'} onClose={() => setSheet(null)} title="Tambah Foto">
-        <View style={styles.pilihanFoto}>
-          <Button variant="outline" icon="camera" label="Ambil dari Kamera" onPress={() => ambilFoto('kamera')} block />
-          <Button variant="outline" icon="image" label="Pilih dari Galeri" onPress={() => ambilFoto('galeri')} block />
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <Button label="Kirim Tiket" iconRight="send" onPress={kirim} loading={t.mengirim} style={gs.flex1} />
         </View>
-      </BottomSheet>
-    </KeyboardAvoidingView>
+
+        <SheetAset
+          visible={sheet === 'aset'}
+          q={cariAset.q}
+          onChangeQ={cariAset.setQ}
+          hasil={cariAset.hasil}
+          memuat={cariAset.memuat}
+          gagal={cariAset.gagal}
+          onPilih={(a) => t.ubah('aset', a)}
+          onClose={() => setSheet(null)}
+        />
+
+        <EditorFoto
+          visible={t.editorTerbuka}
+          fotos={t.fotoAtur ? [t.fotoAtur] : []}
+          tanpaTag
+          onBatal={t.batalFoto}
+          onSelesai={t.selesaiFoto}
+        />
+
+        <SheetPilihan visible={sheet === 'jenis'} judul="Jenis Masalah" opsi={t.opsiJenis} terpilih={form.idJenis} onPilih={(id) => t.ubah('idJenis', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'kategori'} judul="Kategori Masalah" opsi={t.opsiKategori} terpilih={form.idKategori} onPilih={(id) => t.ubah('idKategori', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={t.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => t.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'sub'} judul="Sub Departemen" opsi={t.opsiSub} terpilih={form.idSub} onPilih={(id) => t.ubah('idSub', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'area'} judul="Area" opsi={t.opsiArea} terpilih={form.idArea} bolehKosong onPilih={(id) => t.ubah('idArea', id ?? null)} onClose={() => setSheet(null)} />
+
+        <BottomSheet visible={sheet === 'foto'} onClose={() => setSheet(null)} title="Tambah Foto">
+          <View style={styles.pilihanFoto}>
+            <Button variant="outline" icon="camera" label="Ambil dari Kamera" onPress={() => ambilFoto('kamera')} block />
+            <Button variant="outline" icon="image" label="Pilih dari Galeri" onPress={() => ambilFoto('galeri')} block />
+          </View>
+        </BottomSheet>
+      </KeyboardAvoidingView>
+    </Muncul>
   );
 }
 
 const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   judulBagian: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -277,7 +280,7 @@ const styles = StyleSheet.create({
   field: { marginBottom: Spacing.md },
   label: { fontSize: ukuranIsi, fontFamily: fonts.medium, color: Colors.textPrimary, marginBottom: 6 },
   wajib: { color: Colors.danger },
-  hitung: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary, marginBottom: 6 },
+  hitung: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary, marginBottom: 6 },
   input: {
     borderWidth: 1,
     borderColor: Colors.border,
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
   },
   textArea: { minHeight: 120, textAlignVertical: 'top' },
   inputGalat: { borderColor: Colors.danger },
-  galat: { marginTop: 4, fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { marginTop: 4, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',
     gap: Spacing.sm,
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
     borderColor: brand[200],
     backgroundColor: brand[50],
   },
-  teksSumber: { fontSize: 12, fontFamily: fonts.semibold, color: brand[700] },
+  teksSumber: { fontSize: ukuranIsi, fontFamily: fonts.semibold, color: brand[700] },
   gambar: { width: '100%', height: '100%' },
   hapusFoto: {
     position: 'absolute',
@@ -341,10 +344,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
   },
-  namaAset: { fontSize: 12, fontFamily: fonts.bold, color: Colors.textPrimary },
-  nomorAset: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: Colors.textSecondary },
-  ketAset: { fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
-  ket: { marginTop: Spacing.sm, fontSize: 12, fontFamily: fonts.regular, color: Colors.textTertiary },
+  namaAset: { fontSize: ukuranIsi, fontFamily: fonts.bold, color: Colors.textPrimary },
+  nomorAset: { marginTop: 2, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textSecondary },
+  ketAset: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
+  ket: { marginTop: Spacing.sm, fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.textTertiary },
   footer: {
     flexDirection: 'row',
     gap: Spacing.sm,

@@ -8,7 +8,7 @@ import BottomSheet from '../common/BottomSheet';
 import Button from '../common/Button';
 import Colors from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { KategoriAset } from '../../types/aset';
 
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   judulSeksi: {
     marginTop: Spacing.sm,
     fontSize: ukuranIsi,
-    fontFamily: fonts.semibold,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textPrimary,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', paddingTop: 6, paddingBottom: Spacing.sm, gap: 6 },

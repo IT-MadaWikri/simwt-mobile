@@ -11,7 +11,7 @@ import { Skeleton } from '../common/Skeleton';
 import LencanaStatusKeluarPabrik from './LencanaStatusKeluarPabrik';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { GerbangKeluarPabrik, HasilGerbang } from '../../types/layananHrd';
 import { LABEL_JENIS, formatDurasiMenit, formatRentangJam, formatTanggalKeluar, formatWaktuKeluarPabrik } from '../../adapters/keluarPabrik';
@@ -153,21 +153,21 @@ const styles = StyleSheet.create({
   },
   kepala: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   ikon: { width: 36, height: 36, borderRadius: 18, backgroundColor: brand[50], alignItems: 'center', justifyContent: 'center' },
-  nama: { fontFamily: fonts.bold, fontSize: 12, color: Colors.textPrimary },
-  nomor: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, marginTop: 1 },
+  nama: { fontFamily: fonts.bold, fontSize: ukuranIsi, color: Colors.textPrimary },
+  nomor: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary, marginTop: 1 },
   rincian: { marginTop: Spacing.md, rowGap: 6 },
   baris: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm },
-  teksBaris: { flex: 1, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  teksBaris: { flex: 1, fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary },
   catatan: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md },
   kotak: { flex: 1, padding: Spacing.sm, borderRadius: Spacing.radius.md, ...Spacing.curve, backgroundColor: slate[100] },
   kotakIsi: { backgroundColor: brand[50] },
   labelKotak: { fontFamily: fonts.regular, fontSize: 11, color: Colors.textTertiary },
-  waktuKotak: { fontFamily: fonts.semibold, fontSize: 12, color: Colors.textPrimary, marginTop: 1 },
+  waktuKotak: { fontFamily: fonts.semibold, fontSize: ukuranCatatan, color: Colors.textPrimary, marginTop: 1 },
   hasil: { flexDirection: 'row', gap: Spacing.sm, padding: Spacing.md, marginBottom: Spacing.md, borderRadius: Spacing.radius.lg, ...Spacing.curve },
-  judulHasil: { fontFamily: fonts.bold, fontSize: 12 },
-  pesanHasil: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, marginTop: 1 },
+  judulHasil: { fontFamily: fontsJudul.bold, fontSize: ukuranIsi },
+  pesanHasil: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary, marginTop: 1 },
   tombol: { marginTop: Spacing.lg },
   galat: { alignItems: 'center', paddingVertical: Spacing.xl },
-  teksGalat: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.md },
-  galatKecil: { fontFamily: fonts.regular, fontSize: 12, color: Colors.danger, marginTop: Spacing.sm },
+  teksGalat: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.md },
+  galatKecil: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.danger, marginTop: Spacing.sm },
 });

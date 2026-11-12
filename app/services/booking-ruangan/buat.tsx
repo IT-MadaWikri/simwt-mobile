@@ -23,11 +23,12 @@ import { SkeletonForm } from '../../../src/components/common/Skeleton';
 import { dialog } from '../../../src/components/common/AppDialog';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, fontsJudul, ukuranIsi } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { useBuatBooking } from '../../../src/hooks/useBuatBooking';
 import { kunciTanggal } from '../../../src/utils/kalender';
 import { JenisRapat } from '../../../src/types/booking';
+import Muncul from '../../../src/components/common/Muncul';
 
 type Sheet = 'plant' | 'ruangan' | 'departemen' | 'peserta' | null;
 
@@ -79,145 +80,147 @@ export default function BuatBookingScreen() {
   const g = diperiksa ? b.galat : {};
 
   return (
-    <KeyboardAvoidingView
-      style={[gs.screen, { backgroundColor: Colors.white }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
-      <AppBar judul="Buat Booking" />
+    <Muncul style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={[gs.screen, { backgroundColor: Colors.white }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+        <AppBar judul="Buat Booking" />
 
-      <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text style={styles.judulBagian}>Jenis Rapat</Text>
-        <View style={[styles.bagian, styles.jenis]}>
-          {JENIS.map((j) => {
-            const aktif = form.jenis === j.nilai;
-            return (
-              <TouchableOpacity
-                key={j.nilai}
-                style={[styles.chip, aktif && styles.chipAktif]}
-                activeOpacity={0.8}
-                onPress={() => b.ubah('jenis', j.nilai)}
-              >
-                <Text style={[styles.teksChip, aktif && styles.teksChipAktif]}>{j.label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        <Text style={styles.judulBagian}>Tempat</Text>
-        <View style={styles.bagian}>
-          {form.jenis !== 'luar' ? (
-            <FieldPilihan
-              label="Plant"
-              wajib
-              nilai={b.labelDari(b.opsiPlant, form.idPlant)}
-              galat={g.plant}
-              onPress={() => setSheet('plant')}
-            />
-          ) : null}
-          {form.jenis === 'offline' ? (
-            <FieldPilihan
-              label="Ruangan"
-              wajib
-              nonaktif={!form.idPlant}
-              placeholder={form.idPlant ? 'Pilih ruangan' : 'Pilih plant dulu'}
-              nilai={b.labelDari(b.opsiRuangan, form.idRuangan)}
-              galat={g.ruangan}
-              onPress={() => setSheet('ruangan')}
-            />
-          ) : null}
-          {form.jenis === 'online' ? (
-            <FieldTeks
-              label="Link Meeting"
-              wajib
-              nilai={form.linkMeeting}
-              onUbah={(t) => b.ubah('linkMeeting', t)}
-              galat={g.link}
-              keyboardType="url"
-              autoCapitalize="none"
-              placeholder="https://meet.google.com/…"
-            />
-          ) : null}
-          {form.jenis === 'luar' ? (
-            <FieldTeks
-              label="Lokasi"
-              wajib
-              nilai={form.lokasi}
-              onUbah={(t) => b.ubah('lokasi', t)}
-              galat={g.lokasi}
-              placeholder="Tempat rapat di luar perusahaan"
-            />
-          ) : null}
-        </View>
-
-        <Text style={styles.judulBagian}>Kegiatan</Text>
-        <View style={styles.bagian}>
-          <FieldTeks label="Nama Kegiatan" wajib nilai={form.namaKegiatan} onUbah={(t) => b.ubah('namaKegiatan', t)} galat={g.kegiatan} placeholder="Mis. Rapat evaluasi mingguan" />
-          <FieldTeks label="Nama Peminjam" wajib nilai={form.namaPeminjam} onUbah={(t) => b.ubah('namaPeminjam', t)} galat={g.peminjam} autoCapitalize="words" />
-          <FieldPilihan
-            label="Departemen"
-            wajib
-            nilai={b.labelDari(b.opsiDepartemen, form.idDepartemen)}
-            galat={g.departemen}
-            onPress={() => setSheet('departemen')}
-          />
-        </View>
-
-        <Text style={styles.judulBagian}>Waktu</Text>
-        <View style={styles.bagian}>
-          <View style={styles.baris}>
-            <FieldTanggal label="Tanggal" value={form.tanggal} onChange={(v) => v && b.ubah('tanggal', v)} />
-          </View>
-          <View style={styles.baris}>
-            <FieldJam label="Mulai" value={form.mulai} onChange={(v) => b.ubah('mulai', v)} />
-            <FieldJam label="Selesai" value={form.selesai} onChange={(v) => b.ubah('selesai', v)} />
-          </View>
-          {g.waktu ? <Text style={styles.galat}>{g.waktu}</Text> : null}
-        </View>
-
-        <View style={styles.kepalaBagian}>
-          <Text style={[styles.judulBagian, { marginBottom: 0 }]}>Peserta</Text>
-          <Button variant="outline" icon="plus" accessibilityLabel="Tambah peserta" onPress={() => setSheet('peserta')} />
-        </View>
-        {form.peserta.length > 0 ? (
-          <View style={[styles.bagian, { gap: Spacing.sm }]}>
-            {form.peserta.map((nama, i) => (
-              <View key={nama} style={styles.kartuPeserta}>
-                <Avatar nama={nama} ukuran={28} />
-                <Text style={styles.namaPeserta} numberOfLines={1}>{nama}</Text>
-                <TouchableOpacity hitSlop={8} onPress={() => b.hapusPeserta(i)} accessibilityLabel={`Hapus peserta ${nama}`}>
-                  <Icon name="close-circle" size={18} color={Colors.textTertiary} />
+        <ScrollView contentContainerStyle={styles.isi} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Text style={styles.judulBagian}>Jenis Rapat</Text>
+          <View style={[styles.bagian, styles.jenis]}>
+            {JENIS.map((j) => {
+              const aktif = form.jenis === j.nilai;
+              return (
+                <TouchableOpacity
+                  key={j.nilai}
+                  style={[styles.chip, aktif && styles.chipAktif]}
+                  activeOpacity={0.8}
+                  onPress={() => b.ubah('jenis', j.nilai)}
+                >
+                  <Text style={[styles.teksChip, aktif && styles.teksChipAktif]}>{j.label}</Text>
                 </TouchableOpacity>
-              </View>
-            ))}
+              );
+            })}
           </View>
-        ) : null}
 
-        {b.galatServer ? (
-          <View style={styles.galatServer} accessibilityRole="alert">
-            <Icon name="alert-circle" size={18} color={Colors.danger} />
-            <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{b.galatServer}</Text>
+          <Text style={styles.judulBagian}>Tempat</Text>
+          <View style={styles.bagian}>
+            {form.jenis !== 'luar' ? (
+              <FieldPilihan
+                label="Plant"
+                wajib
+                nilai={b.labelDari(b.opsiPlant, form.idPlant)}
+                galat={g.plant}
+                onPress={() => setSheet('plant')}
+              />
+            ) : null}
+            {form.jenis === 'offline' ? (
+              <FieldPilihan
+                label="Ruangan"
+                wajib
+                nonaktif={!form.idPlant}
+                placeholder={form.idPlant ? 'Pilih ruangan' : 'Pilih plant dulu'}
+                nilai={b.labelDari(b.opsiRuangan, form.idRuangan)}
+                galat={g.ruangan}
+                onPress={() => setSheet('ruangan')}
+              />
+            ) : null}
+            {form.jenis === 'online' ? (
+              <FieldTeks
+                label="Link Meeting"
+                wajib
+                nilai={form.linkMeeting}
+                onUbah={(t) => b.ubah('linkMeeting', t)}
+                galat={g.link}
+                keyboardType="url"
+                autoCapitalize="none"
+                placeholder="https://meet.google.com/…"
+              />
+            ) : null}
+            {form.jenis === 'luar' ? (
+              <FieldTeks
+                label="Lokasi"
+                wajib
+                nilai={form.lokasi}
+                onUbah={(t) => b.ubah('lokasi', t)}
+                galat={g.lokasi}
+                placeholder="Tempat rapat di luar perusahaan"
+              />
+            ) : null}
           </View>
-        ) : null}
-      </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-        <Button label="Ajukan Booking" iconRight="send" onPress={kirim} loading={b.mengirim} style={gs.flex1} />
-      </View>
+          <Text style={styles.judulBagian}>Kegiatan</Text>
+          <View style={styles.bagian}>
+            <FieldTeks label="Nama Kegiatan" wajib nilai={form.namaKegiatan} onUbah={(t) => b.ubah('namaKegiatan', t)} galat={g.kegiatan} placeholder="Mis. Rapat evaluasi mingguan" />
+            <FieldTeks label="Nama Peminjam" wajib nilai={form.namaPeminjam} onUbah={(t) => b.ubah('namaPeminjam', t)} galat={g.peminjam} autoCapitalize="words" />
+            <FieldPilihan
+              label="Departemen"
+              wajib
+              nilai={b.labelDari(b.opsiDepartemen, form.idDepartemen)}
+              galat={g.departemen}
+              onPress={() => setSheet('departemen')}
+            />
+          </View>
 
-      <SheetPilihan visible={sheet === 'plant'} judul="Plant" opsi={b.opsiPlant} terpilih={form.idPlant} onPilih={(id) => b.ubah('idPlant', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'ruangan'} judul="Ruangan" opsi={b.opsiRuangan} terpilih={form.idRuangan} onPilih={(id) => b.ubah('idRuangan', id)} onClose={() => setSheet(null)} />
-      <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={b.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => b.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
-      <SheetKaryawan visible={sheet === 'peserta'} judul="Tambah Peserta" onClose={() => setSheet(null)} onPilih={(k) => b.tambahPeserta(k.nama)} />
-    </KeyboardAvoidingView>
+          <Text style={styles.judulBagian}>Waktu</Text>
+          <View style={styles.bagian}>
+            <View style={styles.baris}>
+              <FieldTanggal label="Tanggal" value={form.tanggal} onChange={(v) => v && b.ubah('tanggal', v)} />
+            </View>
+            <View style={styles.baris}>
+              <FieldJam label="Mulai" value={form.mulai} onChange={(v) => b.ubah('mulai', v)} />
+              <FieldJam label="Selesai" value={form.selesai} onChange={(v) => b.ubah('selesai', v)} />
+            </View>
+            {g.waktu ? <Text style={styles.galat}>{g.waktu}</Text> : null}
+          </View>
+
+          <View style={styles.kepalaBagian}>
+            <Text style={[styles.judulBagian, { marginBottom: 0 }]}>Peserta</Text>
+            <Button variant="outline" icon="plus" accessibilityLabel="Tambah peserta" onPress={() => setSheet('peserta')} />
+          </View>
+          {form.peserta.length > 0 ? (
+            <View style={[styles.bagian, { gap: Spacing.sm }]}>
+              {form.peserta.map((nama, i) => (
+                <View key={nama} style={styles.kartuPeserta}>
+                  <Avatar nama={nama} ukuran={28} />
+                  <Text style={styles.namaPeserta} numberOfLines={1}>{nama}</Text>
+                  <TouchableOpacity hitSlop={8} onPress={() => b.hapusPeserta(i)} accessibilityLabel={`Hapus peserta ${nama}`}>
+                    <Icon name="close-circle" size={18} color={Colors.textTertiary} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {b.galatServer ? (
+            <View style={styles.galatServer} accessibilityRole="alert">
+              <Icon name="alert-circle" size={18} color={Colors.danger} />
+              <Text style={[gs.bodySm, gs.flex1, { color: Colors.dangerDark }]}>{b.galatServer}</Text>
+            </View>
+          ) : null}
+        </ScrollView>
+
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <Button label="Ajukan Booking" iconRight="send" onPress={kirim} loading={b.mengirim} style={gs.flex1} />
+        </View>
+
+        <SheetPilihan visible={sheet === 'plant'} judul="Plant" opsi={b.opsiPlant} terpilih={form.idPlant} onPilih={(id) => b.ubah('idPlant', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'ruangan'} judul="Ruangan" opsi={b.opsiRuangan} terpilih={form.idRuangan} onPilih={(id) => b.ubah('idRuangan', id)} onClose={() => setSheet(null)} />
+        <SheetPilihan visible={sheet === 'departemen'} judul="Departemen" opsi={b.opsiDepartemen} terpilih={form.idDepartemen} onPilih={(id) => b.ubah('idDepartemen', id)} onClose={() => setSheet(null)} />
+        <SheetKaryawan visible={sheet === 'peserta'} judul="Tambah Peserta" onClose={() => setSheet(null)} onPilih={(k) => b.tambahPeserta(k.nama)} />
+      </KeyboardAvoidingView>
+    </Muncul>
   );
 }
 
 const styles = StyleSheet.create({
   isi: { padding: Spacing.lg, paddingBottom: Spacing.xxl },
   judulBagian: {
-    fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontSize: ukuranIsi,
+    fontFamily: fontsJudul.semibold,
     color: Colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -253,7 +256,7 @@ const styles = StyleSheet.create({
     backgroundColor: slate[50],
   },
   namaPeserta: { flex: 1, fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  galat: { fontSize: 12, fontFamily: fonts.regular, color: Colors.danger },
+  galat: { fontSize: ukuranIsi, fontFamily: fonts.regular, color: Colors.danger },
   galatServer: {
     flexDirection: 'row',
     gap: Spacing.sm,

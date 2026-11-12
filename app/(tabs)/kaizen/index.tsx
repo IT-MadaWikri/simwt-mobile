@@ -15,11 +15,12 @@ import RekapBulan from '../../../src/components/kaizen/RekapBulan';
 import BannerAksi from '../../../src/components/common/BannerAksi';
 import ServiceIcon from '../../../src/components/common/ServiceIcon';
 import SectionHeader from '../../../src/components/common/SectionHeader';
+import Muncul from '../../../src/components/common/Muncul';
 import { Skeleton, SkeletonBaris } from '../../../src/components/common/Skeleton';
 import Lencana from '../../../src/components/common/Lencana';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs } from '../../../constants/GlobalStyles';
 import { ServiceItem } from '../../../constants/Services';
 import { useAuth } from '../../../src/contexts/AuthContext';
@@ -102,7 +103,7 @@ export default function MenuKaizenScreen() {
         </View>
 
         {(bisaApprove && menunggu > 0) || jumlahDraf > 0 ? (
-        <View style={styles.bagian}>
+        <View>
           {bisaApprove && menunggu > 0 ? (
             <BannerAksi
               tokoh="putra"
@@ -138,6 +139,7 @@ export default function MenuKaizenScreen() {
             </View>
           </View>
         ) : (
+          <Muncul>
           <View style={styles.bagian}>
             <SectionHeader title="Ringkasan" />
             <View style={[gs.card, styles.kartuRingkas]}>
@@ -167,6 +169,7 @@ export default function MenuKaizenScreen() {
               ) : null}
             </View>
           </View>
+          </Muncul>
         )}
 
         <View style={styles.bagian}>
@@ -176,7 +179,7 @@ export default function MenuKaizenScreen() {
           ) : terbaru.length === 0 ? (
             <Text style={[gs.emptyText, gs.containerX]}>Belum ada Kaizen. Ajukan ide perbaikan pertamamu.</Text>
           ) : (
-            terbaru.map((k, i) => {
+            <Muncul>{terbaru.map((k, i) => {
               const warna = warnaStatus(k.status);
               const tgl = new Date(k.created_at);
               return (
@@ -198,7 +201,7 @@ export default function MenuKaizenScreen() {
                   </TouchableOpacity>
                 </View>
               );
-            })
+            })}</Muncul>
           )}
         </View>
         <View style={styles.bagian}>
@@ -208,7 +211,7 @@ export default function MenuKaizenScreen() {
             ) : hadiahBaru.length === 0 ? (
               <Text style={[gs.emptyText, gs.containerX]}>Belum ada hadiah untuk plant kamu.</Text>
             ) : (
-              hadiahBaru.map((g, i) => {
+              <Muncul>{hadiahBaru.map((g, i) => {
                 const foto = g.gambar_url ?? urlFoto(g.gambar);
                 return (
                   <View key={g.id}>
@@ -232,7 +235,7 @@ export default function MenuKaizenScreen() {
                     </TouchableOpacity>
                   </View>
                 );
-              })
+              })}</Muncul>
             )}
         </View>
 
@@ -244,12 +247,14 @@ export default function MenuKaizenScreen() {
 
 const styles = StyleSheet.create({
   grid: {
+    // Baris ikon membawa margin bawah sendiri; dibatalkan agar jarak antar section rata.
+    marginBottom: -Spacing.xl,
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: Spacing.md,
   },
   bagian: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.sectionGap,
   },
   kartuRingkas: {
     marginHorizontal: Spacing.lg,
@@ -269,12 +274,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
     color: Colors.textTertiary,
   },
   nilaiPoin: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: Colors.textPrimary,
   },
@@ -286,7 +291,7 @@ const styles = StyleSheet.create({
     ...Spacing.curve,
   },
   teksPil: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.regular,
   },
   fotoHadiah: {
@@ -306,7 +311,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   hargaHadiah: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.bold,
     color: brand[700],
   },
@@ -335,13 +340,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tema: {
-    fontSize: 12,
+    fontSize: ukuranIsi,
     fontFamily: fonts.semibold,
     color: Colors.textPrimary,
   },
   sub: {
     marginTop: 2,
-    fontSize: 12,
+    fontSize: ukuranCatatan,
     fontFamily: fonts.regular,
     color: Colors.textSecondary,
   },

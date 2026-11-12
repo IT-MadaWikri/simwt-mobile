@@ -14,7 +14,7 @@ import Avatar from './Avatar';
 import Icon from './Icon';
 import Colors, { brand, slate } from '../../../constants/Colors';
 import Spacing from '../../../constants/Spacing';
-import { fonts, ukuranIsi } from '../../../constants/Typography';
+import { fonts, ukuranIsi, ukuranCatatan } from '../../../constants/Typography';
 import { gs, inputReset } from '../../../constants/GlobalStyles';
 
 export interface ItemCari {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     ...inputReset,
   },
   isi: { paddingHorizontal: Spacing.lg },
-  info: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textTertiary, paddingVertical: Spacing.lg, textAlign: 'center' },
+  info: { fontFamily: fonts.regular, fontSize: ukuranIsi, color: Colors.textTertiary, paddingVertical: Spacing.lg, textAlign: 'center' },
   baris: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   lingkar: {
     width: UKURAN_LINGKAR,
@@ -164,5 +164,5 @@ const styles = StyleSheet.create({
     borderBottomColor: slate[200],
   },
   nama: { fontFamily: fonts.semibold, fontSize: ukuranIsi, color: Colors.textPrimary },
-  sub: { marginTop: 2, fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  sub: { marginTop: 2, fontFamily: fonts.regular, fontSize: ukuranCatatan, color: Colors.textSecondary },
 });
