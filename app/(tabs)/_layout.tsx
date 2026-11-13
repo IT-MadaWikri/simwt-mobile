@@ -184,6 +184,14 @@ export default function TabLayout() {
           tabBarStyle: { display: 'none' },
         }}
       />
+      <Tabs.Screen
+        name="sesi-perangkat"
+        options={{
+          href: null,
+          title: 'Perangkat & Sesi',
+          tabBarStyle: { display: 'none' },
+        }}
+      />
       {/* Notifikasi bukan tab lagi — dibuka dari ikon lonceng di beranda. */}
       <Tabs.Screen
         name="notification"

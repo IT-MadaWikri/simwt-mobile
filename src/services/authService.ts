@@ -6,6 +6,7 @@ import api from './api';
 import { API_CONFIG } from '../../constants/Api';
 import { LoginRequest, LoginResponse, User } from '../types';
 import { storage } from '../utils/storage';
+import { labelPerangkat } from './sesiService';
 
 export const authService = {
   /**
@@ -16,7 +17,7 @@ export const authService = {
     try {
       const response = await api.post<LoginResponse>(
         API_CONFIG.ENDPOINTS.LOGIN,
-        credentials
+        { ...credentials, perangkat: labelPerangkat() }
       );
 
       const data = response.data;
