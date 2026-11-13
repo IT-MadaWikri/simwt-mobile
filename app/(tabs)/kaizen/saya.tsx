@@ -6,7 +6,6 @@
  * "Buat Kaizen". Isinya hanya Kaizen milik akun yang login (dibatasi server,
  * `GET /kaizen/list`). Urutan dipilih dari ikon di app bar.
  */
-import LencanaAngka from '../../../src/components/common/LencanaAngka';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -56,6 +55,8 @@ const STATUS: Opsi[] = [
 // Lencana arah Kaizen: kategori PQCDSM dengan total nilai manfaat terbesar.
 // Disembunyikan sementara; ubah ke true untuk menampilkannya lagi.
 const TAMPILKAN_LENCANA = false;
+// Kartu Top 5 Karyawan & Departemen. Disembunyikan sementara; ubah ke true untuk menampilkannya lagi.
+const TAMPILKAN_TOP = false;
 // warna: [terang (bingkai), utama (muka), gelap (sisi & ikon)] — gaya koin Duolingo, warna rata tanpa gradasi.
 const PQCDSM = Object.keys(LENCANA);
 
@@ -172,11 +173,11 @@ export default function KaizenSaya() {
 
   // Menu lain di bar bawah. Sheet ditutup dulu sebelum aksi supaya dua sheet tidak bertumpuk.
   const MENU = [
-    { ikon: 'gift', label: 'Redeem Hadiah', warna: ['#fb923c', '#f97316'] as const, aksi: () => router.push('/kaizen/redeem') },
+    { ikon: 'gift', label: 'Redeem Hadiah', warna: '#f97316', aksi: () => router.push('/kaizen/redeem') },
     {
       ikon: 'file-document',
       label: 'Draft Kaizen Anda',
-      warna: ['#60a5fa', '#3b82f6'] as const,
+      warna: '#3b82f6',
       jumlah: jumlahDraf,
       aksi: () => router.push('/kaizen/draf'),
     },
@@ -314,7 +315,7 @@ export default function KaizenSaya() {
                     </TouchableOpacity>
                   </View>
                 ) : null}
-                {top ? (
+                {TAMPILKAN_TOP && top ? (
                   // Dua kartu sejajar, digeser mendatar; snap per kartu. Bleed ke tepi layar (induk berpadding lg).
                   <ScrollView
                     horizontal
@@ -392,15 +393,15 @@ export default function KaizenSaya() {
                 m.aksi();
               }}
             >
-              <LinearGradient colors={m.warna} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.isiUbin}>
-                <View style={styles.lingkarIkon}>
-                  <Icon name={m.ikon} size={18} color={Colors.white} strokeWidth={1.8} />
+              <View style={styles.isiUbin}>
+                <View style={[styles.lingkarIkon, { backgroundColor: `${m.warna}1A` }]}>
+                  <Icon name={m.ikon} size={18} color={m.warna} strokeWidth={1.8} />
                 </View>
                 <Text style={[styles.labelUbin, gs.flex1]}>{m.label}</Text>
-                {'jumlah' in m ? (
-                  <LencanaAngka jumlah={m.jumlah ?? 0} ukuran={24} warna={Colors.white} teks={Colors.textPrimary} style={styles.jumlahUbin} />
-                ) : null}
-              </LinearGradient>
+                {'jumlah' in m ? <Text style={styles.jumlahUbin}>{m.jumlah ?? 0}</Text> : null}
+                <Icon name="chevron-right" size={18} color={Colors.textTertiary} />
+
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -601,7 +602,7 @@ const styles = StyleSheet.create({
     paddingLeft: Spacing.md,
     paddingRight: Spacing.sm,
     minHeight: 44,
-    borderRadius: Spacing.radius.full,
+    borderRadius: Spacing.radius.md,
     ...Spacing.curve,
     borderWidth: 1,
     marginBottom: Spacing.md,
@@ -799,12 +800,6 @@ const styles = StyleSheet.create({
   },
   profil: {
     marginBottom: Spacing.md,
-    padding: Spacing.md,
-    borderRadius: Spacing.radius.xl,
-    ...Spacing.curve,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
   },
   namaProfil: {
     fontSize: ukuranIsi,
@@ -853,9 +848,10 @@ const styles = StyleSheet.create({
   },
   pilHutang: {
     marginTop: Spacing.sm,
-    borderRadius: Spacing.radius.full,
+    borderRadius: Spacing.radius.md,
+    ...Spacing.curve,
     paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
+    paddingVertical: Spacing.sm,
     alignItems: 'center',
   },
   teksPilHutang: {
@@ -932,8 +928,11 @@ const styles = StyleSheet.create({
   ubinMenu: {
     width: '100%',
     height: 52,
-    borderRadius: Spacing.radius.full,
+    borderRadius: Spacing.radius.lg,
     ...Spacing.curve,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.white,
     overflow: 'hidden',
   },
   isiUbin: {
@@ -948,17 +947,18 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.22)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   labelUbin: {
     fontSize: ukuranIsi,
-    fontFamily: fonts.bold,
-    color: Colors.white,
+    fontFamily: fonts.regular,
+    color: Colors.textPrimary,
     textAlign: 'left',
   },
   jumlahUbin: {
-    marginRight: Spacing.xs,
+    fontSize: ukuranIsi,
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary,
   },
 });
