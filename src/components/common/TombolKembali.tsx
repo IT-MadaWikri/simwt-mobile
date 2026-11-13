@@ -28,6 +28,8 @@ interface TombolKembaliProps {
   ikon?: string;
   /** Latar lingkaran putih — untuk header transparan yang menimpa konten. */
   lingkaran?: boolean;
+  /** Menggantikan aksi mundur bawaan (mis. menutup sub-tampilan di dalam satu layar). */
+  onPress?: () => void;
 }
 
 export default function TombolKembali({
@@ -35,12 +37,13 @@ export default function TombolKembali({
   cadangan = '/(tabs)',
   ikon = 'chevron-left',
   lingkaran = false,
+  onPress,
 }: TombolKembaliProps) {
   const router = useRouter();
 
   return (
     <TouchableOpacity
-      onPress={() => (router.canGoBack() ? router.back() : router.replace(cadangan as any))}
+      onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.replace(cadangan as any)))}
       style={lingkaran ? styles.lingkaran : { paddingRight: Spacing.md, paddingVertical: Spacing.xs }}
       accessibilityRole="button"
       accessibilityLabel={ikon === 'close' ? 'Tutup' : 'Kembali'}

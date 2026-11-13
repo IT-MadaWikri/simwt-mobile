@@ -11,7 +11,7 @@ import { fonts, ukuranIsi } from '../../../constants/Typography';
 import { inputReset } from '../../../constants/GlobalStyles';
 
 interface FieldTeksProps
-  extends Pick<TextInputProps, 'keyboardType' | 'autoCapitalize' | 'autoComplete' | 'placeholder' | 'editable' | 'multiline'> {
+  extends Pick<TextInputProps, 'keyboardType' | 'autoCapitalize' | 'autoComplete' | 'placeholder' | 'editable' | 'multiline' | 'maxLength'> {
   label: string;
   nilai: string;
   onUbah: (teks: string) => void;

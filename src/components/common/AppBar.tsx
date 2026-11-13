@@ -45,13 +45,16 @@ interface AppBarProps {
   tanpaKembali?: boolean;
   /** Header menimpa konten (tanpa judul, tombol kembali gelap) — untuk layar yang diawali gambar penuh. */
   transparan?: boolean;
+  /** Menggantikan aksi tombol kembali (mis. menutup sub-tampilan di dalam layar yang sama). */
+  onKembali?: () => void;
 }
 
-export default function AppBar({ judul, kanan, tanpaKembali, transparan }: AppBarProps) {
+export default function AppBar({ judul, kanan, tanpaKembali, transparan, onKembali }: AppBarProps) {
   return (
     <Stack.Screen
       options={{
         ...(tanpaKembali ? gayaAppBar : opsiAppBar),
+        ...(onKembali && { headerLeft: () => <TombolKembali onPress={onKembali} /> }),
         title: judul,
         headerRight: kanan ? () => kanan : undefined,
         ...(transparan && {

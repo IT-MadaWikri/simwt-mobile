@@ -1,24 +1,25 @@
 /**
- * Setelan — avatar & identitas di tengah, kartu ajakan biometrik, lalu menu
- * dalam kelompok kartu putih. Logika biometrik & keluar ada di sini; tampilan
- * barisnya di `profil/BarisSetelan`.
+ * Setelan — bar judul putih, kartu profil (avatar, nama, email, "Edit Profil"),
+ * lalu menu dalam kelompok kartu putih berjudul di atas latar abu muda. Logika
+ * biometrik & keluar ada di sini; tampilan barisnya di `profil/BarisSetelan`.
  */
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import KartuPromo from '../../src/components/common/KartuPromo';
+import Icon from '../../src/components/common/Icon';
 import BarisSetelan from '../../src/components/profil/BarisSetelan';
 import Avatar from '../../src/components/common/Avatar';
 import { biometric } from '../../src/utils/biometric';
-import Colors, { gradasiLembut } from '../../constants/Colors';
+import Colors, { brand, slate } from '../../constants/Colors';
 import Spacing from '../../constants/Spacing';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { fonts, fontsJudul, ukuranIsi } from '../../constants/Typography';
+import { fonts, fontsJudul, ukuranCatatan, ukuranIsi } from '../../constants/Typography';
 import { dialog } from '../../src/components/common/AppDialog';
 import Button from '../../src/components/common/Button';
 import { versiAplikasi } from '../../src/utils/versiAplikasi';
+
+const URL_KEBIJAKAN_PRIVASI = 'https://madawikri.co.id/kebijakan-privasi';
 
 export default function ProfileScreen() {
   const { user, logout, login } = useAuth();
@@ -116,81 +117,75 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Latar atas: gradasi lembut yang memudar ke warna halaman. */}
-      <LinearGradient
-        colors={[...gradasiLembut]}
-        start={{ x: 0, y: 0.5 }}
-        end={{ x: 1, y: 0.5 }}
-        style={styles.latarAtas}
-      />
-      <LinearGradient
-        colors={['rgba(255,255,255,0)', Colors.background]}
-        pointerEvents="none"
-        style={styles.latarAtas}
-      />
-
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + Spacing.md }]}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={[styles.bar, { paddingTop: insets.top }]}>
         <Text style={styles.judulHalaman}>Setelan</Text>
+      </View>
 
-        <View style={styles.identitas}>
-          <Avatar nama={nama} foto={user?.avatar} ukuran={88} style={styles.avatar} />
-          {/* Sapaan besar di beranda juga pengecualian 12px; nama di sini 20. */}
-          <Text style={styles.nama} numberOfLines={1}>{nama}</Text>
-          <Text style={styles.email} numberOfLines={1}>{user?.email || 'email@mwtpart.co.id'}</Text>
-        </View>
-
-        <View style={styles.menuContainer}>
-          {!isBiometricEnabled ? (
-            <KartuPromo
-              ikon="fingerprint"
-              label={`Aktifkan ${namaBiometrik}`}
-              onPress={() => toggleBiometric(true)}
-            />
-          ) : null}
-
-          <View style={styles.kelompok}>
-            <BarisSetelan
-              ikon="account-cog-outline"
-              label="Kelola profil"
-              onPress={() => router.push('/(tabs)/edit-profile')}
-              terakhir={!isBiometricEnabled}
-            />
-            {/* Belum aktif → kartu ajakan di atas; sudah aktif → sakelar ini, untuk mematikannya. */}
-            {isBiometricEnabled ? (
-              <BarisSetelan
-                ikon="fingerprint"
-                label={`Masuk dengan ${namaBiometrik}`}
-                sakelar={{ aktif: true, onUbah: toggleBiometric }}
-                terakhir
-              />
-            ) : null}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.kartuProfil}>
+          <Avatar nama={nama} foto={user?.avatar} ukuran={48} />
+          <View style={styles.infoProfil}>
+            <Text style={styles.nama} numberOfLines={1}>{nama}</Text>
+            <Text style={styles.email} numberOfLines={1}>{user?.email || 'email@mwtpart.co.id'}</Text>
+            <TouchableOpacity style={styles.tautan} onPress={() => router.push('/(tabs)/edit-profile')} hitSlop={8}>
+              <Icon name="pencil" size={13} color={brand[700]} />
+              <Text style={styles.teksTautan}>Edit Profil</Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.kelompok}>
-            <BarisSetelan
-              ikon="help-circle-outline"
-              label="Pusat bantuan"
-              onPress={() => dialog.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')}
-            />
-            <BarisSetelan
-              ikon="information-outline"
-              label="Tentang aplikasi"
-              nilai={`v${versiAplikasi}`}
-              onPress={() => dialog.alert('SIMWT Mobile', `Versi ${versiAplikasi}\nDikembangkan oleh IT Mada Wikri Tunggal.\n\nIkon layanan: Streamline Flex oleh Streamline (streamlinehq.com), lisensi CC BY 4.0.`)}
-              terakhir
-            />
-          </View>
-
           <Button
             variant="dangerOutline"
             icon="logout"
-            label="Keluar dari Aplikasi"
             onPress={handleLogout}
             loading={loadingLogout}
-            block
+            accessibilityLabel="Keluar dari Aplikasi"
+          />
+        </View>
+
+        <Text style={styles.judulKelompok}>Akun</Text>
+        <View style={styles.kelompok}>
+          <BarisSetelan
+            ikon="account-cog-outline"
+            label="Kelola profil"
+            onPress={() => router.push('/(tabs)/edit-profile')}
+          />
+          <BarisSetelan
+            ikon="fingerprint"
+            label={`Masuk dengan ${namaBiometrik}`}
+            sakelar={{ aktif: isBiometricEnabled, onUbah: toggleBiometric }}
+          />
+          <BarisSetelan
+            ikon="cellphone"
+            label="Perangkat & sesi"
+            onPress={() => router.push('/(tabs)/sesi-perangkat')}
+            terakhir
+          />
+        </View>
+
+        <Text style={styles.judulKelompok}>Dukungan</Text>
+        <View style={styles.kelompok}>
+          <BarisSetelan
+            ikon="help-circle-outline"
+            label="Pusat bantuan"
+            onPress={() => dialog.alert('Pusat Bantuan', 'Silakan hubungi tim IT (Ext. 123) untuk bantuan.')}
+          />
+          <BarisSetelan
+            ikon="shield-lock-outline"
+            label="Kebijakan privasi"
+            onPress={() =>
+              Linking.openURL(URL_KEBIJAKAN_PRIVASI).catch(() =>
+                dialog.alert('Gagal Membuka', 'Tautan tidak bisa dibuka di browser.', 'danger')
+              )
+            }
+          />
+          <BarisSetelan
+            ikon="information-outline"
+            label="Tentang aplikasi"
+            nilai={`v${versiAplikasi}`}
+            onPress={() => dialog.alert('SIMWT Mobile', `Versi ${versiAplikasi}
+Dikembangkan oleh IT Mada Wikri Tunggal.
+
+Ikon layanan: Streamline Flex oleh Streamline (streamlinehq.com), lisensi CC BY 4.0.`)}
+            terakhir
           />
         </View>
 
@@ -206,64 +201,76 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: slate[100],
   },
-  latarAtas: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 260,
-  },
-  scrollContent: {
-    paddingBottom: Spacing.xxxl * 2,
+  bar: {
+    backgroundColor: Colors.white,
   },
   judulHalaman: {
+    height: 56,
     textAlign: 'center',
+    textAlignVertical: 'center',
     fontFamily: fontsJudul.bold,
-    fontSize: ukuranIsi,
+    fontSize: 18,
     color: Colors.textPrimary,
-    marginBottom: Spacing.lg,
   },
-  identitas: {
+  scrollContent: {
+    padding: Spacing.lg,
+    paddingBottom: Spacing.xxxl * 2,
+  },
+  kartuProfil: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.xl,
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    backgroundColor: Colors.white,
+    borderRadius: Spacing.radius.xl,
+    ...Spacing.curve,
   },
-  avatar: {
-    borderWidth: 3,
-    borderColor: Colors.white,
+  infoProfil: {
+    flex: 1,
   },
   nama: {
-    marginTop: Spacing.md,
     fontFamily: fonts.bold,
-    fontSize: 20,
+    fontSize: 16,
     color: Colors.textPrimary,
   },
   email: {
-    marginTop: 2,
     fontFamily: fonts.regular,
     fontSize: ukuranIsi,
     color: Colors.textTertiary,
   },
-  menuContainer: {
-    paddingHorizontal: Spacing.lg,
+  tautan: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 4,
+    marginTop: Spacing.xs,
+  },
+  teksTautan: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: brand[700],
+  },
+  judulKelompok: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    fontFamily: fonts.medium,
+    fontSize: ukuranIsi,
+    color: Colors.textSecondary,
   },
   kelompok: {
     backgroundColor: Colors.white,
     borderRadius: Spacing.radius.xl,
     ...Spacing.curve,
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
     overflow: 'hidden',
-    marginBottom: Spacing.lg,
   },
   footer: {
     alignItems: 'center',
     paddingTop: Spacing.xl,
   },
   footerText: {
-    fontSize: ukuranIsi,
+    fontSize: ukuranCatatan,
     color: Colors.textTertiary,
     fontFamily: fonts.medium,
     marginTop: 4,

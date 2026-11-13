@@ -13,6 +13,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Ambil ulang profil dari server (mis. setelah email diubah). */
+  muatUlangUser: () => Promise<void>;
   error: string | null;
   clearError: () => void;
 }
@@ -88,6 +90,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const muatUlangUser = useCallback(async () => {
+    const freshUser = await authService.getProfile();
+    setUser(freshUser);
+    await storage.setUser(freshUser);
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -101,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!token,
         login,
         logout,
+        muatUlangUser,
         error,
         clearError,
       }}
