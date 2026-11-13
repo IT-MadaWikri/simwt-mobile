@@ -258,7 +258,8 @@ const styles = StyleSheet.create({
   },
   kartuRingkas: {
     marginHorizontal: Spacing.lg,
-    padding: Spacing.md,
+    padding: 0,
+    borderWidth: 0,
   },
   barisPoin: {
     flexDirection: 'row',
@@ -286,8 +287,8 @@ const styles = StyleSheet.create({
   pil: {
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderRadius: Spacing.radius.full,
+    paddingVertical: Spacing.sm,
+    borderRadius: Spacing.radius.md,
     ...Spacing.curve,
   },
   teksPil: {

@@ -117,8 +117,8 @@ export default function SheetBooking({
 
           {onBukaLink ? <Button variant="outline" icon="open-in-new" label="Buka Link Meeting" onPress={onBukaLink} block /> : null}
           <View style={styles.barisTombol}>
-            <Button variant="outline" icon="calendar" label="Tambah ke Kalender" onPress={onTambahKalender} style={gs.flex1} />
-            <Button icon="share-variant" label="Bagikan Undangan" onPress={onBagikan} style={gs.flex1} />
+            <Button variant="outline" icon="calendar" label="Kalender" onPress={onTambahKalender} style={gs.flex1} />
+            <Button icon="share-variant" label="Bagikan" onPress={onBagikan} style={gs.flex1} />
           </View>
         </View>
       </BottomSheet>
