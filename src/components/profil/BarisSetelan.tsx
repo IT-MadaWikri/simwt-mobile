@@ -1,6 +1,6 @@
 /**
  * BarisSetelan — satu baris menu setelan: ikon, label, lalu di kanan salah
- * satu dari tombol panah bulat, nilai singkat, atau sakelar.
+ * satu dari nilai singkat + chevron, atau sakelar.
  */
 import { Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Icon from '../common/Icon';
@@ -28,7 +28,7 @@ export default function BarisSetelan({ ikon, label, nilai, onPress, sakelar, ter
       disabled={!onPress}
       onPress={onPress}
     >
-      <Icon name={ikon as any} size={20} color={Colors.ink} />
+      <Icon name={ikon as any} size={20} color={Colors.textSecondary} />
       <Text style={styles.label} numberOfLines={2}>{label}</Text>
       {sakelar ? (
         <Switch
@@ -40,9 +40,7 @@ export default function BarisSetelan({ ikon, label, nilai, onPress, sakelar, ter
       ) : (
         <>
           {nilai ? <Text style={styles.nilai}>{nilai}</Text> : null}
-          <View style={styles.panah}>
-            <Icon name="arrow-right" size={14} color={Colors.ink} />
-          </View>
+          <Icon name="chevron-right" size={18} color={Colors.textTertiary} />
         </>
       )}
     </TouchableOpacity>
@@ -72,15 +70,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: ukuranIsi,
     color: Colors.textTertiary,
-  },
-  panah: {
-    width: 28,
-    height: 28,
-    borderRadius: Spacing.radius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
